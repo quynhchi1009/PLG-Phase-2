@@ -1,0 +1,1965 @@
+/* Page layouts: Billing & Subscription, Products & Pricing. */
+
+.page {
+  max-inline-size: 1240px;
+  padding: var(--space-8) var(--space-10) var(--space-12);
+}
+
+.page__head {
+  display: grid;
+  gap: var(--space-2);
+  padding-block-end: var(--space-6);
+  margin-block-end: var(--space-6);
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+
+/* The billing head sits straight on its cards, as in the current flow. */
+.page__head--flush {
+  padding-block-end: 0;
+  margin-block-end: var(--space-5);
+  border-block-end: 0;
+}
+
+.page__head h1 {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.page__head p {
+}
+
+.card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-base-light);
+  box-shadow: var(--shadow-card);
+}
+
+/* Billing ------------------------------------------------------------------ */
+
+.billing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--space-5);
+  align-items: stretch;
+  margin-block-end: var(--space-5);
+}
+
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+}
+
+.plan-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.plan-card__label {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--color-interactive-primary);
+}
+
+.plan-card__figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-6);
+  margin-block-start: var(--space-4);
+}
+
+.plan-card__price,
+.plan-card__credits {
+  font-family: var(--font-body);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-interactive-control);
+}
+
+.plan-card__credits {
+  padding-inline-start: var(--space-6);
+  border-inline-start: 1px solid var(--color-border-subtle);
+}
+
+.plan-card__price span,
+.plan-card__credits span {
+  margin-inline-start: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-content-tertiary);
+}
+
+.plan-card__lead {
+  margin-block: var(--space-6) var(--space-3);
+  font-weight: 600;
+  color: var(--color-content-primary);
+}
+
+.plan-card__foot {
+  margin-block-start: auto;
+  padding-block-start: var(--space-8);
+  text-align: center;
+}
+
+.settings {
+  display: grid;
+  align-content: start;
+  padding: var(--space-6);
+}
+
+
+
+
+
+.settings__title {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--color-content-primary);
+}
+
+.settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.settings__date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+  color: var(--color-content-main);
+}
+
+.settings__date strong {
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.settings__block {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.settings__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+  color: var(--color-content-primary);
+}
+
+.settings__hint {
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+.settings__changed > div {
+  display: grid;
+  gap: 2px;
+}
+
+.balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.balance__figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.balance__figure svg {
+  align-self: center;
+  color: var(--color-interactive-primary);
+}
+
+.balance__figure strong {
+  font-family: var(--font-body);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-interactive-control);
+}
+
+.balance--low .balance__figure svg,
+.balance--low .balance__figure strong {
+  color: var(--color-content-on-warning-elevated);
+}
+
+.balance--empty .balance__figure svg,
+.balance--empty .balance__figure strong {
+  color: var(--color-sentiment-negative);
+}
+
+.balance__reset {
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter {
+  position: relative;
+  block-size: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-background-subtle);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+  overflow: hidden;
+}
+
+.meter__fill {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--color-interactive-primary);
+  transition: inline-size 600ms var(--ease-out);
+}
+
+.meter--low .meter__fill {
+  background: var(--color-sentiment-warning);
+}
+
+/* Inactive: pick up where you left off ------------------------------------- */
+
+.resub {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-6);
+  margin-block-end: var(--space-5);
+  text-align: center;
+}
+
+.resub__title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.resub__text {
+}
+
+.resub__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  inline-size: 100%;
+  margin-block: var(--space-2);
+}
+
+.resub__tile {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-interactive-selected);
+  font-size: var(--text-sm);
+}
+
+.resub__tile-title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-content-primary);
+}
+
+.resub__tile--warn {
+  border-color: var(--color-border-warning);
+  background: var(--color-sentiment-warning-elevated);
+}
+
+/* History ------------------------------------------------------------------ */
+
+.history {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.history__panel {
+  padding-block-start: var(--space-3);
+  outline: none;
+}
+
+.history__panel:focus-visible {
+  outline: 2px solid var(--color-interactive-primary);
+  outline-offset: 4px;
+}
+
+.history__foot {
+  margin-block-start: var(--space-4);
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* Products & Pricing -------------------------------------------------------- */
+
+.estimator {
+  /* Its dropdowns must paint over the plan cards and billing toggle below. */
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  padding: var(--space-8);
+  margin-block-end: var(--space-10);
+}
+
+.estimator__form {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.estimator__title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.estimator__lede {
+  margin-block-start: calc(var(--space-2) * -1);
+}
+
+.estimator__fine {
+  margin-block: calc(var(--space-3) * -1) var(--space-2);
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+.recommend {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  align-self: center;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-interactive-selected);
+}
+
+.recommend.is-ready {
+  animation: notice-in var(--dur) var(--ease-out);
+}
+
+.recommend__title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-content-primary);
+}
+
+.recommend__plan {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-content-primary);
+}
+
+.recommend__steps {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.recommend__steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-content-main);
+}
+
+.recommend__num {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border: 1px solid var(--color-border-accent);
+  border-radius: 50%;
+  background: var(--color-base-light);
+  color: var(--color-interactive-control);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.recommend__steps li.is-done {
+  color: var(--color-content-primary);
+}
+
+.recommend__steps li.is-done .recommend__num {
+  border-color: var(--color-interactive-primary);
+  background: var(--color-interactive-primary);
+  color: var(--color-base-light);
+}
+
+.recommend__facts {
+  display: grid;
+  font-size: var(--text-sm);
+}
+
+.recommend__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-2);
+  border-block-start: 1px solid var(--color-border-accent);
+}
+
+.recommend__facts dt {
+  color: var(--color-content-main);
+}
+
+.recommend__facts dd {
+  font-weight: 600;
+  color: var(--color-content-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.recommend .btn {
+  justify-self: start;
+}
+
+.choose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  scroll-margin-top: calc(var(--topbar-h) + var(--space-4));
+}
+
+.choose__title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+  align-items: stretch;
+  /* Room for the billing toggle above the raised featured card, plus a clear
+     gap under the section title. */
+  margin-block-start: calc(var(--space-12) + var(--space-4));
+  /* Absorbs the featured card's overhang so the next section sits 40px away. */
+  margin-block-end: var(--space-5);
+}
+
+@media (min-width: 1101px) {
+  /* Keeps the three feature lists starting on the same line. */
+  .plan__figures {
+    min-block-size: 91px;
+    align-content: start;
+  }
+}
+
+/* The featured Growth card sits raised: it starts above and ends below its
+   neighbours, with the billing toggle docked on top. */
+.plans__featured {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.plans__featured > .plan {
+  flex: 1;
+  margin-block: calc(var(--space-5) * -1);
+  box-shadow: var(--shadow-card);
+}
+
+.billing-toggle {
+  position: absolute;
+  inset-block-end: calc(100% + var(--space-5) + var(--space-2));
+  inset-inline: var(--space-4);
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius-lg);
+  background: var(--color-background-subtle);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+}
+
+.billing-toggle button {
+  flex: 1;
+  min-block-size: 32px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.billing-toggle button:hover {
+  color: var(--color-content-primary);
+}
+
+.billing-toggle button[aria-pressed='true'] {
+  background: var(--color-base-light);
+  color: var(--color-interactive-primary);
+  box-shadow: 0 1px 2px rgb(14 15 12 / 0.08), 0 1px 6px -1px rgb(14 15 12 / 0.08);
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-xl);
+  background: var(--color-base-light);
+  transition: box-shadow var(--dur) var(--ease-out);
+}
+
+.plan--featured {
+  border-color: var(--color-border-accent);
+  background: var(--color-interactive-selected);
+}
+
+.plan--recommended,
+.plans__featured > .plan--recommended {
+  box-shadow: 0 0 0 2px var(--color-interactive-primary);
+}
+
+.plan__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-block-size: 22px;
+}
+
+.plan__badges .badge {
+  gap: var(--space-1);
+}
+
+.plan__name {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.plan__summary {
+  margin-block-start: calc(var(--space-2) * -1);
+  min-block-size: 3em;
+  font-size: var(--text-sm);
+}
+
+.plan__figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-5);
+  padding-block: var(--space-4);
+  border-block: 1px solid var(--color-border-subtle);
+}
+
+.plan--featured .plan__figures {
+  border-color: var(--color-border-accent);
+}
+
+.plan__amount,
+.plan__credits {
+  font-family: var(--font-body);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-interactive-control);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan__credits {
+  padding-inline-start: var(--space-5);
+  border-inline-start: 1px solid var(--color-border-subtle);
+  color: var(--color-interactive-control);
+}
+
+.plan--featured .plan__credits {
+  border-color: var(--color-border-accent);
+}
+
+.plan__amount span,
+.plan__credits span {
+  margin-inline-start: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-content-tertiary);
+}
+
+.plan__amount--custom {
+  color: var(--color-interactive-control);
+}
+
+.plan__unit {
+  flex-basis: 100%;
+  color: var(--color-interactive-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan__unit--lead {
+  margin-block: var(--space-1);
+}
+
+/* The featured Growth card is set in the Portal's navy, as in the design. */
+.plan--navy,
+.plans__featured > .plan--navy {
+  border-color: var(--color-navy-900);
+  background: linear-gradient(180deg, var(--color-navy-700) 0%, var(--color-navy-900) 60%, var(--color-navy-950) 100%);
+  color: var(--color-chrome-content-main);
+  box-shadow: var(--shadow-pop);
+}
+
+.plan--navy .plan__name,
+.plan--navy .plan__amount,
+.plan--navy .checklist strong {
+  color: #fff;
+}
+
+.plan--navy .plan__summary,
+.plan--navy .plan__amount span,
+.plan--navy .plan__credits span,
+.plan--navy .checklist__detail {
+  color: var(--color-chrome-content-tertiary);
+}
+
+.plan--navy .plan__credits,
+.plan--navy .plan__unit,
+.plan--navy .checklist__mark {
+  color: var(--color-chrome-accent);
+}
+
+.plan--navy .plan__figures,
+.plan--navy .plan__credits {
+  border-color: var(--color-chrome-border);
+}
+
+.plan--navy .btn--current,
+.plan--navy .btn--current:hover {
+  background: var(--color-chrome-selected);
+  border-color: var(--color-chrome-border);
+  color: #fff;
+}
+
+.plan--navy .btn--locked,
+.plan--navy .btn--locked:hover {
+  background: var(--color-chrome-selected);
+  border-color: var(--color-chrome-border);
+  color: var(--color-chrome-content-tertiary);
+}
+
+.plan--navy :focus-visible {
+  outline-color: var(--color-chrome-accent);
+}
+
+.plans__featured > .plan--recommended {
+  box-shadow: 0 0 0 2px var(--color-chrome-accent), var(--shadow-pop);
+}
+
+/* Small uppercase section labels, as the design sets them. */
+.eyebrow {
+  color: var(--color-interactive-primary);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.eyebrow + h2 {
+  margin-block-start: calc(var(--space-3) * -1);
+}
+
+.eyebrow--muted {
+  color: var(--color-content-main);
+}
+
+.estimator .field__label {
+  color: var(--color-content-main);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.recommend .eyebrow + .recommend__plan {
+  margin-block-start: calc(var(--space-2) * -1);
+}
+
+.section-card__title--sub {
+  margin-block-start: var(--space-6);
+  font-size: var(--text-xl);
+}
+
+.rates-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.tiers__count {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-interactive-primary);
+  color: var(--color-base-light);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.plan__cta {
+  margin-block-start: auto;
+  padding-block-start: var(--space-2);
+}
+
+.placeholder-note {
+  margin-block-start: var(--space-6);
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* Recommendation detail */
+
+.recommend__figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-6);
+  margin-block-start: calc(var(--space-2) * -1);
+}
+
+.recommend__blurb {
+  font-size: var(--text-sm);
+}
+
+.recommend__est {
+  margin-block-start: calc(var(--space-2) * -1);
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.recommend__actions {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+}
+
+.recommend__actions .btn--link {
+  font-size: var(--text-sm);
+}
+
+/* Section cards below the plans --------------------------------------------- */
+
+.section-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  padding: var(--space-8);
+  margin-block-start: var(--space-10);
+}
+
+.section-card__title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+}
+
+.section-card__lede {
+  margin-block-start: calc(var(--space-3) * -1);
+}
+
+.table--compare {
+  table-layout: fixed;
+  min-inline-size: 760px;
+}
+
+.table--compare thead th {
+  inline-size: 16%;
+  padding-block: var(--space-4);
+  vertical-align: top;
+  text-align: center;
+  white-space: normal;
+}
+
+.table--compare thead th:first-child,
+.table--compare tbody th {
+  inline-size: 36%;
+  text-align: start;
+}
+
+.table--compare tbody th {
+  font-weight: 400;
+  color: var(--color-content-main);
+}
+
+.table--compare tbody th .infotip {
+  margin-inline-start: var(--space-1);
+}
+
+.table--compare td {
+  text-align: center;
+  color: var(--color-content-primary);
+  font-size: var(--text-sm);
+}
+
+.table--compare .is-featured {
+  background: var(--color-interactive-selected);
+}
+
+.table--compare tbody td.is-featured {
+  color: var(--color-interactive-control);
+  font-weight: 600;
+}
+
+.table--compare tbody tr:hover {
+  background: none;
+}
+
+.table--compare .badge {
+  margin-block-start: var(--space-1);
+}
+
+.table__current {
+  display: block;
+  margin-block-start: var(--space-1);
+  color: var(--color-interactive-primary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.yes {
+  color: var(--color-interactive-primary);
+}
+
+.no {
+  color: var(--color-content-tertiary);
+}
+
+.compare__name,
+.compare__price,
+.compare__credits {
+  display: block;
+}
+
+.compare__name {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-content-primary);
+}
+
+.compare__price {
+  margin-block-start: 2px;
+  color: var(--color-content-main);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.compare__credits {
+  margin-block-end: var(--space-2);
+  color: var(--color-interactive-control);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.rates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.rates__col {
+  display: grid;
+  align-content: start;
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.rates__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-3);
+}
+
+.rates__row + .rates__row {
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.rates__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+  color: var(--color-content-primary);
+}
+
+.rates__from {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-interactive-selected);
+  color: var(--color-interactive-control);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rates__note {
+  flex-basis: 100%;
+  grid-template-columns: auto 1fr;
+  animation: none;
+}
+
+.disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-content-link);
+  font-weight: 600;
+}
+
+.disclosure svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.disclosure svg.is-open {
+  transform: rotate(180deg);
+}
+
+.disclosure:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tiers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  animation: notice-in var(--dur) var(--ease-out);
+}
+
+.tiers__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.tiers__label {
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.tiers__pick {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.tier {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-base-light);
+  text-align: start;
+  transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+
+.tier:hover {
+  border-color: var(--color-border-accent);
+}
+
+.tier[aria-checked='true'] {
+  border-color: var(--color-interactive-primary);
+  background: var(--color-interactive-selected);
+  box-shadow: inset 0 0 0 1px var(--color-interactive-primary);
+}
+
+.tier__name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-content-primary);
+}
+
+.tier__countries {
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+}
+
+.table--rates td:first-child {
+  color: var(--color-content-primary);
+}
+
+.table--rates .infotip {
+  margin-inline-start: var(--space-1);
+}
+
+.faq {
+  display: grid;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.faq__item + .faq__item {
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.faq__item h3 {
+  font-size: var(--text-md);
+}
+
+.faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  inline-size: 100%;
+  min-block-size: 52px;
+  padding: var(--space-3) var(--space-5);
+  border: 0;
+  background: none;
+  color: var(--color-content-primary);
+  font-weight: 600;
+  text-align: start;
+}
+
+.faq__q:hover {
+  background: var(--color-base-contrast);
+}
+
+.faq__q:focus-visible {
+  outline-offset: -2px;
+}
+
+.faq__q svg {
+  color: var(--color-content-tertiary);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.faq__item.is-open .faq__q {
+  background: var(--color-base-contrast);
+}
+
+.faq__item.is-open .faq__q svg {
+  transform: rotate(180deg);
+}
+
+.faq__a {
+  padding: var(--space-3) var(--space-5) var(--space-5);
+  animation: notice-in var(--dur) var(--ease-out);
+}
+
+.help {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  margin-block-start: var(--space-10);
+  text-align: center;
+}
+
+.help__title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.help .btn {
+  margin-block-start: var(--space-2);
+}
+
+/* Confirm plan & terms */
+
+.confirm-plan {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-interactive-selected);
+}
+
+.confirm-plan__name {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-content-primary);
+}
+
+.plan__figures--flat {
+  margin-block-start: calc(var(--space-3) * -1);
+  padding-block: 0;
+  border: 0;
+}
+
+.plan__figures--flat .plan__credits {
+  border-color: var(--color-border-accent);
+}
+
+.confirm-plan__fine {
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+}
+
+.confirm-terms {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.confirm-terms .field-error {
+  min-block-size: 0;
+}
+
+.placeholder-note .badge {
+  margin-inline-end: var(--space-2);
+}
+
+/* Two-card lineup for Growth yearly subscribers (current + Business). */
+.plans--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-block-start: var(--space-5);
+}
+
+/* Choose report ---------------------------------------------------------- */
+
+.page--report > .tabs {
+  margin-block-end: var(--space-6);
+}
+
+.entity {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-end: var(--space-6);
+}
+
+.entity__name {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+}
+
+.entity__local {
+  color: var(--color-content-main);
+  font-weight: 500;
+}
+
+.entity__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.report-options {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.report-options__title {
+  font-size: var(--text-xl);
+  font-weight: 500;
+}
+
+.report-options__sub {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+.report-options__hint {
+  margin-block-start: calc(var(--space-3) * -1);
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+.report-list {
+  display: grid;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.report-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  cursor: pointer;
+}
+
+.report-option + .report-option {
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.report-option:hover {
+  background: var(--color-base-contrast);
+}
+
+.report-option.is-selected {
+  background: var(--color-interactive-selected);
+}
+
+.report-option input {
+  position: absolute;
+  inline-size: 20px;
+  block-size: 20px;
+  margin: 0;
+  opacity: 0;
+}
+
+.report-option__radio {
+  inline-size: 20px;
+  block-size: 20px;
+  border: 1.5px solid var(--color-interactive-secondary);
+  border-radius: 50%;
+  background: var(--color-base-light);
+}
+
+.report-option input:checked + .report-option__radio {
+  border: 6px solid var(--color-interactive-primary);
+}
+
+.report-option input:focus-visible + .report-option__radio {
+  outline: 2px solid var(--color-interactive-primary);
+  outline-offset: 2px;
+}
+
+.report-option__text {
+  display: grid;
+  gap: 2px;
+  font-size: var(--text-sm);
+}
+
+.report-option__text strong {
+  font-size: var(--text-md);
+}
+
+.report-option__credits {
+  color: var(--color-interactive-control);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.report-addon__detail {
+  display: block;
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+.report-summary {
+  position: sticky;
+  inset-block-start: calc(var(--topbar-h) + var(--space-5));
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.report-summary__title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+.report-summary__balance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.report-summary__balance svg {
+  color: var(--color-interactive-primary);
+}
+
+.report-summary__balance.is-short {
+  color: var(--color-content-on-warning-elevated);
+}
+
+.report-summary__balance.is-short svg {
+  color: var(--color-content-on-warning-elevated);
+}
+
+/* Responsive --------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
+    margin-block: var(--space-4) 0;
+  }
+
+  .plans__featured {
+    gap: var(--space-3);
+  }
+
+  .plans__featured > .plan {
+    margin-block: 0;
+  }
+
+  .billing-toggle {
+    position: static;
+  }
+
+  .rates,
+  .tiers__pick {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plan__summary {
+    min-block-size: 0;
+  }
+
+  .plan__badges:empty {
+    display: none;
+  }
+
+  .estimator {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .recommend {
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 1040px) {
+  .billing-grid,
+  .report-grid,
+  .plans--two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: var(--space-6) var(--space-4) var(--space-10);
+  }
+
+  .page__head h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .plan-card,
+  .settings,
+  .estimator,
+  .section-card,
+  .help {
+    padding: var(--space-5);
+  }
+
+  .rates__col {
+    padding-inline: var(--space-4);
+  }
+
+  /* Usage table scrolls sideways honestly instead of squeezing names. */
+  .history .table td,
+  .history .table th {
+    white-space: nowrap;
+  }
+
+  .history {
+    padding: var(--space-3) var(--space-4) var(--space-5);
+  }
+
+  .resub {
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .resub__tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings__row--date,
+  .settings__changed {
+    flex-wrap: wrap;
+  }
+
+  /* Figures stack on phones; the divider only makes sense side by side. */
+  .plan-card__credits,
+  .plan__credits {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .plan-card__figures,
+  .plan__figures {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .plan__unit {
+    flex-basis: auto;
+  }
+
+  .dialog__body {
+    padding: var(--space-6) var(--space-5) var(--space-5);
+  }
+
+  .proto-toggle {
+    inset-block-end: var(--space-3);
+    inset-inline-end: var(--space-3);
+  }
+
+  .toaster {
+    inset-block-end: 64px;
+  }
+}
+
+.confirm-plan.confirm-plan--plain {
+  border-color: var(--color-border-subtle);
+  background: var(--color-base-light);
+}
+
+/* Simulated Stripe checkout ------------------------------------------------- */
+/* A neutral stand-in for the hosted checkout page: two panes, order summary on
+   the left, payment on the right. Deliberately unbranded beyond the merchant. */
+
+.checkout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-block-size: 100dvh;
+  background: var(--color-base-light);
+}
+
+.checkout__summary {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-10) var(--space-10) max(var(--space-10), calc(50vw - 480px));
+  background: var(--color-base-contrast);
+  border-inline-end: 1px solid var(--color-border-subtle);
+}
+
+.checkout__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.checkout__back:hover {
+  color: var(--color-content-primary);
+}
+
+.checkout__merchant {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-4);
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.checkout__label {
+  margin-block-start: var(--space-4);
+  color: var(--color-content-main);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.checkout__total {
+  margin-block-start: calc(var(--space-3) * -1);
+  font-family: var(--font-body);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--color-content-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.checkout__lines {
+  display: grid;
+  inline-size: min(100%, 420px);
+  margin-block-start: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.checkout__lines > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+}
+
+.checkout__lines dt {
+  display: grid;
+  gap: 2px;
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.checkout__lines dt span {
+  color: var(--color-content-tertiary);
+  font-weight: 400;
+}
+
+.checkout__lines dd {
+  color: var(--color-content-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.checkout__subtotal {
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.checkout__subtotal dt {
+  font-weight: 400 !important;
+}
+
+.checkout__grand {
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.checkout__grand dt,
+.checkout__grand dd {
+  font-weight: 700;
+}
+
+.checkout__pay {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  inline-size: min(100%, 440px);
+  padding: var(--space-12) var(--space-10);
+}
+
+.checkout__pay-title {
+  font-size: var(--text-xl);
+  font-weight: 500;
+}
+
+.checkout__field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.checkout__field-label {
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.checkout__field-value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius);
+  background: var(--color-base-contrast);
+  color: var(--color-content-main);
+}
+
+.checkout__card svg {
+  color: var(--color-content-tertiary);
+}
+
+.checkout__fine {
+  color: var(--color-content-tertiary);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.checkout__sim {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--color-border-warning);
+  border-radius: var(--radius);
+  background: var(--color-sentiment-warning-elevated);
+  color: var(--color-content-on-warning-elevated);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.checkout--status,
+.checkout--empty {
+  grid-template-columns: minmax(0, 1fr);
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.checkout__status-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-content-primary);
+}
+
+.checkout__status-text {
+  color: var(--color-content-main);
+}
+
+.checkout--status .checkout__sim {
+  margin-block-start: var(--space-6);
+}
+
+.checkout__spinner {
+  inline-size: 40px;
+  block-size: 40px;
+  border: 3px solid var(--color-interactive-accent-hover);
+  border-block-start-color: var(--color-interactive-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Reduced motion: a still ring still reads as "in progress" next to the text. */
+@media (prefers-reduced-motion: reduce) {
+  .checkout__spinner {
+    animation: none;
+    border-color: var(--color-interactive-primary);
+    border-inline-end-color: var(--color-interactive-accent-hover);
+  }
+}
+
+.checkout__done {
+  color: var(--color-sentiment-positive);
+}
+
+@media (max-width: 760px) {
+  .checkout {
+    grid-template-columns: minmax(0, 1fr);
+    min-block-size: 100dvh;
+  }
+
+  .checkout__summary,
+  .checkout__pay {
+    inline-size: 100%;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .checkout__summary {
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--color-border-subtle);
+  }
+}
+
+/* Billing hierarchy (PM layout) --------------------------------------------
+   Layout stays as designed: plan on the left, settings on the right. Weight is
+   redistributed so the credit balance is the only large figure; the plan
+   price identifies the plan; everything else reads at body size. */
+
+.billing-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: stretch;
+}
+
+/* Left: plan */
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.plan-card__head {
+  margin: 0;
+}
+
+.plan-card__label {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--color-interactive-primary);
+}
+
+.plan-card__figures {
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding-block-end: var(--space-5);
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+
+/* Price and allowance are the plan's two facts, so they share one figure size. */
+.plan-card__price,
+.plan-card__credits {
+  font-size: var(--text-3xl);
+  line-height: 1.1;
+  color: var(--color-interactive-control);
+}
+
+.plan-card__credits {
+  padding-inline-start: var(--space-5);
+}
+
+.plan-card__price span,
+.plan-card__credits span {
+  font-size: var(--text-md);
+}
+
+.plan-card__breakdown {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.plan-card__lead {
+  margin: 0;
+  color: var(--color-content-primary);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.plan-card__breakdown .checklist {
+  color: var(--color-content-main);
+}
+
+.plan-card__foot {
+  margin-block-start: auto;
+  padding-block-start: var(--space-2);
+}
+
+/* Right: settings */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Siblings are spaced by the card's gap; notices keep their own padding and border. */
+.settings > * + * {
+  margin: 0;
+}
+
+.settings__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.settings__head-text {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.settings__title {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--color-content-primary);
+  outline: none;
+}
+
+.settings__meta {
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+}
+
+.settings__meta strong {
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.settings__changed {
+  align-items: flex-start;
+}
+
+.balance-block {
+  display: grid;
+  gap: var(--space-3);
+  padding-block-start: var(--space-5);
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.balance-block .balance {
+  align-items: flex-end;
+}
+
+.balance-block .balance__figure {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.balance-block .balance__figure svg {
+  align-self: center;
+}
+
+/* Same figure size as the plan's price and credits. */
+.balance-block .balance__figure strong {
+  font-size: var(--text-3xl);
+  line-height: 1.1;
+}
+
+.balance-block .balance__figure span {
+  align-self: baseline;
+  font-size: var(--text-md);
+}
+
+.balance-block .meter {
+  block-size: 8px;
+}
+
+.topup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-start: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-base-contrast);
+}
+
+.topup__text {
+  display: grid;
+  gap: 2px;
+  color: var(--color-content-primary);
+  font-size: var(--text-md);
+}
+
+
+@media (max-width: 1040px) {
+  .billing-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .settings__head,
+  .topup {
+    flex-wrap: wrap;
+  }
+
+  .plan-card__credits {
+    padding-inline-start: 0;
+  }
+}
+
+/* Text beside an action fills the row; only the button keeps its own width. */
+.topup__text,
+.settings__changed > div {
+  flex: 1 1 0;
+  min-inline-size: 0;
+}
+
+.topup > .btn,
+.settings__head > .btn,
+.settings__changed > .btn {
+  flex: none;
+}
+
+@media (max-width: 760px) {
+  .topup__text,
+  .settings__changed > div {
+    flex-basis: 100%;
+  }
+}
+
+.topup {
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+/* Settings card: header line, divider, then notices and actions. */
+.settings__head {
+  padding-block-end: var(--space-5);
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+
+.settings__head-text {
+  gap: var(--space-2);
+}
+
+.settings__meta {
+  color: var(--color-content-main);
+  font-size: var(--text-md);
+}
+
+.settings__meta strong {
+  font-weight: 500;
+}
+
+.settings > .notice {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius);
+}
+
+.settings > .notice .notice__title {
+  font-size: var(--text-md);
+}
+
+.settings > .notice .notice__text {
+  margin-block-start: var(--space-1);
+  font-size: var(--text-md);
+}
+
+.settings__changed {
+  gap: var(--space-5);
+}
+
+.settings__changed > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* Section labels inside the cards share one step: 14px semibold. */
+.settings__subtitle {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-content-primary);
+}
+
+.settings .settings__hint,
+.balance-block .balance__reset {
+  font-size: var(--text-md);
+}
+
+/* The balance follows the header directly when nothing sits between them. */
+.settings__head + .balance-block {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+

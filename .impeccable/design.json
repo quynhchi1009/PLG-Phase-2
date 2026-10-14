@@ -1,0 +1,758 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-13T09:21:21+00:00",
+  "title": "Design System: AsiaVerify Portal (PLG Billing)",
+  "extensions": {
+    "colorSource": "AsiaVerify Colour Tokens sheet; generated into billing/src/styles/tokens.css (light :root, dark via prefers-color-scheme and [data-theme=dark]). Frontmatter carries light values; darkValue carries the dark-theme value.",
+    "colorMeta": {
+      "interactive-primary": {
+        "role": "primary",
+        "displayName": "Registry Green",
+        "canonical": "#00735f",
+        "cssVar": "--color-interactive-primary",
+        "darkValue": "#00bd9a",
+        "tonalRamp": [
+          "#001509",
+          "#003222",
+          "#00513f",
+          "#00725e",
+          "#38957f",
+          "#5eb8a2",
+          "#84ddc6",
+          "#a9ffeb"
+        ]
+      },
+      "interactive-control": {
+        "role": "primary",
+        "displayName": "Deep Ledger Green",
+        "canonical": "#004d3f",
+        "cssVar": "--color-interactive-control",
+        "darkValue": "#9af4e3",
+        "tonalRamp": [
+          "#001309",
+          "#002f23",
+          "#024e40",
+          "#2e6e5f",
+          "#519080",
+          "#74b4a3",
+          "#98d9c7",
+          "#bdffec"
+        ]
+      },
+      "interactive-accent": {
+        "role": "primary",
+        "displayName": "Soft Mint Wash",
+        "canonical": "#e5f1e8",
+        "cssVar": "--color-interactive-accent",
+        "darkValue": "#203325",
+        "tonalRamp": [
+          "#060d08",
+          "#1f2821",
+          "#3b453e",
+          "#5a645d",
+          "#7b867e",
+          "#9da8a0",
+          "#c1cdc4",
+          "#e6f2e9"
+        ]
+      },
+      "interactive-accent-hover": {
+        "role": "primary",
+        "displayName": "Soft Mint Wash (hover)",
+        "canonical": "#d6e9da",
+        "cssVar": "--color-interactive-accent-hover",
+        "darkValue": "#2a4231",
+        "tonalRamp": [
+          "#030f06",
+          "#1b291e",
+          "#37473b",
+          "#566659",
+          "#76887a",
+          "#99aa9c",
+          "#bccfc0",
+          "#e1f4e5"
+        ]
+      },
+      "interactive-selected": {
+        "role": "primary",
+        "displayName": "Pale Ledger Tint",
+        "canonical": "#edf5ef",
+        "cssVar": "--color-interactive-selected",
+        "darkValue": "#1f2b23",
+        "tonalRamp": [
+          "#080d09",
+          "#212722",
+          "#3d443f",
+          "#5c635e",
+          "#7d847f",
+          "#a0a7a2",
+          "#c4cbc6",
+          "#e9f1eb"
+        ]
+      },
+      "interactive-secondary": {
+        "role": "neutral",
+        "displayName": "Control Grey",
+        "canonical": "#626262",
+        "cssVar": "--color-interactive-secondary",
+        "darkValue": "#8d8d8d",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "border-accent": {
+        "role": "primary",
+        "displayName": "Mint Hairline",
+        "canonical": "#8fcaa9",
+        "cssVar": "--color-border-accent",
+        "darkValue": "rgb(0 189 154 / 0.35)",
+        "tonalRamp": [
+          "#001301",
+          "#003017",
+          "#114e33",
+          "#366f52",
+          "#579172",
+          "#7ab494",
+          "#9ed9b8",
+          "#c2ffdc"
+        ]
+      },
+      "chrome-accent": {
+        "role": "secondary",
+        "displayName": "Chrome Signal Green",
+        "canonical": "#2fbf87",
+        "cssVar": "--color-chrome-accent",
+        "darkValue": "#2fbf87",
+        "tonalRamp": [
+          "#001700",
+          "#003410",
+          "#00542d",
+          "#00754b",
+          "#28986c",
+          "#54bc8e",
+          "#7ae2b1",
+          "#a0ffd6"
+        ]
+      },
+      "navy-700": {
+        "role": "neutral",
+        "displayName": "Portal Navy 700",
+        "canonical": "#1f3954",
+        "cssVar": "--color-navy-700",
+        "darkValue": "#1f3954",
+        "tonalRamp": [
+          "#000b22",
+          "#0c2640",
+          "#2a4460",
+          "#486481",
+          "#6985a4",
+          "#8aa8c9",
+          "#aecdee",
+          "#d2f2ff"
+        ]
+      },
+      "navy-900": {
+        "role": "neutral",
+        "displayName": "Portal Navy 900",
+        "canonical": "#111a24",
+        "cssVar": "--color-navy-900",
+        "darkValue": "#111a24",
+        "tonalRamp": [
+          "#050c15",
+          "#1d2630",
+          "#39434f",
+          "#58626f",
+          "#788491",
+          "#9ba6b4",
+          "#becbd9",
+          "#e3f0ff"
+        ]
+      },
+      "navy-950": {
+        "role": "neutral",
+        "displayName": "Portal Navy 950",
+        "canonical": "#0b1016",
+        "cssVar": "--color-navy-950",
+        "darkValue": "#0b1016",
+        "tonalRamp": [
+          "#070c11",
+          "#20262c",
+          "#3d434a",
+          "#5b626a",
+          "#7c838b",
+          "#9fa6ae",
+          "#c3cad3",
+          "#e8eff9"
+        ]
+      },
+      "background-system": {
+        "role": "neutral",
+        "displayName": "System Navy",
+        "canonical": "#111a24",
+        "cssVar": "--color-background-system",
+        "darkValue": "#1b3147",
+        "tonalRamp": [
+          "#050c15",
+          "#1d2630",
+          "#39434f",
+          "#58626f",
+          "#788491",
+          "#9ba6b4",
+          "#becbd9",
+          "#e3f0ff"
+        ]
+      },
+      "content-primary": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1b1c1e",
+        "cssVar": "--color-content-primary",
+        "darkValue": "#cdced1",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#242527",
+          "#414244",
+          "#606164",
+          "#818285",
+          "#a4a5a8",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "content-main": {
+        "role": "neutral",
+        "displayName": "Body Graphite",
+        "canonical": "#444444",
+        "cssVar": "--color-content-main",
+        "darkValue": "#b6b6b6",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "content-tertiary": {
+        "role": "neutral",
+        "displayName": "Quiet Graphite",
+        "canonical": "#6b6b6b",
+        "cssVar": "--color-content-tertiary",
+        "darkValue": "#979797",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "content-link": {
+        "role": "neutral",
+        "displayName": "Ledger Link",
+        "canonical": "#004d3f",
+        "cssVar": "--color-content-link",
+        "darkValue": "#9af4e3",
+        "tonalRamp": [
+          "#001309",
+          "#002f23",
+          "#024e40",
+          "#2e6e5f",
+          "#519080",
+          "#74b4a3",
+          "#98d9c7",
+          "#bdffec"
+        ]
+      },
+      "base-light": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "cssVar": "--color-base-light",
+        "darkValue": "#1c1c1b",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "base-contrast": {
+        "role": "neutral",
+        "displayName": "Floor Grey",
+        "canonical": "#f8f8f8",
+        "cssVar": "--color-base-contrast",
+        "darkValue": "#202020",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "background-subtle": {
+        "role": "neutral",
+        "displayName": "Subtle Fill",
+        "canonical": "#f1f1f1",
+        "cssVar": "--color-background-subtle",
+        "darkValue": "rgb(255 255 255 / 0.06)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "border-subtle": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e3e3e3",
+        "cssVar": "--color-border-subtle",
+        "darkValue": "rgb(255 255 255 / 0.1)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "border-neutral": {
+        "role": "neutral",
+        "displayName": "Neutral Edge",
+        "canonical": "#a5a5a5",
+        "cssVar": "--color-border-neutral",
+        "darkValue": "#545454",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "sentiment-positive": {
+        "role": "sentiment",
+        "displayName": "Positive",
+        "canonical": "#1b813d",
+        "cssVar": "--color-sentiment-positive",
+        "darkValue": "#a3e363",
+        "tonalRamp": [
+          "#001500",
+          "#003300",
+          "#005219",
+          "#207339",
+          "#47965a",
+          "#6bba7b",
+          "#8fdf9f",
+          "#b4ffc3"
+        ]
+      },
+      "sentiment-negative": {
+        "role": "sentiment",
+        "displayName": "Negative",
+        "canonical": "#d14343",
+        "cssVar": "--color-sentiment-negative",
+        "darkValue": "#fcbcb4",
+        "tonalRamp": [
+          "#2d0000",
+          "#510002",
+          "#751f1f",
+          "#9a413e",
+          "#c0635e",
+          "#e7867f",
+          "#ffaaa2",
+          "#ffcfc6"
+        ]
+      },
+      "sentiment-warning": {
+        "role": "sentiment",
+        "displayName": "Warning",
+        "canonical": "#ffaa52",
+        "cssVar": "--color-sentiment-warning",
+        "darkValue": "#f4c430",
+        "tonalRamp": [
+          "#280000",
+          "#490d00",
+          "#6b2f00",
+          "#8f4f00",
+          "#b37127",
+          "#d9944e",
+          "#ffb872",
+          "#ffdd97"
+        ]
+      },
+      "sentiment-negative-elevated": {
+        "role": "sentiment",
+        "displayName": "Negative Tint",
+        "canonical": "#ffefef",
+        "cssVar": "--color-sentiment-negative-elevated",
+        "darkValue": "#3a0505",
+        "tonalRamp": [
+          "#120808",
+          "#2d2222",
+          "#4b3e3f",
+          "#6b5d5e",
+          "#8d7e7e",
+          "#b0a1a1",
+          "#d4c5c5",
+          "#faeaea"
+        ]
+      },
+      "sentiment-warning-elevated": {
+        "role": "sentiment",
+        "displayName": "Warning Tint",
+        "canonical": "#fff6e8",
+        "cssVar": "--color-sentiment-warning-elevated",
+        "darkValue": "#3e2807",
+        "tonalRamp": [
+          "#100a03",
+          "#2b241a",
+          "#484136",
+          "#686054",
+          "#898175",
+          "#aca497",
+          "#d1c8ba",
+          "#f6eddf"
+        ]
+      },
+      "content-on-negative-elevated": {
+        "role": "sentiment",
+        "displayName": "Negative Ink",
+        "canonical": "#95231e",
+        "cssVar": "--color-content-on-negative-elevated",
+        "darkValue": "#ffe5e2",
+        "tonalRamp": [
+          "#2d0000",
+          "#510000",
+          "#751f1a",
+          "#9a4239",
+          "#c06459",
+          "#e6867b",
+          "#ffaa9e",
+          "#ffcfc2"
+        ]
+      },
+      "content-on-warning-elevated": {
+        "role": "sentiment",
+        "displayName": "Warning Ink",
+        "canonical": "#9a6200",
+        "cssVar": "--color-content-on-warning-elevated",
+        "darkValue": "#ffdb58",
+        "tonalRamp": [
+          "#250000",
+          "#461300",
+          "#673300",
+          "#8a5300",
+          "#ae7523",
+          "#d3984b",
+          "#f9bc70",
+          "#ffe195"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles; 22px under 760px."
+      },
+      "price": {
+        "displayName": "Price",
+        "purpose": "Plan prices with tabular numerals; unit suffix at 16px 500."
+      },
+      "section-title": {
+        "displayName": "Section Title",
+        "purpose": "In-page section heads such as the plan comparison."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Dialog titles and plan names."
+      },
+      "card-title": {
+        "displayName": "Card Title",
+        "purpose": "Card headers such as Subscription settings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text at 14px."
+      },
+      "body-sm": {
+        "displayName": "Body Small",
+        "purpose": "Hints, notice text, facts lists, legends, toasts."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, setting labels, tab labels, table emphasis."
+      },
+      "badge": {
+        "displayName": "Badge",
+        "purpose": "Status and accent badges."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 1px 2px rgb(14 15 12 / 0.04), 0 2px 8px -2px rgb(14 15 12 / 0.06)",
+        "purpose": "Resting cards only."
+      },
+      {
+        "name": "pop",
+        "value": "0 8px 24px -6px rgb(11 16 22 / 0.22), 0 2px 6px rgb(11 16 22 / 0.08)",
+        "purpose": "Tooltips, toasts, skip link."
+      },
+      {
+        "name": "dialog",
+        "value": "0 28px 56px -16px rgb(11 16 22 / 0.38), 0 4px 12px rgb(11 16 22 / 0.1)",
+        "purpose": "Modal dialogs and the mobile sidebar drawer."
+      }
+    ],
+    "focus": {
+      "value": "2px solid var(--color-interactive-primary); outline-offset 2px",
+      "chrome": "outline-color var(--color-chrome-accent)",
+      "input": "border interactive-primary + 0 0 0 3px interactive-accent-hover halo"
+    },
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Single easing for all transitions and entrances."
+      },
+      {
+        "name": "dur-fast",
+        "value": "150ms",
+        "purpose": "Hover and colour changes on controls, tabs, rows."
+      },
+      {
+        "name": "dur",
+        "value": "220ms",
+        "purpose": "Switch, drawer, scrim, dialog open/close, notice and toast entrances."
+      },
+      {
+        "name": "dialog-reshape",
+        "value": "inline-size 280ms ease-out",
+        "purpose": "Dialog width change between 440/560/880px steps."
+      },
+      {
+        "name": "step-in",
+        "value": "260ms, translateY(6px) + fade",
+        "purpose": "Content re-entry on each dialog step."
+      },
+      {
+        "name": "mark-in",
+        "value": "420ms, scale(0.6) + fade",
+        "purpose": "Success result mark."
+      },
+      {
+        "name": "meter",
+        "value": "inline-size 600ms ease-out",
+        "purpose": "Credit meter fill."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animation/transition durations 1ms",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "plans-stack",
+        "value": "1100px"
+      },
+      {
+        "name": "billing-grid-stack",
+        "value": "1040px"
+      },
+      {
+        "name": "sidebar-drawer",
+        "value": "900px"
+      },
+      {
+        "name": "mobile",
+        "value": "760px"
+      },
+      {
+        "name": "topbar-compact",
+        "value": "520px"
+      },
+      {
+        "name": "segmented-stack",
+        "value": "480px"
+      }
+    ],
+    "layout": {
+      "topbarHeight": "56px",
+      "sidebarWidth": "236px",
+      "sidebarCollapsed": "68px",
+      "pageMax": "1240px",
+      "dialogWidths": [
+        "440px",
+        "560px",
+        "880px"
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action on a card or dialog step (Change plan, Keep subscription, Upgrade).",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Change plan</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 20px;border:1px solid transparent;border-radius:6px;font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;font-weight:600;line-height:1.2;cursor:pointer;transition:background-color 150ms cubic-bezier(0.22,1,0.36,1),border-color 150ms cubic-bezier(0.22,1,0.36,1),color 150ms cubic-bezier(0.22,1,0.36,1)}.ds-btn:focus-visible{outline:2px solid var(--color-interactive-primary,#00735f);outline-offset:2px}.ds-btn-primary{background:var(--color-interactive-primary,#00735f);color:var(--color-base-light,#fff)}.ds-btn-primary:hover{background:var(--color-interactive-control,#004d3f)}.ds-btn-primary:active{box-shadow:inset 0 2px 0 rgb(0 0 0 / 0.14)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined green action of lesser weight (Update payment method, Contact sales).",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Update</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 20px;border:1px solid transparent;border-radius:6px;font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;font-weight:600;line-height:1.2;cursor:pointer;transition:background-color 150ms cubic-bezier(0.22,1,0.36,1),border-color 150ms cubic-bezier(0.22,1,0.36,1),color 150ms cubic-bezier(0.22,1,0.36,1)}.ds-btn:focus-visible{outline:2px solid var(--color-interactive-primary,#00735f);outline-offset:2px}.ds-btn-secondary{background:var(--color-base-light,#fff);border-color:var(--color-interactive-primary,#00735f);color:var(--color-interactive-primary,#00735f)}.ds-btn-secondary:hover{background:var(--color-interactive-accent,#e5f1e8)}"
+    },
+    {
+      "name": "Current Plan Button",
+      "kind": "button",
+      "refersTo": "button-current",
+      "description": "Inert tinted state marking the plan the user already has.",
+      "html": "<button class=\"ds-btn ds-btn-current\" aria-disabled=\"true\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg> Current plan</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 20px;border:1px solid transparent;border-radius:6px;font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;font-weight:600;line-height:1.2;cursor:pointer;transition:background-color 150ms cubic-bezier(0.22,1,0.36,1),border-color 150ms cubic-bezier(0.22,1,0.36,1),color 150ms cubic-bezier(0.22,1,0.36,1)}.ds-btn:focus-visible{outline:2px solid var(--color-interactive-primary,#00735f);outline-offset:2px}.ds-btn-current{background:var(--color-interactive-selected,#edf5ef);border-color:var(--color-border-accent,#8fcaa9);color:var(--color-interactive-control,#004d3f);cursor:default}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Single-line field; green stroke and mint halo on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Please specify\">",
+      "css": ".ds-input{width:100%;min-height:40px;padding:0 12px;border:1px solid var(--color-interactive-secondary,#626262);border-radius:6px;background:var(--color-base-light,#fff);color:var(--color-content-primary,#1b1c1e);font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;transition:border-color 150ms cubic-bezier(0.22,1,0.36,1),box-shadow 150ms cubic-bezier(0.22,1,0.36,1)}.ds-input::placeholder{color:var(--color-content-tertiary,#6b6b6b)}.ds-input:hover{border-color:var(--color-content-main,#444)}.ds-input:focus-visible{outline:none;border-color:var(--color-interactive-primary,#00735f);box-shadow:0 0 0 3px var(--color-interactive-accent-hover,#d6e9da)}"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "sidebar-item",
+      "description": "Navy portal sidebar; current page marked by a white wash and a Chrome Signal Green edge bar.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" href=\"#\">Products &amp; Pricing</a><a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\">My Plan</a><a class=\"ds-nav-item\" href=\"#\">API Key <span class=\"ds-nav-new\">New</span></a></nav>",
+      "css": ".ds-nav{display:grid;gap:2px;width:236px;padding:16px 12px;background:linear-gradient(180deg,#1f3954 0%,#111a24 55%,#0b1016 100%)}.ds-nav-item{position:relative;display:flex;align-items:center;gap:12px;min-height:40px;padding:8px 12px;border-radius:6px;color:rgb(255 255 255 / 0.7);font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;text-decoration:none;transition:background-color 150ms cubic-bezier(0.22,1,0.36,1),color 150ms cubic-bezier(0.22,1,0.36,1)}.ds-nav-item:hover{background:rgb(255 255 255 / 0.05);color:#fff}.ds-nav-item:focus-visible{outline:2px solid #2fbf87;outline-offset:-2px}.ds-nav-item[aria-current='page']{background:rgb(255 255 255 / 0.07);color:#fff;font-weight:600}.ds-nav-item[aria-current='page']::before{content:'';position:absolute;top:9px;bottom:9px;left:-12px;width:3px;border-radius:0 3px 3px 0;background:#2fbf87}.ds-nav-new{margin-left:auto;padding:1px 6px;border-radius:4px;background:#2fbf87;color:#0b1016;font-size:10px;font-weight:700}"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "refersTo": "badge-accent",
+      "description": "Small bordered status labels: positive, accent, warning, neutral.",
+      "html": "<span class=\"ds-badge ds-badge-positive\">Active</span> <span class=\"ds-badge ds-badge-accent\">Cancel anytime</span> <span class=\"ds-badge ds-badge-warning\">Cancelled</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;min-height:22px;padding:0 8px;border:1px solid;border-radius:4px;font-family:var(--font-body,'Open Sans',sans-serif);font-size:12px;font-weight:600;white-space:nowrap}.ds-badge-positive{background:var(--color-sentiment-positive-elevated,#f6ffed);border-color:var(--color-border-accent,#8fcaa9);color:var(--color-content-on-positive-elevated,#397300)}.ds-badge-accent{background:var(--color-interactive-selected,#edf5ef);border-color:var(--color-border-accent,#8fcaa9);color:var(--color-interactive-control,#004d3f)}.ds-badge-warning{background:var(--color-sentiment-warning-elevated,#fff6e8);border-color:var(--color-border-warning,#efd7a3);color:var(--color-content-on-warning-elevated,#9a6200)}"
+    },
+    {
+      "name": "Subscription Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "White hairline card with green plan label, Open Sans tabular price and hairline-divided sections.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-head\"><span class=\"ds-card-label\">Subscription</span><span class=\"ds-card-badge\">Active</span></div><p class=\"ds-card-price\">$99<span>/ billed monthly</span></p><p class=\"ds-card-meta\">99 report credits per month</p><p class=\"ds-card-lead\">Subscription plan breakdown:</p><ul class=\"ds-card-list\"><li><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg> Credits refreshed automatically upon full usage</li><li><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg> Ability to generate any report on the Portal</li></ul></article>",
+      "css": ".ds-card{max-width:380px;padding:24px;border:1px solid var(--color-border-subtle,#e3e3e3);border-radius:10px;background:var(--color-base-light,#fff);box-shadow:0 1px 2px rgb(14 15 12 / 0.04),0 2px 8px -2px rgb(14 15 12 / 0.06);font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;color:var(--color-content-main,#444)}.ds-card-head{display:flex;align-items:center;justify-content:space-between}.ds-card-label{font-family:var(--font-head,Roboto,sans-serif);font-size:18px;font-weight:500;color:var(--color-interactive-primary,#00735f)}.ds-card-badge{padding:0 8px;min-height:22px;display:inline-flex;align-items:center;border:1px solid var(--color-border-accent,#8fcaa9);border-radius:4px;background:var(--color-sentiment-positive-elevated,#f6ffed);color:var(--color-content-on-positive-elevated,#397300);font-size:12px;font-weight:600}.ds-card-price{margin:12px 0 0;font-family:var(--font-head,Roboto,sans-serif);font-size:26px;font-weight:700;letter-spacing:-0.01em;font-variant-numeric:tabular-nums;color:var(--color-interactive-control,#004d3f)}.ds-card-price span{margin-left:4px;font-size:16px;font-weight:500;letter-spacing:0}.ds-card-meta{margin:0;font-size:13px;color:var(--color-content-tertiary,#6b6b6b)}.ds-card-lead{margin:24px 0 12px;padding-top:20px;border-top:1px solid var(--color-border-subtle,#e3e3e3);font-size:13px;font-weight:600;color:var(--color-content-primary,#1b1c1e)}.ds-card-list{display:grid;gap:12px;margin:0;padding:0;list-style:none}.ds-card-list li{display:grid;grid-template-columns:16px 1fr;gap:12px}.ds-card-list svg{margin-top:2px;color:var(--color-interactive-primary,#00735f)}"
+    },
+    {
+      "name": "Positive Notice",
+      "kind": "custom",
+      "refersTo": "notice",
+      "description": "Good-news notice: Pale Ledger Tint with Mint Hairline, green icon.",
+      "html": "<div class=\"ds-notice\" role=\"status\"><span class=\"ds-notice-icon\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/></svg></span><div><p class=\"ds-notice-title\">Payment scheduled</p><p class=\"ds-notice-text\">Your next billing date is 28 October 2026.</p></div></div>",
+      "css": ".ds-notice{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 12px 12px 16px;border:1px solid var(--color-border-accent,#8fcaa9);border-radius:6px;background:var(--color-interactive-selected,#edf5ef);font-family:var(--font-body,'Open Sans',sans-serif);color:var(--color-content-main,#444)}.ds-notice-icon{display:inline-grid;margin-top:1px;color:var(--color-interactive-primary,#00735f)}.ds-notice-title{margin:0;font-size:14px;font-weight:600;color:var(--color-content-primary,#1b1c1e)}.ds-notice-text{margin:0;font-size:13px}"
+    },
+    {
+      "name": "Line Tabs",
+      "kind": "nav",
+      "refersTo": "tabs-line",
+      "description": "History tabs: tertiary labels over a hairline, green inset underline on the selected tab.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Usage history</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">Subscription history</button></div>",
+      "css": ".ds-tabs{display:flex;gap:24px;border-bottom:1px solid var(--color-border-subtle,#e3e3e3)}.ds-tab{padding:12px 0;border:0;background:none;font-family:var(--font-body,'Open Sans',sans-serif);font-size:14px;font-weight:600;color:var(--color-content-tertiary,#6b6b6b);box-shadow:inset 0 -2px 0 transparent;cursor:pointer;transition:color 150ms cubic-bezier(0.22,1,0.36,1),box-shadow 150ms cubic-bezier(0.22,1,0.36,1)}.ds-tab:hover{color:var(--color-content-primary,#1b1c1e)}.ds-tab[aria-selected='true']{color:var(--color-content-primary,#1b1c1e);box-shadow:inset 0 -2px 0 var(--color-interactive-primary,#00735f)}.ds-tab:focus-visible{outline:2px solid var(--color-interactive-primary,#00735f);outline-offset:-2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Ledger",
+    "overview": "**Creative North Star: \"The Quiet Ledger\"**\n\nThe AsiaVerify Portal is a navy-framed workspace: a gradient top bar and sidebar that every product shares, and inside it a pale, near-white working floor of hairline-edged cards. Billing extends that world without competing with it. The content area reads like a ledger: exact amounts and dates set in Roboto with tabular numerals, sections divided by single hairline rules, and one green voice reserved for actions, the plan price and confirmation marks.\n\nDensity is moderate and administrative: 14px Open Sans body, 24px card padding, 20px gutters. Depth is almost absent on the working floor (a barely-there card shadow) and is spent only on things that float: tooltips, toasts and the modal dialog. Good news and the recommended choice are carried by soft green tints, never by saturated fills; cancellation and warnings use the sheet's sentiment tokens in their elevated (tinted) form.\n\nEvery colour comes from the AsiaVerify Colour Tokens sheet, in light and dark, and the semantic name in code is the sheet's name (`content.main` is `--color-content-main`). The navy chrome is constant across themes; only the working floor flips.",
+    "keyCharacteristics": [
+      "Navy gradient chrome (navy-700 to navy-950), identical in light and dark.",
+      "White cards on an off-white floor, 1px subtle hairlines, near-flat shadow.",
+      "One interactive green for actions, prices and checks; pale green tints for good news and the featured option.",
+      "Roboto for every heading, Open Sans for everything else (figures and money included); tabular numerals wherever figures align.",
+      "Multi-step flows reshape a single dialog rather than stacking new ones."
+    ],
+    "rules": [
+      {
+        "name": "The Sheet Is Law Rule",
+        "body": "Colours enter only through `--color-*` tokens generated from the AsiaVerify Colour Tokens sheet. Never hand-edit a value or introduce a hex that is not on the sheet; regenerate instead.",
+        "section": "colors"
+      },
+      {
+        "name": "The Navy Stays Navy Rule",
+        "body": "Chrome (top bar, sidebar) uses the navy and chrome-* tokens in both themes. Chrome Signal Green belongs to the chrome; Registry Green belongs to the working floor.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tint, Not Fill Rule",
+        "body": "Good news and \"recommended\" are expressed by Pale Ledger Tint plus a Mint Hairline, never by a saturated green surface. Saturated green is for things you can press.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ledger Numerals Rule",
+        "body": "Every amount, credit count, date column and pager count uses tabular numerals (`font-variant-numeric: tabular-nums`); body text keeps lining numerals.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Families Rule",
+        "body": "Every heading is Roboto: h1–h6, card and dialog titles, section labels, notice titles, plan names and the top-bar product title. Everything else is Open Sans, including prices, credit figures, buttons, labels, tables and tooltips.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline First Rule",
+        "body": "Separate with a 1px Hairline before reaching for a shadow or another card. Shadows are for things that float.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** take every colour from the `--color-*` tokens generated from the AsiaVerify Colour Tokens sheet, and test both themes.",
+      "**Do** keep the shell's navy gradient (navy-700 to navy-900 at 55% to navy-950) and chrome tokens unchanged in dark mode.",
+      "**Do** set money, credits and date columns in tabular numerals, with prices in Open Sans 700.",
+      "**Do** separate sections inside a card with a 1px Hairline and 20px spacing before adding another card.",
+      "**Do** pair every Pale Ledger Tint surface with a Mint Hairline edge.",
+      "**Do** run multi-step flows inside one dialog that reshapes (440/560/880px) instead of opening a second modal.",
+      "**Do** honour `prefers-reduced-motion`: the build collapses all animation and transition to 1ms."
+    ],
+    "donts": [
+      "**Don't** use Chrome Signal Green (#2fbf87) on the working floor, or Registry Green on the navy chrome.",
+      "**Don't** fill large surfaces with saturated green; tints are for state and recommendation, solid green is for pressable controls.",
+      "**Don't** introduce shadows heavier than Card on resting content; Pop and Dialog are for floating layers only.",
+      "**Don't** set body or UI text in Roboto; it is reserved for headings.",
+      "**Don't** put tracked uppercase labels above headings; the only uppercase in the system is the comparison table's row-group header."
+    ]
+  }
+}

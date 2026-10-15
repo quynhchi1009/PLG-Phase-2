@@ -1918,12 +1918,14 @@
   border-block-start: 1px solid var(--color-border-subtle);
 }
 
+/* "of N remaining" and "Resets <date>" share one baseline with the figure;
+   only the coin icon centres on the number. */
 .balance-block .balance {
-  align-items: flex-end;
+  align-items: baseline;
 }
 
 .balance-block .balance__figure {
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-2);
 }
 

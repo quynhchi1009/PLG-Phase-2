@@ -1,7 +1,8 @@
 import { useId, type CSSProperties } from 'react'
-import { BadgeCheck, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
+import { SuccessMark } from '../../components/ui/SuccessMark'
 import { PLANS, formatCount, formatPrice, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
 import { TODAY, useBilling } from '../../state/billing'
@@ -69,7 +70,7 @@ export function SuccessDialog() {
 
       {open && s?.kind === 'topped-up' && (
         <div className="dialog__body success topped">
-          <BadgeCheck className="topped__mark" size={44} strokeWidth={1.75} aria-hidden />
+          <SuccessMark />
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
             {formatCount(s.credits)} credits added!
           </h2>
@@ -111,7 +112,7 @@ export function SuccessDialog() {
 
       {open && s?.kind === 'reactivated' && (
         <div className="dialog__body success topped">
-          <BadgeCheck className="topped__mark" size={44} strokeWidth={1.75} aria-hidden />
+          <SuccessMark />
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
             Subscription reactivated
           </h2>

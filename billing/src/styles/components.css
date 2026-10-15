@@ -1782,14 +1782,26 @@
   font-size: var(--text-md);
 }
 
-.topped__mark {
-  color: var(--color-interactive-primary);
+/* Success mark (shared): a white circle with a Registry Green outline and tick. */
+.success-mark {
+  flex: none;
   animation: success-pop 420ms var(--ease-out) 60ms both;
 }
 
-.topped__mark path:last-child {
-  stroke-dasharray: 12;
-  stroke-dashoffset: 12;
+.success-mark__shape {
+  fill: var(--color-base-light);
+  stroke: var(--color-interactive-primary);
+  stroke-width: 3;
+}
+
+.success-mark__tick {
+  fill: none;
+  stroke: var(--color-interactive-primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
   animation: success-draw 360ms var(--ease-out) 300ms forwards;
 }
 
@@ -1800,8 +1812,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .topped__mark,
-  .topped__mark path:last-child {
+  .success-mark,
+  .success-mark__tick {
     animation-delay: 0ms !important;
   }
 }

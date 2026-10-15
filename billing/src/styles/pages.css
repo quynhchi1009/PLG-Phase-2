@@ -1775,10 +1775,6 @@
   }
 }
 
-.checkout__done {
-  color: var(--color-sentiment-positive);
-}
-
 @media (max-width: 760px) {
   .checkout {
     grid-template-columns: minmax(0, 1fr);

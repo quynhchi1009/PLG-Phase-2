@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react'
-import { ArrowLeft, CheckCircle2, CreditCard, FlaskConical, Lock } from 'lucide-react'
+import { ArrowLeft, CreditCard, FlaskConical, Lock } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { SuccessMark } from '../../components/ui/SuccessMark'
 import { formatAmount } from '../../data/plans'
 import { TODAY, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
@@ -64,7 +65,7 @@ export function CheckoutPage() {
     return (
       <div className="checkout checkout--status" role="status" aria-live="polite">
         {phase === 'success' ? (
-          <CheckCircle2 size={44} className="checkout__done" aria-hidden />
+          <SuccessMark />
         ) : (
           <span className="checkout__spinner" aria-hidden />
         )}

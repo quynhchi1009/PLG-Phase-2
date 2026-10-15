@@ -836,25 +836,6 @@
   font-size: var(--text-sm);
 }
 
-.result-mark {
-  display: grid;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  margin-block-start: var(--space-2);
-  border-radius: 50%;
-  background: var(--color-sentiment-positive);
-  color: var(--color-base-light);
-  animation: mark-in 420ms var(--ease-out) both;
-}
-
-@keyframes mark-in {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-}
-
 .facts {
   display: grid;
   margin-block: var(--space-2);
@@ -1038,12 +1019,6 @@
 }
 
 /* Result mark: warning variant (cancellation) ------------------------------ */
-
-.result-mark--warning {
-  background: var(--color-sentiment-warning-elevated);
-  color: var(--color-content-on-warning-elevated);
-  box-shadow: inset 0 0 0 1px var(--color-border-warning);
-}
 
 .consequences {
   display: grid;
@@ -1342,7 +1317,6 @@
   padding-inline: var(--space-3);
 }
 
-
 /* Multi-select: groups, nested block, footer ------------------------------- */
 
 .select__menu {
@@ -1441,7 +1415,6 @@
   color: #fff;
 }
 
-
 /* Danger: the one control that commits an irreversible change. Outlined, not
    filled, so it never outranks the safe choice next to it. */
 .btn--danger {
@@ -1467,7 +1440,6 @@
 .table__event td.strong {
   color: var(--color-content-on-warning-elevated);
 }
-
 
 /* Upgrade dialogs ----------------------------------------------------------- */
 
@@ -1607,7 +1579,6 @@
   font-size: var(--text-xs);
 }
 
-
 /* Plan cancelled (final cancel step) ---------------------------------------- */
 
 .cancelled {
@@ -1714,221 +1685,11 @@
 }
 
 /* The tick draws itself after the disc lands, and one ring spreads outward. */
-.success__mark {
-  position: relative;
-}
-
-.success__mark svg path {
-  stroke-dasharray: 24;
-  stroke-dashoffset: 24;
-  animation: success-draw 360ms var(--ease-out) 240ms forwards;
-}
-
-.success__mark::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--color-sentiment-positive);
-  opacity: 0;
-  animation: success-ring 700ms var(--ease-out) 300ms;
-}
 
 @keyframes success-draw {
   to {
     stroke-dashoffset: 0;
   }
-}
-
-@keyframes success-ring {
-  from {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.7);
-  }
-}
-
-/* Before → after ledger */
-.dialog__body--center > .change {
-  justify-self: stretch;
-}
-
-.change {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-base-contrast);
-  text-align: start;
-}
-
-.change__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-}
-
-.change__label {
-  color: var(--color-content-main);
-  font-size: var(--text-sm);
-}
-
-.change__values {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  font-variant-numeric: tabular-nums;
-}
-
-.change__from {
-  position: relative;
-  color: var(--color-content-tertiary);
-  font-size: var(--text-md);
-}
-
-.change__from--strike {
-  animation: success-dim 320ms var(--ease-out) var(--at, 0ms) both;
-}
-
-.change__from--strike::after {
-  content: '';
-  position: absolute;
-  inset-inline: -2px;
-  inset-block-start: 52%;
-  block-size: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left center;
-  animation: success-strike 320ms var(--ease-out) var(--at, 0ms) forwards;
-}
-
-@keyframes success-dim {
-  from {
-    color: var(--color-content-primary);
-  }
-}
-
-@keyframes success-strike {
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.change__arrow {
-  flex: none;
-  color: var(--color-content-tertiary);
-  animation: success-slide 300ms var(--ease-out) var(--at, 0ms) both;
-}
-
-@keyframes success-slide {
-  from {
-    opacity: 0;
-    transform: translateX(-6px);
-  }
-}
-
-.change__to {
-  padding: 2px var(--space-2);
-  border-radius: var(--radius);
-  background: var(--color-interactive-selected);
-  color: var(--color-interactive-control);
-  font-size: var(--text-md);
-  font-weight: 600;
-  animation: success-pop 360ms var(--ease-out) var(--at, 0ms) both;
-}
-
-.change__total {
-  color: var(--color-interactive-control);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.change__delta {
-  padding: 1px var(--space-2);
-  border-radius: var(--radius);
-  background: var(--color-interactive-selected);
-  color: var(--color-sentiment-positive);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  opacity: 0;
-  transform: scale(0.85);
-  transition:
-    opacity 260ms var(--ease-out),
-    transform 260ms var(--ease-out);
-}
-
-.change__delta.is-in {
-  opacity: 1;
-  transform: none;
-}
-
-.change__meter {
-  display: flex;
-  gap: 2px;
-  block-size: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--color-border-subtle);
-}
-
-.change__seg {
-  flex-basis: 0;
-  min-inline-size: 4px;
-}
-
-.change__seg--kept,
-.change__swatch--kept {
-  background: var(--color-interactive-control);
-}
-
-.change__seg--added,
-.change__swatch--added {
-  background: var(--color-chart-reviewed);
-}
-
-.change__seg--added {
-  transform-origin: left center;
-  animation: success-fill var(--count-ms, 750ms) var(--ease-out) var(--at, 0ms) both;
-}
-
-@keyframes success-fill {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-.change__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
-  color: var(--color-content-main);
-  font-size: var(--text-sm);
-}
-
-.change__legend li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.change__legend strong {
-  color: var(--color-content-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.change__swatch {
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: 2px;
 }
 
 /* After closing, the card that changed rings once so the eye finds it. */
@@ -1951,15 +1712,481 @@
   }
 }
 
-/* Reduced motion: everything is present at once; the count shows its final value. */
+/* Reduced motion: everything is present at once. */
 @media (prefers-reduced-motion: reduce) {
-  .success__in,
-  .success__mark svg path,
-  .change__from--strike,
-  .change__from--strike::after,
-  .change__arrow,
-  .change__to,
-  .change__seg--added {
+  .success__in {
     animation-delay: 0ms !important;
+  }
+}
+
+/* Plan cancelled: the way back sits under the facts, then the two actions. */
+.cancelled__reverse {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-3);
+  justify-self: stretch;
+  margin-block-end: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-interactive-selected);
+  color: var(--color-content-primary);
+  text-align: start;
+  line-height: 1.5;
+}
+
+.cancelled__reverse svg {
+  justify-self: center;
+  margin-block-start: 3px;
+  color: var(--color-interactive-primary);
+}
+
+.cancelled__reverse strong {
+  font-weight: 600;
+}
+
+.cancelled__actions {
+  display: grid;
+  gap: var(--space-2);
+  justify-self: stretch;
+}
+
+/* "Your subscription is safe": the kept perks sit in a firmer green frame. */
+.perk-box--firm {
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-color: var(--color-interactive-primary);
+}
+
+.perk-box--firm .perk-box__title {
+  font-size: var(--text-lg);
+}
+
+.perk-box--firm .checklist strong {
+  color: var(--color-content-primary);
+}
+
+/* "N credits added!": left-aligned, a rosette tick that pops in and draws. */
+.topped {
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+}
+
+.topped .dialog__title {
+  margin-block-start: var(--space-3);
+  font-size: var(--text-xl);
+}
+
+.topped .dialog__lede {
+  margin-block-end: var(--space-3);
+  color: var(--color-content-main);
+  font-size: var(--text-md);
+}
+
+.topped__mark {
+  color: var(--color-interactive-primary);
+  animation: success-pop 420ms var(--ease-out) 60ms both;
+}
+
+.topped__mark path:last-child {
+  stroke-dasharray: 12;
+  stroke-dashoffset: 12;
+  animation: success-draw 360ms var(--ease-out) 300ms forwards;
+}
+
+@media (max-width: 760px) {
+  .topped {
+    padding: var(--space-6) var(--space-5) var(--space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topped__mark,
+  .topped__mark path:last-child {
+    animation-delay: 0ms !important;
+  }
+}
+
+/* Upgrade confirmation ------------------------------------------------------
+   Header, a white plan card (name, price, billing switch, perks), then the
+   credit ledger as plain rows under the card, its total below a hairline, and
+   the pay button. */
+
+.upc {
+  gap: var(--space-5);
+}
+
+/* Level 1: the dialog title outranks the plan name inside the card. */
+.upc__head {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.upc__head .dialog__title {
+  font-size: var(--text-2xl);
+}
+
+/* The lede supports the title: body size, quiet colour, plan name only semibold. */
+.upc__head .dialog__lede {
+  max-inline-size: none;
+  color: var(--color-content-main);
+  font-size: var(--text-md);
+  line-height: 1.5;
+}
+
+.upc__head .dialog__lede strong {
+  color: var(--color-content-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.upc__card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-base-light);
+  box-shadow: 0 1px 2px rgb(14 15 12 / 0.04), 0 4px 12px -6px rgb(0 115 95 / 0.18);
+}
+
+.upc__plan {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.upc__name {
+  color: var(--color-content-primary);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+/* Name and price read as one unit: tight inside, open below. */
+.upc__name + .upc__price {
+  margin-block-start: calc(var(--space-5) * -1 + var(--space-1));
+}
+
+/* The price stays a figure, but steps below the 22px title so the title leads. */
+.upc__price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--color-navy-700);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.upc__price span {
+  color: var(--color-content-tertiary);
+  font-size: var(--text-md);
+  font-weight: 400;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .upc__price {
+    color: var(--color-content-primary);
+  }
+}
+
+:root[data-theme='dark'] .upc__price {
+  color: var(--color-content-primary);
+}
+
+.upc__cycle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-base-contrast);
+}
+
+.upc__cycle-label {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-content-primary);
+  font-size: var(--text-md);
+}
+
+.upc__save {
+  color: var(--color-interactive-primary);
+  font-weight: 600;
+}
+
+/* On/off switch: off is a hairline track with a dark knob, on fills green. */
+.switch {
+  position: relative;
+  flex: none;
+  inline-size: 44px;
+  block-size: 24px;
+  padding: 0;
+  border: 1px solid var(--color-border-neutral);
+  border-radius: 999px;
+  background: var(--color-base-light);
+  transition:
+    background var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out);
+}
+
+.switch__knob {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  background: var(--color-content-primary);
+  transition:
+    transform var(--dur) var(--ease-out),
+    background var(--dur) var(--ease-out);
+}
+
+.switch[aria-checked='true'] {
+  border-color: var(--color-interactive-primary);
+  background: var(--color-interactive-primary);
+}
+
+.switch[aria-checked='true'] .switch__knob {
+  background: var(--color-base-light);
+  transform: translateX(20px);
+}
+
+.upc__perks {
+  display: grid;
+  gap: var(--space-3);
+  color: var(--color-content-main);
+  line-height: 1.5;
+}
+
+.upc__perks li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  line-height: 1.45;
+}
+
+.upc__perks strong {
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.upc__tick {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  margin-block-start: 1px;
+  border-radius: 50%;
+  background: var(--color-interactive-selected);
+  color: var(--color-interactive-primary);
+}
+
+/* The credit sum: plain rows under the card. Figures are semibold; the plan
+   name on the first line is regular, since the card above already names it. */
+.upc__ledger {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-start: var(--space-1);
+}
+
+.upc__ledger > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+}
+
+.upc__ledger dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.upc__ledger dd {
+  color: var(--color-content-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.upc__line dt {
+  font-weight: 400;
+}
+
+/* Rolled-over credits: Deep Ledger Green marks them as added. */
+.upc__carry dt,
+.upc__carry dd {
+  color: var(--color-interactive-control);
+}
+
+.upc__carry .infotip__trigger {
+  color: var(--color-content-main);
+}
+
+/* The sum, set off by a hairline; semibold at body size. */
+.upc__total {
+  margin-block-start: var(--space-1);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.upc__ledger .upc__total dt,
+.upc__ledger .upc__total dd {
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.upc > .btn {
+  margin-block-start: var(--space-1);
+}
+
+@media (max-width: 760px) {
+  .upc__card {
+    padding: var(--space-5);
+  }
+}
+
+/* Plan activated: tinted panel, centred badge and title, then a white box
+   holding what the plan includes and the way back. Mirrors Plan cancelled. */
+.activated {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-10) var(--space-8) var(--space-8);
+  /* A cool green-grey, not the cancelled popup's warm floor: this one is good news. */
+  background: color-mix(in srgb, var(--color-interactive-selected) 45%, var(--color-base-contrast));
+  text-align: center;
+}
+
+.activated__badge {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-interactive-selected);
+  color: var(--color-interactive-primary);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.activated .dialog__title {
+  font-size: var(--text-xl);
+}
+
+.activated__box {
+  display: grid;
+  gap: var(--space-6);
+  inline-size: 100%;
+  margin-block-start: var(--space-2);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-base-light);
+  text-align: start;
+}
+
+@media (max-width: 760px) {
+  .activated {
+    padding: var(--space-8) var(--space-4) var(--space-5);
+  }
+
+  .activated__box {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+  }
+}
+
+/* "Are you sure you'd like to cancel?" ----------------------------------------
+   Centred question and lede, then one white card holding what's at stake and
+   both exits: keeping the plan is the solid button, cancelling a quiet link. */
+
+.stay {
+  gap: var(--space-2);
+  padding-block-start: var(--space-8);
+}
+
+/* Equal side padding keeps the centred title clear of the close button. */
+.stay__title {
+  padding-inline: var(--space-6);
+  font-size: var(--text-xl);
+  text-wrap: balance;
+}
+
+.stay__lede {
+  max-inline-size: none;
+  font-size: var(--text-md);
+  text-wrap: balance;
+}
+
+.stay__card {
+  display: grid;
+  gap: var(--space-4);
+  justify-self: stretch;
+  margin-block-start: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-base-light);
+  box-shadow: 0 1px 2px rgb(14 15 12 / 0.04), 0 2px 8px -2px rgb(14 15 12 / 0.06);
+  text-align: start;
+}
+
+.stay__card-title {
+  color: var(--color-interactive-control);
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+/* Sentences in Body Graphite; their key phrases step up to 600 so the eye can
+   skim the bold words alone. */
+.stay__perks {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.stay__perks li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.stay__perks strong {
+  font-weight: 600;
+}
+
+.stay__tick {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 2px;
+  border-radius: 50%;
+  background: var(--color-interactive-selected);
+  color: var(--color-interactive-primary);
+}
+
+.stay__actions {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  margin-block-start: var(--space-1);
+}
+
+.stay__actions .btn--link {
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .stay {
+    padding-block-start: var(--space-6);
+  }
+
+  .stay__card {
+    padding: var(--space-4);
   }
 }

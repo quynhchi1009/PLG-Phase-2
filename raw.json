@@ -1,0 +1,182 @@
+{
+  "code": "200",
+  "lastUpdated": "2026-10-08 16:09:42",
+  "message": "Request succeeded",
+  "orderNo": "av202610081608391938601677",
+  "result": {
+    "CompanyInformation": {
+      "data": [
+        {
+          "companyID": "057234858",
+          "name": {
+            "companyName": "A. BEAVER INTERNATIONAL PTY. LIMITED",
+            "isTranslated": false
+          },
+          "incorpDate": "1992-08-21",
+          "companyStatus": "Registered",
+          "entityType": "Australian Proprietary Company Limited By Shares",
+          "regAddress": {
+            "full": "142-146 MAGOWAR ROAD, GIRRAWEEN, NSW, 2145",
+            "addressLine1": "142-146 MAGOWAR ROAD",
+            "addressLine2": "GIRRAWEEN",
+            "state": "NSW",
+            "city": "GIRRAWEEN",
+            "postalCode": "2145"
+          },
+          "otherCompanyAddresses": [
+            {
+              "type": "Principal Place of Business",
+              "full": "142-146 MAGOWAR ROAD, GIRRAWEEN, NSW, 2145",
+              "addressLine1": "142-146 MAGOWAR ROAD",
+              "addressLine2": "GIRRAWEEN",
+              "state": "NSW",
+              "city": "GIRRAWEEN",
+              "postalCode": "2145"
+            }
+          ],
+          "capital": [
+            {
+              "type": "ORDINARY SHARES (ORD1)",
+              "capitalAmount": "3",
+              "currency": "AUD",
+              "numberOfShares": "3"
+            }
+          ],
+          "companyIDOther1": null
+        }
+      ],
+      "total": 1
+    },
+    "Shareholders": {
+      "data": {
+        "individual": [
+          {
+            "isTranslated": false,
+            "shareholderNameEN": "CHRISTOPHER CLAUDIO DI LOSA",
+            "entityType": "PERSON",
+            "shareholderLocation": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+            "shareType": "ORD1",
+            "currency": "AUD",
+            "numberOfShares": "2",
+            "beneficiallyHeldField": true,
+            "jointlyHeldField": false,
+            "shareholderID": null
+          },
+          {
+            "isTranslated": false,
+            "shareholderNameEN": "MARIA GRACE DI LOSA",
+            "entityType": "PERSON",
+            "shareholderLocation": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+            "shareType": "ORD1",
+            "currency": "AUD",
+            "numberOfShares": "1",
+            "beneficiallyHeldField": true,
+            "jointlyHeldField": false,
+            "shareholderID": null
+          }
+        ]
+      },
+      "total": 2
+    },
+    "directUbo": {
+      "data": [
+        {
+          "uboNameEN": "CHRISTOPHER CLAUDIO DI LOSA",
+          "isTranslated": false,
+          "sharePercentage": "66.67%",
+          "uboPaths": [
+            {
+              "path": "CHRISTOPHER CLAUDIO DI LOSA (66.67%) -> A. BEAVER INTERNATIONAL PTY. LIMITED",
+              "uboShare": "66.67%"
+            }
+          ],
+          "uboDetails": {
+            "fullAddress": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+            "city": "TENNYSON POINT",
+            "state": "NSW",
+            "postcode": "2111",
+            "beneficiallyHeldField": true
+          }
+        },
+        {
+          "uboNameEN": "MARIA GRACE DI LOSA",
+          "isTranslated": false,
+          "sharePercentage": "33.33%",
+          "uboPaths": [
+            {
+              "path": "MARIA GRACE DI LOSA (33.33%) -> A. BEAVER INTERNATIONAL PTY. LIMITED",
+              "uboShare": "33.33%"
+            }
+          ],
+          "uboDetails": {
+            "fullAddress": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+            "city": "TENNYSON POINT",
+            "state": "NSW",
+            "postcode": "2111",
+            "beneficiallyHeldField": true
+          }
+        }
+      ],
+      "total": 2
+    },
+    "investigation": {
+      "companiesExplored": [
+        {
+          "companyName": "A. BEAVER INTERNATIONAL PTY. LIMITED",
+          "companyId": "057234858",
+          "companyType": "Australian Proprietary CompanyLimited By Shares",
+          "companyStatus": "Registered"
+        }
+      ]
+    },
+    "majorPerson": {
+      "data": [
+        {
+          "enName": "REBECCA MARIA BOYD",
+          "isTranslated": false,
+          "dob": "1977-10-03",
+          "role": "Director",
+          "address": "27 CONSETT STREET, CONCORD WEST, NSW, 2138",
+          "appointedDate": "2020-08-07"
+        },
+        {
+          "enName": "CHRISTOPHER CLAUDIO DI LOSA",
+          "isTranslated": false,
+          "dob": "1948-07-07",
+          "role": "Director",
+          "address": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+          "appointedDate": "1992-08-21"
+        },
+        {
+          "enName": "MARIA GRACE DI LOSA",
+          "isTranslated": false,
+          "dob": "1953-03-19",
+          "role": "Director",
+          "address": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+          "appointedDate": "1992-08-21"
+        },
+        {
+          "enName": "MELISSA DI LOSA VARONE",
+          "isTranslated": false,
+          "dob": "1975-03-10",
+          "role": "Director",
+          "address": "31 THOMPSON STREET, GLADESVILLE, NSW, 2111",
+          "appointedDate": "2020-08-07"
+        },
+        {
+          "enName": "MARIA GRACE DI LOSA",
+          "isTranslated": false,
+          "dob": "1953-03-19",
+          "role": "Secretary",
+          "address": "53A BAYVIEW STREET, TENNYSON POINT, NSW, 2111",
+          "appointedDate": "1992-08-21"
+        }
+      ],
+      "total": 5
+    },
+    "traceStatus": {
+      "blockingEntities": null,
+      "isComplete": true
+    }
+  }
+}

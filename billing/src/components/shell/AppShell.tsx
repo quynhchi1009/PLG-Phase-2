@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react'
 import {
   Bell,
   ChevronDown,
-  Coins,
   CircleArrowLeft,
   Gem,
   KeyRound,
@@ -104,7 +103,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </a>
         <span className="topbar__title">{TITLES[route]}</span>
         <div className="topbar__actions">
-          {route === 'plans' && <CreditsPill />}
           <button
             type="button"
             className="icon-btn icon-btn--chrome"
@@ -258,22 +256,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
     </div>
-  )
-}
-
-/** Remaining credits at a glance, shown in the top bar on the Upgrade page. */
-function CreditsPill() {
-  const { state } = useBilling()
-  const total = Math.max(state.creditsTotal, state.creditsRemaining)
-  const pct = total ? Math.min(100, (state.creditsRemaining / total) * 100) : 0
-  return (
-    <p className="credits-pill" aria-label={`${state.creditsRemaining} of ${total} credits left`}>
-      <span className="credits-pill__bar" aria-hidden>
-        <span style={{ inlineSize: `${pct}%` }} />
-      </span>
-      <Coins size={14} aria-hidden />
-      <span aria-hidden>{state.creditsRemaining} credits left</span>
-    </p>
   )
 }
 

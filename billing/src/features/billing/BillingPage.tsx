@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge, Checklist, InfoTip, Notice } from '../../components/ui/primitives'
 import { PLANS, REPORT_RETENTION_DAYS, formatCount, formatPrice, planBreakdown } from '../../data/plans'
 import { addDays, formatDate } from '../../data/history'
-import { canSelectPlan, canTopUp, useBilling } from '../../state/billing'
+import { FLEX_RESETS_ON, canTopUp, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { HistoryTabs } from './HistoryTabs'
 import { SubscriptionFlow, type FlowStep } from './SubscriptionFlow'
@@ -26,7 +26,9 @@ export function BillingPage() {
     <div className="page">
       <header className="page__head page__head--flush">
         <h1>Billing &amp; Subscription</h1>
-        <p>Keep track of your subscription details, update your billing information, and control your account's payments.</p>
+        <p>
+          Keep track of your subscription details, update your billing information, and control your account's payments.
+        </p>
       </header>
 
       {state.status === 'none' ? (
@@ -110,7 +112,6 @@ function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingE
   const oneTime = !state.cycleEnd
   const headingId = useId()
   const cycleEnd = oneTime ? '' : formatDate(state.cycleEnd)
-  const deleteOn = oneTime ? '' : formatDate(addDays(state.cycleEnd, REPORT_RETENTION_DAYS))
 
   return (
     <>
@@ -155,7 +156,8 @@ function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingE
             title="Your plan is active"
             onDismiss={() => dispatch({ type: 'dismiss-notice' })}
           >
-            Your credits are ready to use.{oneTime ? ' They never expire.' : ` Your next billing date is ${cycleEnd}.`}
+            Your credits are ready to use.
+            {oneTime ? ` They reset on ${formatDate(FLEX_RESETS_ON)}.` : ` Your next billing date is ${cycleEnd}.`}
           </Notice>
         )}
 
@@ -169,14 +171,17 @@ function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingE
               <div>
                 <h3 className="settings__subtitle">Changed your mind?</h3>
                 <p className="settings__hint">
-                  {canSelectPlan(state)
-                    ? `You can choose a new plan now. Choose one by ${deleteOn} to keep your report history.`
-                    : `You can choose a new plan from ${cycleEnd}, or as soon as your credits run out. Choose one by ${deleteOn} to keep your report history.`}
+                  You can reverse the cancellation any time before your current billing cycle ends.
                 </p>
               </div>
-              <Button size="sm" onClick={() => navigate('plans')}>
-                Choose a plan
-              </Button>
+              <div className="settings__actions">
+                <Button size="sm" onClick={() => dispatch({ type: 'request-reactivate' })}>
+                  Reactivate subscription
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => navigate('plans')}>
+                  Choose a plan
+                </Button>
+              </div>
             </div>
           </>
         )}
@@ -199,7 +204,7 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
   const cancelling = state.status === 'cancelling'
   const tone = remaining === 0 ? 'empty' : pct <= 15 ? 'low' : 'ok'
   const resets = !state.cycleEnd
-    ? 'Never expire'
+    ? `Resets ${formatDate(FLEX_RESETS_ON)}`
     : cancelling
       ? `Usable until ${formatDate(state.cycleEnd)}`
       : `Resets ${formatDate(state.cycleEnd)}`
@@ -259,20 +264,24 @@ const TILES = [
   { title: 'Full flexibility', text: 'Unlimited top-ups, upgrade, or cancel anytime' },
 ]
 
+/* A lapsed account: why the plan ended, what a new plan brings back, and the
+   report-history deadline, then one way forward. */
 function Resubscribe() {
   const { state } = useBilling()
   const { navigate } = useUi()
   const headingId = useId()
+  const failed = state.endReason === 'payment-failed'
+  const endedOn = formatDate(state.endedOn)
   const keepUntil = formatDate(addDays(state.endedOn, REPORT_RETENTION_DAYS))
 
   return (
     <section className="card resub" aria-labelledby={headingId}>
       <h2 id={headingId} className="resub__title">
-        Pick up right where you left off
+        {failed ? "We couldn't renew your subscription" : 'Pick up right where you left off'}
       </h2>
       <p className="resub__text">
-        Your subscription ended on {formatDate(state.endedOn)}. Purchase a plan again to continue accessing our
-        services.
+        Your subscription was cancelled on <strong>{endedOn}</strong>
+        {failed && " after payment couldn't be processed"}. Purchase a plan again to continue accessing our services.
       </p>
       <ul className="resub__tiles">
         {TILES.map((t) => (
@@ -281,11 +290,12 @@ function Resubscribe() {
             <p>{t.text}</p>
           </li>
         ))}
-        <li className="resub__tile resub__tile--warn">
+        <li className="resub__tile">
           <p className="resub__tile-title">Your report history</p>
           <p>
-            Your historical reports remain accessible for {REPORT_RETENTION_DAYS} days, until <strong>{keepUntil}</strong>.
-            Purchase a plan by then to keep access. After that, they'll be permanently deleted.
+            Your historical reports will remain accessible for {REPORT_RETENTION_DAYS} days until{' '}
+            <strong>{keepUntil}</strong>. Purchase a plan by then to keep access. After that, they'll be permanently
+            deleted.
           </p>
         </li>
       </ul>

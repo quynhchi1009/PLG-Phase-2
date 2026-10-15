@@ -240,48 +240,56 @@
 .resub {
   display: grid;
   justify-items: center;
-  gap: var(--space-4);
-  padding: var(--space-8) var(--space-6);
+  gap: var(--space-3);
+  padding: var(--space-6);
   margin-block-end: var(--space-5);
   text-align: center;
 }
 
 .resub__title {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 
 .resub__text {
+  color: var(--color-content-main);
 }
 
+.resub__text strong {
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+/* Three equal outlined boxes: white, one Registry Green hairline, centred
+   text. No fills or warning tints; the bold date carries the deadline. */
 .resub__tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
   inline-size: 100%;
-  margin-block: var(--space-2);
+  margin-block: var(--space-2) var(--space-1);
 }
 
 .resub__tile {
   display: grid;
   align-content: start;
   gap: var(--space-2);
-  padding: var(--space-5);
-  border: 1px solid var(--color-border-accent);
-  border-radius: var(--radius-lg);
-  background: var(--color-interactive-selected);
-  font-size: var(--text-sm);
+  padding: var(--space-5) var(--space-4);
+  border: 1px solid var(--color-interactive-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-base-light);
+  color: var(--color-content-main);
+  line-height: 1.45;
 }
 
 .resub__tile-title {
-  font-size: var(--text-lg);
-  font-weight: 500;
   color: var(--color-content-primary);
+  font-weight: 600;
 }
 
-.resub__tile--warn {
-  border-color: var(--color-border-warning);
-  background: var(--color-sentiment-warning-elevated);
+.resub__tile strong {
+  color: var(--color-content-primary);
+  font-weight: 600;
 }
 
 /* History ------------------------------------------------------------------ */
@@ -1132,6 +1140,106 @@
   min-block-size: 0;
 }
 
+/* "Confirm plan & terms" (new purchases), per the product mock: an off-white
+   surface, a neutral plan card outlined in Registry Green, graphite name and
+   price, credits in Registry Green, thin graphite ticks and green-outlined
+   checkboxes. Scoped here so other plan cards keep their own colours. */
+.confirm {
+  gap: var(--space-5);
+  background: var(--color-base-contrast);
+}
+
+.confirm .dialog__title {
+  color: var(--color-content-primary);
+  font-weight: 500;
+}
+
+.confirm .confirm-plan {
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-8);
+  border-color: var(--color-interactive-primary);
+  background: var(--color-base-contrast);
+  box-shadow: 0 1px 2px rgb(14 15 12 / 0.04), 0 4px 12px -6px rgb(0 115 95 / 0.18);
+}
+
+.confirm .confirm-plan__name {
+  color: var(--color-content-main);
+  font-size: var(--text-xl);
+}
+
+.confirm .plan__figures--flat {
+  margin-block-start: calc(var(--space-2) * -1);
+}
+
+.confirm .plan__amount {
+  color: var(--color-content-main);
+}
+
+.confirm .plan__amount span {
+  color: var(--color-content-main);
+}
+
+.confirm .plan__credits {
+  border-color: var(--color-border-subtle);
+  color: var(--color-interactive-primary);
+}
+
+.confirm .plan__credits span {
+  color: var(--color-interactive-primary);
+}
+
+.confirm .checklist {
+  color: var(--color-content-main);
+}
+
+.confirm .checklist strong {
+  color: var(--color-content-main);
+}
+
+.confirm .checklist li {
+  grid-template-columns: 20px 1fr;
+}
+
+.confirm .checklist__mark {
+  inline-size: 20px;
+  block-size: 20px;
+  margin-block-start: 0;
+  color: var(--color-content-main);
+  stroke-width: 1.5;
+}
+
+.confirm .confirm-terms {
+  padding-inline-start: var(--space-1);
+  color: var(--color-content-main);
+}
+
+.confirm .check__box {
+  inline-size: 20px;
+  block-size: 20px;
+  margin-block-start: 0;
+  border: 2px solid var(--color-interactive-primary);
+  background: transparent;
+}
+
+.confirm .check input {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.confirm .check input:checked + .check__box {
+  background: var(--color-interactive-primary);
+}
+
+.confirm .check a {
+  color: var(--color-content-main);
+}
+
+@media (max-width: 760px) {
+  .confirm .confirm-plan {
+    padding: var(--space-5);
+  }
+}
+
 .placeholder-note .badge {
   margin-inline-end: var(--space-2);
 }
@@ -1963,3 +2071,22 @@
   border-block-start: 0;
 }
 
+
+/* Cancelled: the explanation runs full width, then reactivate leads and
+   choosing another plan follows. */
+.settings__changed:has(.settings__actions) {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.settings__changed:has(.settings__actions) > div:first-child {
+  flex-basis: auto;
+}
+
+.settings__changed > .settings__actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

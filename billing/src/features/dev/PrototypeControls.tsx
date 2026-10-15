@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FlaskConical, X } from 'lucide-react'
-import { useBilling, type PaidPlanId, type SubscriptionStatus } from '../../state/billing'
+import { useBilling, type EndReason, type PaidPlanId, type SubscriptionStatus } from '../../state/billing'
 import { useUi, type Route } from '../../state/ui'
 
 interface Scenario {
@@ -10,6 +10,7 @@ interface Scenario {
   planId: PaidPlanId
   creditsLeft?: number | 'some' | 'none'
   topUpUsed?: boolean
+  endReason?: EndReason
   route?: Route
 }
 
@@ -38,6 +39,7 @@ const GROUPS: { title: string; items: Scenario[] }[] = [
       { id: 'c-some', label: 'Cancelled, credits > 0', status: 'cancelling', planId: 'monthly', creditsLeft: 'some' },
       { id: 'c-none', label: 'Cancelled, credits = 0', status: 'cancelling', planId: 'monthly', creditsLeft: 'none' },
       { id: 'inactive', label: 'Inactive', status: 'none', planId: 'monthly' },
+      { id: 'failed', label: 'Payment failed (auto-cancelled)', status: 'none', planId: 'monthly', endReason: 'payment-failed' },
     ],
   },
 ]
@@ -59,7 +61,14 @@ export function PrototypeControls() {
 
   const set = (s: Scenario) => {
     setCurrent(s.id)
-    dispatch({ type: 'demo', status: s.status, planId: s.planId, creditsLeft: s.creditsLeft, topUpUsed: s.topUpUsed })
+    dispatch({
+      type: 'demo',
+      status: s.status,
+      planId: s.planId,
+      creditsLeft: s.creditsLeft,
+      topUpUsed: s.topUpUsed,
+      endReason: s.endReason,
+    })
     navigate(s.route ?? 'billing')
   }
 

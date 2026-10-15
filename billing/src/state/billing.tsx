@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useReducer, type ReactNode } from 'react'
 import { PLANS, TOP_UP } from '../data/plans'
+import { addDays } from '../data/history'
 
 /**
  * active      paid plan in use
@@ -9,23 +10,18 @@ import { PLANS, TOP_UP } from '../data/plans'
 export type SubscriptionStatus = 'active' | 'cancelling' | 'none'
 export type PaidPlanId = 'flex' | 'monthly' | 'yearly'
 export type BillingNotice = 'plan-started' | null
+/** Why a lapsed plan ended: the customer cancelled, or a renewal payment failed (auto-cancelled). */
+export type EndReason = 'cancelled' | 'payment-failed'
 
 /** What the billing page celebrates after a (simulated) Stripe checkout. */
-/* Each carries the before-state so the dialog can show the change, not just the result. */
 export type Success =
-  | {
-      kind: 'upgraded'
-      planId: PaidPlanId
-      /** The plan being replaced; null for a fresh purchase after a plan ended or was cancelled. */
-      fromPlanId: PaidPlanId | null
-      /** Balance before checkout; on a fresh purchase these credits do not carry over. */
-      before: number
-      /** Unused credits rolled into the new plan. */
-      carried: number
-      /** Credits the new plan adds. */
-      added: number
-    }
-  | { kind: 'topped-up'; credits: number; before: number }
+  /** A plan was bought: `via` says whether it moved up from an active plan or started fresh. */
+  | { kind: 'upgraded'; planId: PaidPlanId; via: 'upgrade' | 'subscribe' }
+  | { kind: 'topped-up'; credits: number }
+  /** Asked to reactivate: shows what the customer keeps before they confirm. */
+  | { kind: 'reactivate-confirm'; planId: PaidPlanId }
+  /** A scheduled cancellation was withdrawn: same plan, same credits, billing resumes. */
+  | { kind: 'reactivated'; planId: PaidPlanId; renewsOn: string }
   | null
 
 export interface LedgerEvent {
@@ -54,6 +50,8 @@ export interface BillingState {
   cycleEnd: string
   /** ISO date the last plan ended, when status is 'none'. */
   endedOn: string
+  /** Why the last plan ended, when status is 'none'. */
+  endReason: EndReason
   /** Flex allows one top-up. */
   topUpUsed: boolean
   topUpUsedOn: string
@@ -65,6 +63,8 @@ export interface BillingState {
 
 type Action =
   | { type: 'cancel' }
+  | { type: 'request-reactivate' }
+  | { type: 'reactivate'; today: string }
   | { type: 'subscribe'; planId: PaidPlanId; today: string }
   | { type: 'upgrade'; planId: PaidPlanId; today: string }
   | { type: 'top-up'; today: string }
@@ -77,6 +77,7 @@ type Action =
       planId?: PaidPlanId
       creditsLeft?: number | 'some' | 'none'
       topUpUsed?: boolean
+      endReason?: EndReason
     }
 
 const CYCLE_END: Record<PaidPlanId, string> = {
@@ -87,13 +88,17 @@ const CYCLE_END: Record<PaidPlanId, string> = {
 
 export const TODAY = '2026-10-14'
 
+/** Flex has no billing cycle; per product direction (15 Oct 2026) its balance resets one day out. */
+export const FLEX_RESETS_ON = addDays(TODAY, 1)
+
 export const INITIAL_STATE: BillingState = {
   status: 'active',
   planId: 'monthly',
-  creditsRemaining: 212,
-  creditsTotal: 267,
+  creditsRemaining: 423,
+  creditsTotal: 535,
   cycleEnd: CYCLE_END.monthly,
   endedOn: '2026-09-12',
+  endReason: 'cancelled',
   topUpUsed: false,
   topUpUsedOn: '',
   notice: null,
@@ -115,6 +120,23 @@ function reducer(state: BillingState, action: Action): BillingState {
     case 'cancel':
       return { ...state, status: 'cancelling', notice: null }
 
+    // Opens the "Your subscription is safe" confirmation; nothing changes yet.
+    case 'request-reactivate':
+      if (state.status !== 'cancelling') return state
+      return { ...state, success: { kind: 'reactivate-confirm', planId: state.planId } }
+
+    // Undoes a scheduled cancellation before the cycle ends. Nothing is charged
+    // now; the plan simply renews on the date it would have ended.
+    case 'reactivate':
+      if (state.status !== 'cancelling') return state
+      return {
+        ...state,
+        status: 'active',
+        notice: null,
+        success: { kind: 'reactivated', planId: state.planId, renewsOn: state.cycleEnd },
+        events: [event('Subscription reactivated', action.today, null), ...state.events],
+      }
+
     case 'subscribe': {
       // A fresh purchase after a plan lapsed or was cancelled: credits start clean.
       const plan = PLANS[action.planId]
@@ -129,7 +151,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         topUpUsed: false,
         topUpUsedOn: '',
         notice: null,
-        success: { kind: 'upgraded', planId: action.planId, fromPlanId: null, before: state.creditsRemaining, carried: 0, added: credits },
+        success: { kind: 'upgraded', planId: action.planId, via: 'subscribe' },
         events: [event(plan.name, action.today, plan.price), ...state.events],
       }
     }
@@ -148,14 +170,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         topUpUsed: false,
         topUpUsedOn: '',
         notice: null,
-        success: {
-          kind: 'upgraded',
-          planId: action.planId,
-          fromPlanId: state.planId,
-          before: state.creditsRemaining,
-          carried: state.creditsRemaining,
-          added: plan.credits ?? 0,
-        },
+        success: { kind: 'upgraded', planId: action.planId, via: 'upgrade' },
         events: [event(`Upgrade to ${plan.name}`, action.today, plan.price), ...state.events],
       }
     }
@@ -168,7 +183,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         creditsTotal: state.creditsRemaining + pack.credits,
         topUpUsed: pack.once ? true : state.topUpUsed,
         topUpUsedOn: pack.once ? action.today : state.topUpUsedOn,
-        success: { kind: 'topped-up', credits: pack.credits, before: state.creditsRemaining },
+        success: { kind: 'topped-up', credits: pack.credits },
         events: [event(`Top-up (${pack.credits} credits)`, action.today, pack.price), ...state.events],
       }
     }
@@ -219,6 +234,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         creditsTotal: credits,
         topUpUsed: !!action.topUpUsed,
         topUpUsedOn: action.topUpUsed ? '2026-09-30' : '',
+        endReason: action.endReason ?? 'cancelled',
       }
     }
   }

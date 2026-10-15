@@ -22,8 +22,14 @@ export function HistoryTabs() {
     state.status === 'cancelling'
       ? [{ id: 'cancellation', type: `Cancellation scheduled · ends ${formatDate(state.cycleEnd)}`, date: TODAY, amount: null }]
       : []
+  // An auto-cancellation after a failed renewal is recorded on the day the plan ended.
+  const autoCancel =
+    state.status === 'none' && state.endReason === 'payment-failed'
+      ? [{ id: 'auto-cancel', type: 'Payment failed · subscription cancelled', date: state.endedOn, amount: null }]
+      : []
   const invoices: { id: string; type: string; date: string; amount: number | null }[] = [
     ...cancellation,
+    ...autoCancel,
     ...state.events,
     ...SUBSCRIPTION_HISTORY.filter((r) => before(r.date)),
   ]

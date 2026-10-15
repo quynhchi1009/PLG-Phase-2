@@ -53,7 +53,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Growth (billed monthly)',
     summary: 'For organisations running frequent KYB, AML & UBO checks for ongoing compliance',
     price: 99,
-    credits: 267,
+    credits: 535,
     cycle: 'month',
     badge: 'Save 8%',
     features: [
@@ -72,7 +72,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Growth (billed yearly)',
     summary: 'For organisations running frequent KYB, AML & UBO checks for ongoing compliance',
     price: 999,
-    credits: 3047,
+    credits: 6094,
     cycle: 'year',
     badge: 'Save 22%',
     features: [
@@ -116,8 +116,8 @@ export function isUpgrade(from: PlanId, to: PlanId) {
 /** Credit packs bought on top of a plan. Flex allows one; Growth allows unlimited. */
 export const TOP_UP: Record<'flex' | 'monthly' | 'yearly', { credits: number; price: number; once: boolean }> = {
   flex: { credits: 623, price: 249, once: true },
-  monthly: { credits: 267, price: 99, once: false },
-  yearly: { credits: 267, price: 99, once: false },
+  monthly: { credits: 535, price: 99, once: false },
+  yearly: { credits: 535, price: 99, once: false },
 }
 
 /** What a customer gains by moving to a plan, shown in upgrade dialogs. */
@@ -135,6 +135,14 @@ export const UPGRADE_PERKS: Record<'monthly' | 'yearly', PlanFeature[]> = {
     { title: 'Recurring billing:', detail: 'auto-renews yearly' },
   ],
 }
+
+/** Growth perks before a billing period is picked (Flex → Growth upgrade confirmation). */
+export const GROWTH_PERKS: PlanFeature[] = [
+  { title: 'Better value:', detail: `Save up to ${PLANS.yearly.badge?.replace(/^Save\s+/i, '')} per report` },
+  { title: 'Full flexibility:', detail: 'Unlimited top-ups, upgrade or cancel anytime' },
+  { title: 'Unlimited API access:', detail: "Unlimited use for as long as you're subscribed" },
+  { title: 'Recurring billing:', detail: 'auto-renews yearly/monthly' },
+]
 
 /** Monthly-equivalent price, used to compare the two Growth plans. */
 export function perMonth(plan: Plan) {
@@ -184,17 +192,14 @@ export const RESUBSCRIBE_GAINS: PlanFeature[] = [
   },
 ]
 
-/** Perks lost on cancelling, shown in the first cancel dialog. */
-export const CANCEL_PERKS: PlanFeature[] = [
-  {
-    title: 'Real-time data across 340M+ Asian corporate records',
-    detail: 'for instant monitoring and risk insights',
-  },
-  { title: 'Uninterrupted access', detail: 'to generate reports' },
-  {
-    title: 'Simplified compliance and faster decision-making',
-    detail: 'with reports and insights in one platform',
-  },
+/**
+ * Perks lost on cancelling, shown in the first cancel step. Written as
+ * sentences with their key phrases in **bold** so the eye can skim them alone.
+ */
+export const STAY_PERKS: string[] = [
+  '**Real-time data** across **340M+ Asian corporate records** for **instant monitoring and risk insights**',
+  '**Uninterrupted access** to generate reports',
+  '**Simplified compliance** and **faster decision-making** with reports and insights in **one platform**',
 ]
 
 /** Days a lapsed account keeps its report history. */
@@ -219,4 +224,28 @@ export function formatAmount(amount: number) {
 
 export function formatCount(n: number) {
   return new Intl.NumberFormat('en-US').format(n)
+}
+
+/**
+ * What a customer keeps by reactivating a cancelled Growth plan. The discount
+ * is the plan's own "Save N%" badge from the Choose plan page, so both stay in step.
+ */
+export function stayPerks(id: 'monthly' | 'yearly'): PlanFeature[] {
+  const plan = PLANS[id]
+  const discount = plan.badge?.replace(/^Save\s+/i, '') ?? ''
+  if (id === 'yearly') {
+    return [
+      { title: `${discount} discount`, detail: 'on report unit costs' },
+      { title: 'Uninterrupted access', detail: 'to reports all year' },
+      {
+        title: `Effective cost of ${formatPrice(perMonth(plan) ?? 0)}/month`,
+        detail: `vs ${formatPrice(PLANS.monthly.price ?? 0)}/month with monthly billing`,
+      },
+    ]
+  }
+  return [
+    { title: `${discount} discount`, detail: 'on report unit costs' },
+    { title: 'Uninterrupted access', detail: 'to reports every month' },
+    { title: `${formatCount(plan.credits ?? 0)} credits every month`, detail: 'refreshed automatically each billing cycle' },
+  ]
 }

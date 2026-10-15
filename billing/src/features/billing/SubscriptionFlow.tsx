@@ -1,9 +1,8 @@
 import { useId } from 'react'
-import { CalendarCheck, Check, Clock, Coins, Radar } from 'lucide-react'
+import { Check, RotateCcw } from 'lucide-react'
 import { Dialog } from '../../components/ui/Dialog'
 import { Button } from '../../components/ui/Button'
-import { Checklist } from '../../components/ui/primitives'
-import { CANCEL_PERKS, PLANS, REPORT_RETENTION_DAYS, formatCount } from '../../data/plans'
+import { PLANS, REPORT_RETENTION_DAYS, STAY_PERKS, formatCount } from '../../data/plans'
 import { addDays, formatDate } from '../../data/history'
 import { useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
@@ -66,55 +65,41 @@ function StepContent({
   const deleteOn = formatDate(addDays(state.cycleEnd, REPORT_RETENTION_DAYS))
   const credits = state.creditsRemaining
 
-  // The same dated facts appear before the commit (step 1) and in the receipt (step 3).
-  const facts = (
-    <ul className="consequences" aria-label="What happens if you cancel">
-      <li>
-        <CalendarCheck size={16} aria-hidden />
-        <span>
-          Your plan stays active until <strong>{cycleEnd}</strong>. You won't be charged again.
-        </span>
-      </li>
-      <li>
-        <Coins size={16} aria-hidden />
-        <span>
-          Your <strong>{formatCount(credits)} remaining credits</strong> stay usable until {cycleEnd}.
-        </span>
-      </li>
-      <li>
-        <Radar size={16} aria-hidden />
-        <span>
-          Perpetual KYB monitoring stops on <strong>{cycleEnd}</strong>.
-        </span>
-      </li>
-      <li>
-        <Clock size={16} aria-hidden />
-        <span>
-          Your reports stay accessible until <strong>{deleteOn}</strong>, then they're permanently deleted.
-        </span>
-      </li>
-    </ul>
-  )
-
   switch (step) {
     case 'cancel-confirm':
+      // Title and lede set the question; the card holds what's at stake and
+      // both ways out, with keeping the plan as the obvious one.
       return (
-        <div className="dialog__body dialog__body--center">
-          <h2 id={headingId} tabIndex={-1} className="dialog__title">
+        <div className="dialog__body dialog__body--center stay">
+          <h2 id={headingId} tabIndex={-1} className="dialog__title stay__title">
             Are you sure you'd like to cancel?
           </h2>
-          <p id={descId} className="dialog__lede">
-            Here's what happens if you cancel your {plan.tier} plan:
+          <p id={descId} className="dialog__lede stay__lede">
+            Cancelling your plan would mean losing access to these features you currently enjoy
           </p>
-          {facts}
-          <div className="dialog__actions dialog__actions--stack">
-            <Button data-autofocus block onClick={onClose}>
-              Keep current plan
-            </Button>
-            <Button variant="link" onClick={() => onStep('cancel-offer')}>
-              Continue to cancel
-            </Button>
-          </div>
+          <section className="stay__card" aria-labelledby={`${headingId}-perks`}>
+            <h3 id={`${headingId}-perks`} className="stay__card-title">
+              Stay subscribed to retain your perks
+            </h3>
+            <ul className="stay__perks">
+              {STAY_PERKS.map((line) => (
+                <li key={line}>
+                  <span className="stay__tick" aria-hidden>
+                    <Check size={10} strokeWidth={3} />
+                  </span>
+                  <span>{emphasise(line)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="stay__actions">
+              <Button data-autofocus block onClick={onClose}>
+                Keep current plan
+              </Button>
+              <Button variant="link" onClick={() => onStep('cancel-offer')}>
+                Continue to cancel
+              </Button>
+            </div>
+          </section>
         </div>
       )
 
@@ -129,10 +114,6 @@ function StepContent({
             Explore other plans tailored to your needs and see how report credits can give you more value from your
             subscription.
           </p>
-          <section className="perk-box" aria-label={`What your ${plan.tier} plan includes`}>
-            <p className="perk-box__title">Stay subscribed to retain your perks:</p>
-            <Checklist items={CANCEL_PERKS} size="sm" />
-          </section>
           <div className="dialog__actions dialog__actions--stack">
             <Button
               block
@@ -158,6 +139,8 @@ function StepContent({
       )
 
     case 'cancel-done':
+      // The receipt doubles as the way back: reactivating here undoes the
+      // cancellation without a new purchase, and the dialog's close icon dismisses.
       return (
         <div className="cancelled">
           <span className="cancelled__badge">Plan cancelled</span>
@@ -171,7 +154,8 @@ function StepContent({
                   <Check size={12} strokeWidth={3} />
                 </span>
                 <span>
-                  Your historical reports will remain accessible until <strong>{deleteOn}</strong>.
+                  Your {plan.tier} plan and {formatCount(credits)} credits stay active until <strong>{cycleEnd}</strong>
+                  . You won't be charged again.
                 </span>
               </li>
               <li>
@@ -187,24 +171,43 @@ function StepContent({
                   <Check size={12} strokeWidth={3} />
                 </span>
                 <span>
-                  Re-subscribe by {deleteOn} to keep access. After that, they'll be permanently deleted.
+                  Your historical reports remain accessible until <strong>{deleteOn}</strong>. After that, they're
+                  permanently deleted.
                 </span>
               </li>
             </ul>
-            <Button
-              block
-              onClick={() => {
-                onClose()
-                navigate('plans')
-              }}
-            >
-              View plans &amp; pricing
-            </Button>
-            <Button variant="link" data-autofocus onClick={onClose}>
-              Close
-            </Button>
+            <p className="cancelled__reverse">
+              <RotateCcw size={16} aria-hidden />
+              <span>You can reverse the cancellation any time before your current billing cycle ends.</span>
+            </p>
+            <div className="cancelled__actions">
+              <Button
+                block
+                onClick={() => {
+                  onClose()
+                  dispatch({ type: 'request-reactivate' })
+                }}
+              >
+                Reactivate subscription
+              </Button>
+              <Button
+                block
+                variant="secondary"
+                onClick={() => {
+                  onClose()
+                  navigate('plans')
+                }}
+              >
+                View plans &amp; pricing
+              </Button>
+            </div>
           </div>
         </div>
       )
   }
+}
+
+/** Renders a perk sentence, turning its **marked** phrases into <strong>. */
+function emphasise(line: string) {
+  return line.split(/\*\*(.+?)\*\*/).map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part))
 }

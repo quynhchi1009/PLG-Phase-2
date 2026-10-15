@@ -73,26 +73,26 @@ export function PlansPage() {
             <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
           </div>
         ) : (
-        <div className="plans">
-          <PlanCard plan={PLANS.flex} recommended={recommended === 'flex'} onChoose={setPending} />
-          <div className="plans__featured">
-            <div className="billing-toggle" role="group" aria-label="Growth billing period">
-              {(['monthly', 'yearly'] as Billing[]).map((b) => (
-                <button key={b} type="button" aria-pressed={billing === b} onClick={() => setBilling(b)}>
-                  Billed {b}
-                </button>
-              ))}
+          <div className="plans">
+            <PlanCard plan={PLANS.flex} recommended={recommended === 'flex'} onChoose={setPending} />
+            <div className="plans__featured">
+              <div className="billing-toggle" role="group" aria-label="Growth billing period">
+                {(['monthly', 'yearly'] as Billing[]).map((b) => (
+                  <button key={b} type="button" aria-pressed={billing === b} onClick={() => setBilling(b)}>
+                    Billed {b}
+                  </button>
+                ))}
+              </div>
+              <PlanCard
+                plan={PLANS[billing]}
+                title="Growth"
+                featured
+                recommended={recommended === billing}
+                onChoose={setPending}
+              />
             </div>
-            <PlanCard
-              plan={PLANS[billing]}
-              title="Growth"
-              featured
-              recommended={recommended === billing}
-              onChoose={setPending}
-            />
+            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
           </div>
-          <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
-        </div>
         )}
       </section>
 
@@ -158,9 +158,7 @@ function Estimator({
 
   const estimate = useMemo(() => {
     if (!jurisdictions.length || !scopes.length) return null
-    const countries = jurisdictions.includes(UNSURE)
-      ? TIERS.flatMap((t) => t.countries)
-      : jurisdictions
+    const countries = jurisdictions.includes(UNSURE) ? TIERS.flatMap((t) => t.countries) : jurisdictions
     const scopeIds = scopes.filter((s) => !s.startsWith('my-doc')) as ScopeId[]
     const perReport =
       countries.reduce((sum, c) => sum + creditsPerReport(tierOf(c) ?? 't1', scopeIds), 0) / countries.length
@@ -271,7 +269,9 @@ function Estimator({
               )}
             </div>
             <p className="recommend__blurb">
-              {covered ? 'Your current plan already covers this usage. Top up anytime if you need more credits.' : RECOMMEND_BLURB[estimate.plan]}
+              {covered
+                ? 'Your current plan already covers this usage. Top up anytime if you need more credits.'
+                : RECOMMEND_BLURB[estimate.plan]}
             </p>
             <div className="recommend__actions">
               {covered ? (
@@ -325,6 +325,9 @@ function useCta(plan: Plan) {
     return { kind: 'current' as const, label: 'Your current plan' }
   if (state.status === 'active' && !isUpgrade(state.planId, plan.id))
     return { kind: 'current' as const, label: 'Included in your plan' }
+  // A cancelled plan that hasn't ended yet can be taken back as it is.
+  if (state.status === 'cancelling' && state.planId === plan.id)
+    return { kind: 'reactivate' as const, label: 'Reactivate this plan' }
   if (!canSelectPlan(state)) return { kind: 'locked' as const, label: 'Available when plan ends or credits run out' }
   return { kind: 'select' as const, label: 'Select plan' }
 }
@@ -343,7 +346,8 @@ function PlanCard({
   onChoose: (id: PaidPlanId) => void
 }) {
   const cta = useCta(plan)
-  const { toast } = useUi()
+  const { toast, navigate } = useUi()
+  const { dispatch } = useBilling()
   const headingId = useId()
   const monthly = perMonth(plan)
   const unit = perCredit(plan)
@@ -394,7 +398,13 @@ function PlanCard({
       <div className="plan__cta">
         <Button
           block
-          variant={cta.kind === 'select' && featured ? 'primary' : cta.kind === 'locked' ? 'quiet' : 'secondary'}
+          variant={
+            (cta.kind === 'select' && featured) || cta.kind === 'reactivate'
+              ? 'primary'
+              : cta.kind === 'locked'
+                ? 'quiet'
+                : 'secondary'
+          }
           aria-disabled={cta.kind === 'current' || cta.kind === 'locked' || undefined}
           className={cta.kind === 'current' ? 'btn--current' : cta.kind === 'locked' ? 'btn--locked' : undefined}
           icon={
@@ -409,6 +419,10 @@ function PlanCard({
             else if (cta.kind === 'locked')
               toast('You can choose a new plan when your current plan ends or your credits run out.')
             else if (cta.kind === 'select') onChoose(plan.id as PaidPlanId)
+            else if (cta.kind === 'reactivate') {
+              dispatch({ type: 'request-reactivate' })
+              navigate('billing')
+            }
           }}
         >
           {cta.label}
@@ -423,8 +437,8 @@ function PlanCard({
 type Cell = string | boolean
 const COLUMNS: { id: PlanId; name: string; price: string; credits: string; popular?: boolean }[] = [
   { id: 'flex', name: 'Flex', price: '$249 one-time', credits: '623 credits' },
-  { id: 'monthly', name: 'Growth Monthly', price: '$99 per month', credits: '267 credits' },
-  { id: 'yearly', name: 'Growth Yearly', price: '$83.25 per month', credits: '3,047 credits', popular: true },
+  { id: 'monthly', name: 'Growth Monthly', price: '$99 per month', credits: '535 credits' },
+  { id: 'yearly', name: 'Growth Yearly', price: '$83.25 per month', credits: '6,094 credits', popular: true },
   { id: 'business', name: 'Business', price: 'Save up to 64%', credits: 'Volume-based credits' },
 ]
 
@@ -591,7 +605,12 @@ function CreditRates() {
               </button>
             ))}
           </div>
-          <div className="table-wrap" role="region" aria-label={`${TIERS.find((t) => t.id === tier)?.name} credit rates`} tabIndex={0}>
+          <div
+            className="table-wrap"
+            role="region"
+            aria-label={`${TIERS.find((t) => t.id === tier)?.name} credit rates`}
+            tabIndex={0}
+          >
             <table className="table table--head table--rates">
               <caption className="visually-hidden">Credit value per report type</caption>
               <thead>
@@ -607,7 +626,9 @@ function CreditRates() {
                   <tr key={r.label}>
                     <td>
                       {r.label}
-                      {r.growthOnly && <InfoTip label={`About ${r.label}`}>Available for Growth and Business plans only.</InfoTip>}
+                      {r.growthOnly && (
+                        <InfoTip label={`About ${r.label}`}>Available for Growth and Business plans only.</InfoTip>
+                      )}
                       {r.note && <InfoTip label={`About ${r.label}`}>{r.note}</InfoTip>}
                     </td>
                     <td className="num">{r.credits.toFixed(1)}</td>

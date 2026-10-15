@@ -8,7 +8,7 @@ export interface Order {
   planId?: PaidPlanId
   /** Line shown on the checkout summary, e.g. "Growth (billed yearly)". */
   item: string
-  /** Second line, e.g. "3,047 credits · renews yearly". */
+  /** Second line, e.g. "6,094 credits · renews yearly". */
   detail: string
   amount: number
   /** Where "Back" returns to if the customer abandons checkout. */

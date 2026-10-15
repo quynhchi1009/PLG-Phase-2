@@ -45,12 +45,12 @@ export function Switch({
 
 /* InfoTip: a small explanatory popover anchored to an (i) button --------- */
 
-export function InfoTip({ label, children }: { label: string; children: ReactNode }) {
+export function InfoTip({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
   const id = useId()
   return (
     <span className="infotip">
       <button type="button" className="infotip__trigger" aria-label={label} aria-describedby={id}>
-        <Info size={14} aria-hidden />
+        {icon ?? <Info size={14} aria-hidden />}
       </button>
       <span role="tooltip" id={id} className="infotip__bubble">
         {children}

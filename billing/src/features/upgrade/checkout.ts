@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 import { PLANS, TOP_UP, formatCount } from '../../data/plans'
-import { useBilling, type PaidPlanId } from '../../state/billing'
+import { FLEX_RESETS_ON, useBilling, type PaidPlanId } from '../../state/billing'
 import { useUi } from '../../state/ui'
+import { formatDate } from '../../data/history'
 import { useOrder } from '../checkout/order'
 
 /**
@@ -44,7 +45,7 @@ export function useCheckout() {
       kind: 'top-up',
       item: `${PLANS[state.planId].tier} top-up`,
       detail: `${formatCount(pack.credits)} credits · ${
-        pack.once ? 'one-time, never expire' : 'expire at the end of your billing cycle'
+        pack.once ? `one-time, reset on ${formatDate(FLEX_RESETS_ON)}` : 'expire at the end of your billing cycle'
       }`,
       amount: pack.price,
       returnTo: route,

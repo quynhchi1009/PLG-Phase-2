@@ -316,6 +316,85 @@
   font-size: var(--text-sm);
 }
 
+.history__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-end: var(--space-2);
+}
+
+.history__filters .select {
+  font-size: var(--text-md);
+}
+
+.date-range {
+  position: relative;
+  flex: 0 1 22rem;
+  min-inline-size: 15rem;
+}
+
+.date-range .select {
+  padding-inline-end: var(--space-8);
+}
+
+.date-range__clear {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-1);
+  translate: 0 -50%;
+}
+
+.date-range__panel {
+  inset-inline-end: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  inline-size: max(100%, 20rem);
+  padding: var(--space-3);
+}
+
+.date-range__field {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.date-range__field input {
+  font-weight: 400;
+}
+
+.date-range__field input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+.history__channel {
+  position: relative;
+  flex: 0 1 12rem;
+  min-inline-size: 10rem;
+}
+
+.history__channel select {
+  appearance: none;
+  padding-inline-end: var(--space-8);
+  color: var(--color-content-primary);
+  cursor: pointer;
+}
+
+.history__channel .select__chevron {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-3);
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .history__filters > * {
+    flex: 1 1 100%;
+  }
+}
+
 /* Products & Pricing -------------------------------------------------------- */
 
 .estimator {

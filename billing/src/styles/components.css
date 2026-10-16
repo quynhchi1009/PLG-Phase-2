@@ -1750,7 +1750,7 @@
   justify-self: stretch;
 }
 
-/* "Your subscription is safe": the kept perks sit in a firmer green frame. */
+/* "Don't miss out on your plan benefits": the kept perks sit in a firmer green frame. */
 .perk-box--firm {
   gap: var(--space-4);
   padding: var(--space-5);
@@ -2189,8 +2189,9 @@
   margin-block-start: var(--space-1);
 }
 
-.stay__actions .btn--link {
-  font-weight: 600;
+/* The way out stays visible but grey, so it never reads as the recommended choice. */
+.stay__actions .text-btn {
+  min-block-size: 36px;
 }
 
 @media (max-width: 760px) {

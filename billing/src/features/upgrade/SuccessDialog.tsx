@@ -86,10 +86,10 @@ export function SuccessDialog() {
       {open && s?.kind === 'reactivate-confirm' && (
         <div className="dialog__body success">
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-            Your subscription is safe
+            Don't miss out on your plan benefits
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            Stay active with uninterrupted access.
+            Reactivate your subscription to continue enjoying your current plan benefits.
           </p>
           <section className="perk-box perk-box--firm success__in" style={at(T.panel)} aria-label="What you keep">
             <p className="perk-box__title">Stay on current plan to continue enjoying:</p>

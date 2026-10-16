@@ -1,17 +1,32 @@
-import { useState } from 'react'
-import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Download, FileText, ReceiptText } from 'lucide-react'
+import { useEffect, useId, useRef, useState } from 'react'
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronFirst,
+  ChevronLast,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  FileText,
+  ReceiptText,
+  X,
+} from 'lucide-react'
 import { Tabs } from '../../components/ui/primitives'
-import { SUBSCRIPTION_HISTORY, USAGE_HISTORY, formatDate } from '../../data/history'
+import { SUBSCRIPTION_HISTORY, USAGE_HISTORY, formatDate, type UsageRow } from '../../data/history'
 import { formatAmount } from '../../data/plans'
 import { TODAY, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 
 type Tab = 'usage' | 'subscription'
+type Channel = 'all' | UsageRow['channel']
 const PAGE_SIZE = 5
 
 export function HistoryTabs() {
   const [tab, setTab] = useState<Tab>('usage')
   const [page, setPage] = useState(0)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [channel, setChannel] = useState<Channel>('all')
   const { toast } = useUi()
   const { state } = useBilling()
 
@@ -33,7 +48,11 @@ export function HistoryTabs() {
     ...state.events,
     ...SUBSCRIPTION_HISTORY.filter((r) => before(r.date)),
   ]
-  const usage = [...state.generated, ...USAGE_HISTORY.filter((r) => before(r.date))]
+  const allUsage = [...state.generated, ...USAGE_HISTORY.filter((r) => before(r.date))]
+  const usage = allUsage.filter(
+    (r) => (!from || r.date >= from) && (!to || r.date <= to) && (channel === 'all' || r.channel === channel),
+  )
+  const filtered = Boolean(from || to || channel !== 'all')
   const rows = tab === 'subscription' ? invoices : usage
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const start = page * PAGE_SIZE
@@ -42,6 +61,17 @@ export function HistoryTabs() {
   const switchTab = (next: Tab) => {
     setTab(next)
     setPage(0)
+  }
+
+  const setRange = (nextFrom: string, nextTo: string) => {
+    setFrom(nextFrom)
+    setTo(nextTo)
+    setPage(0)
+  }
+
+  const clearFilters = () => {
+    setRange('', '')
+    setChannel('all')
   }
 
   const download = (kind: 'invoice' | 'receipt', id: string) =>
@@ -66,6 +96,28 @@ export function HistoryTabs() {
         className="history__panel"
         tabIndex={0}
       >
+        {tab === 'usage' && (
+          <div className="history__filters">
+            <DateRange from={from} to={to} onChange={setRange} />
+            <span className="history__channel">
+              <select
+                className="select"
+                aria-label="Channel"
+                value={channel}
+                onChange={(e) => {
+                  setChannel(e.target.value as Channel)
+                  setPage(0)
+                }}
+              >
+                <option value="all">All channels</option>
+                <option value="API">API</option>
+                <option value="Portal">Portal</option>
+              </select>
+              <ChevronDown className="select__chevron" size={16} aria-hidden />
+            </span>
+          </div>
+        )}
+
         <div className="table-wrap">
           {tab === 'subscription' ? (
             <table className="table table--head">
@@ -144,6 +196,22 @@ export function HistoryTabs() {
                 </tr>
               </thead>
               <tbody>
+                {usage.length === 0 && (
+                  <tr>
+                    <td className="table__empty" colSpan={6}>
+                      {filtered ? (
+                        <>
+                          No reports match these filters.{' '}
+                          <button type="button" className="text-btn" onClick={clearFilters}>
+                            Clear filters
+                          </button>
+                        </>
+                      ) : (
+                        'No reports generated yet.'
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {usage.slice(start, end).map((row) => (
                   <tr key={row.orderId}>
                     <td className="nowrap">{row.report}</td>
@@ -182,5 +250,91 @@ export function HistoryTabs() {
         </p>
       </div>
     </section>
+  )
+}
+
+/* Date range filter ---------------------------------------------------------- */
+
+const shortDate = (iso: string) =>
+  new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(
+    new Date(`${iso}T00:00:00Z`),
+  )
+
+function DateRange({ from, to, onChange }: { from: string; to: string; onChange: (from: string, to: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const panelId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        triggerRef.current?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const summary =
+    from && to ? `${shortDate(from)} – ${shortDate(to)}` : from ? `From ${shortDate(from)}` : to ? `Until ${shortDate(to)}` : ''
+
+  return (
+    <div className="date-range" ref={rootRef}>
+      <button
+        ref={triggerRef}
+        type="button"
+        className={`select ${open ? 'is-open' : ''}`}
+        aria-expanded={open}
+        aria-controls={panelId}
+        aria-label={summary ? `Date generated: ${summary}` : 'Filter by date generated'}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <CalendarDays className="select__chevron" size={16} aria-hidden />
+        {summary ? (
+          <span className="select__value">{summary}</span>
+        ) : (
+          <span className="select__placeholder">Date from - Date to</span>
+        )}
+      </button>
+      {summary && (
+        <button type="button" className="icon-btn date-range__clear" aria-label="Clear dates" onClick={() => onChange('', '')}>
+          <X size={14} aria-hidden />
+        </button>
+      )}
+      {open && (
+        <div id={panelId} className="select__menu date-range__panel" role="group" aria-label="Date generated">
+          <label className="date-range__field">
+            <span>Date from</span>
+            <input
+              type="date"
+              className="input input--sm"
+              value={from}
+              max={to || undefined}
+              onChange={(e) => onChange(e.target.value, to)}
+            />
+          </label>
+          <label className="date-range__field">
+            <span>Date to</span>
+            <input
+              type="date"
+              className="input input--sm"
+              value={to}
+              min={from || undefined}
+              onChange={(e) => onChange(from, e.target.value)}
+            />
+          </label>
+        </div>
+      )}
+    </div>
   )
 }

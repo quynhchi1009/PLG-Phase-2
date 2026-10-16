@@ -120,7 +120,7 @@ function reducer(state: BillingState, action: Action): BillingState {
     case 'cancel':
       return { ...state, status: 'cancelling', notice: null }
 
-    // Opens the "Your subscription is safe" confirmation; nothing changes yet.
+    // Opens the "Don't miss out on your plan benefits" confirmation; nothing changes yet.
     case 'request-reactivate':
       if (state.status !== 'cancelling') return state
       return { ...state, success: { kind: 'reactivate-confirm', planId: state.planId } }

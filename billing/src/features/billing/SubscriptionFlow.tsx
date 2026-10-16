@@ -95,9 +95,9 @@ function StepContent({
               <Button data-autofocus block onClick={onClose}>
                 Keep current plan
               </Button>
-              <Button variant="link" onClick={() => onStep('cancel-offer')}>
+              <button type="button" className="text-btn text-btn--quiet" onClick={() => onStep('cancel-offer')}>
                 Continue to cancel
-              </Button>
+              </button>
             </div>
           </section>
         </div>

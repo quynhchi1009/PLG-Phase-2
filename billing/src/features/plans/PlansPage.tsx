@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { AlertTriangle, Check, ChevronDown, CircleCheck, Lock, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { MultiSelect, type Option } from '../../components/ui/MultiSelect'
@@ -531,7 +531,15 @@ function Compare() {
 function CreditRates() {
   const [open, setOpen] = useState(false)
   const [tier, setTier] = useState<TierId>('t1')
+  const [openDocs, setOpenDocs] = useState<Set<string>>(() => new Set())
   const panelId = useId()
+  const toggleDocs = (label: string) =>
+    setOpenDocs((prev) => {
+      const next = new Set(prev)
+      if (next.has(label)) next.delete(label)
+      else next.add(label)
+      return next
+    })
   const rateRow = (r: StartingRate) => (
     <li key={r.label} className="rates__row">
       <span className="rates__label">
@@ -622,18 +630,53 @@ function CreditRates() {
                 </tr>
               </thead>
               <tbody>
-                {TIER_RATES[tier].map((r) => (
-                  <tr key={r.label}>
-                    <td>
-                      {r.label}
-                      {r.growthOnly && (
-                        <InfoTip label={`About ${r.label}`}>Available for Growth and Business plans only.</InfoTip>
+                {TIER_RATES[tier].map((r, i) => {
+                  if (!r.docs) {
+                    return (
+                      <tr key={r.label}>
+                        <td>
+                          {r.label}
+                          {r.growthOnly && (
+                            <InfoTip label={`About ${r.label}`}>Available for Growth and Business plans only.</InfoTip>
+                          )}
+                          {r.note && <InfoTip label={`About ${r.label}`}>{r.note}</InfoTip>}
+                        </td>
+                        <td className="num">{r.credits.toFixed(1)}</td>
+                      </tr>
+                    )
+                  }
+                  const isOpen = openDocs.has(r.label)
+                  const docsId = `${panelId}-docs-${i}`
+                  return (
+                    <Fragment key={r.label}>
+                      <tr className={`rate-bundle ${isOpen ? 'is-open' : ''}`}>
+                        <td>
+                          <button
+                            type="button"
+                            className="rate-bundle__toggle"
+                            aria-expanded={isOpen}
+                            aria-controls={docsId}
+                            onClick={() => toggleDocs(r.label)}
+                          >
+                            <span>{r.label}</span>
+                            <span className="rate-bundle__count">
+                              {r.docs.length} documents
+                              <ChevronDown size={14} aria-hidden />
+                            </span>
+                          </button>
+                        </td>
+                        <td className="num">{r.credits.toFixed(1)}</td>
+                      </tr>
+                      {isOpen && (
+                        <tr className="rate-bundle__docs" id={docsId}>
+                          <td colSpan={2}>
+                            <p>{r.docs.join('; ')}</p>
+                          </td>
+                        </tr>
                       )}
-                      {r.note && <InfoTip label={`About ${r.label}`}>{r.note}</InfoTip>}
-                    </td>
-                    <td className="num">{r.credits.toFixed(1)}</td>
-                  </tr>
-                ))}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </div>

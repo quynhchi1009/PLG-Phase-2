@@ -24,6 +24,8 @@ export interface RateRow {
   note?: string
   /** Rows that apply only to Growth and Business plans. */
   growthOnly?: boolean
+  /** Documents included in a bundled report, listed when the row is expanded. */
+  docs?: string[]
 }
 
 export const TIER_RATES: Record<TierId, RateRow[]> = {
@@ -45,10 +47,60 @@ export const TIER_RATES: Record<TierId, RateRow[]> = {
     { label: 'UBO (excl. South Korea & Philippines)', credits: 200, note: 'Not published by the South Korea and Philippines registries.' },
     { label: 'Perpetual KYB (where KYB BASIC is available)', credits: 10, growthOnly: true },
     { label: 'Legal Doc (Hong Kong)', credits: 25 },
-    { label: 'Legal Doc (Malaysia): Company & Audit Profile', credits: 50 },
-    { label: 'Legal Doc (Malaysia): Corporate Registration & Particulars', credits: 100 },
-    { label: 'Legal Doc (Malaysia): Shareholder & Financial Analysis', credits: 125 },
-    { label: 'Legal Doc (Malaysia): Compliance Attestation & Long-Term Financials', credits: 200 },
+    {
+      label: 'Legal Doc (Malaysia): Company & Audit Profile',
+      credits: 50,
+      docs: [
+        'Audit Firm Profile',
+        'Business Profile: Business',
+        'Business Expiry Confirmation Letter',
+        'Company Profile',
+        'Company Charges',
+        'Business Re-Register Confirmation Letter (BRECLE)',
+        'Business Ownership',
+      ],
+    },
+    {
+      label: 'Legal Doc (Malaysia): Corporate Registration & Particulars',
+      credits: 100,
+      docs: [
+        'Certificate of Incorporation',
+        'Certificate Change of Company Name',
+        'Particular of Directors/Officers',
+        'Particular of Registered Address',
+        'Particular of Shareholders',
+        'Particular of Share Capital',
+        'Particular of Company Secretary',
+        'Particular of Change of Company Name',
+        'Financial Comparison 2 Years',
+        'LLP Profile',
+        'LLP Certificate of Registration',
+        'Certificate of Foreign Company',
+        'Certificate of Conversion',
+        'LLP Certificate Change of Name',
+        'Financial Historical Comparison',
+      ],
+    },
+    {
+      label: 'Legal Doc (Malaysia): Shareholder & Financial Analysis',
+      credits: 125,
+      docs: [
+        'Shareholder Listing and Analysis',
+        'Financial Comparison 3 Years',
+        'Financial Comparison 5 Years',
+        'Attestation of LLP Good Standing',
+        'Auditor Involvement',
+        'Liquidator Involvement',
+        'Secretary Involvement',
+        'Shareholder Involvement',
+        'Director Involvement',
+      ],
+    },
+    {
+      label: 'Legal Doc (Malaysia): Compliance Attestation & Long-Term Financials',
+      credits: 200,
+      docs: ['Attestation of Company Good Standing (ACGS)', 'Financial Comparison 10 Years', 'Partner Involvement'],
+    },
     { label: 'AML & PEP Checks', credits: 1 },
   ],
   t3: [

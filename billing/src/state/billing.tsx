@@ -22,6 +22,18 @@ export type Success =
   | { kind: 'reactivate-confirm'; planId: PaidPlanId }
   /** A scheduled cancellation was withdrawn: same plan, same credits, billing resumes. */
   | { kind: 'reactivated'; planId: PaidPlanId; renewsOn: string }
+  /** Asked to turn Auto top up off: confirm before anything changes. */
+  | { kind: 'auto-top-up-confirm' }
+  /** Auto top up was switched off. */
+  | { kind: 'auto-top-up-off' }
+  /** Asked to turn Auto top up back on: confirm before anything changes. */
+  | { kind: 'auto-top-up-enable-confirm' }
+  /** Auto top up was switched back on. */
+  | { kind: 'auto-top-up-on' }
+  /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
+  | { kind: 'downgrade-confirm' }
+  /** The switch to monthly is scheduled for the end of the yearly cycle. */
+  | { kind: 'downgrade-scheduled'; renewsOn: string }
   | null
 
 export interface LedgerEvent {
@@ -55,6 +67,10 @@ export interface BillingState {
   /** Flex allows one top-up. */
   topUpUsed: boolean
   topUpUsedOn: string
+  /** Growth only: automatically buy a top-up when credits run out. */
+  autoTopUp: boolean
+  /** Growth yearly only: a switch to Growth monthly is scheduled for the end of the cycle. */
+  pendingDowngrade: boolean
   notice: BillingNotice
   success: Success
   events: LedgerEvent[]
@@ -63,7 +79,14 @@ export interface BillingState {
 
 type Action =
   | { type: 'cancel' }
+  | { type: 'request-downgrade' }
+  | { type: 'schedule-downgrade'; today: string }
+  | { type: 'cancel-downgrade'; today: string }
   | { type: 'request-reactivate' }
+  | { type: 'request-enable-auto-top-up' }
+  | { type: 'enable-auto-top-up' }
+  | { type: 'request-disable-auto-top-up' }
+  | { type: 'disable-auto-top-up' }
   | { type: 'reactivate'; today: string }
   | { type: 'subscribe'; planId: PaidPlanId; today: string }
   | { type: 'upgrade'; planId: PaidPlanId; today: string }
@@ -101,6 +124,8 @@ export const INITIAL_STATE: BillingState = {
   endReason: 'cancelled',
   topUpUsed: false,
   topUpUsedOn: '',
+  autoTopUp: true,
+  pendingDowngrade: false,
   notice: null,
   success: null,
   events: [],
@@ -117,8 +142,47 @@ const event = (type: string, date: string, amount: number | null): LedgerEvent =
 
 function reducer(state: BillingState, action: Action): BillingState {
   switch (action.type) {
+    // Growth only. Turning it on or off asks first, then confirms.
+    case 'request-enable-auto-top-up':
+      if (state.planId === 'flex' || state.status !== 'active' || state.autoTopUp) return state
+      return { ...state, success: { kind: 'auto-top-up-enable-confirm' } }
+
+    case 'enable-auto-top-up':
+      if (state.planId === 'flex' || state.status !== 'active') return state
+      return { ...state, autoTopUp: true, success: { kind: 'auto-top-up-on' } }
+
+    case 'request-disable-auto-top-up':
+      if (!state.autoTopUp) return state
+      return { ...state, success: { kind: 'auto-top-up-confirm' } }
+
+    case 'disable-auto-top-up':
+      return { ...state, autoTopUp: false, success: { kind: 'auto-top-up-off' } }
+
+    // Growth yearly can move down to Growth monthly, at the end of the paid year.
+    case 'request-downgrade':
+      if (state.planId !== 'yearly' || state.status !== 'active' || state.pendingDowngrade) return state
+      return { ...state, success: { kind: 'downgrade-confirm' } }
+
+    case 'schedule-downgrade':
+      if (state.planId !== 'yearly' || state.status !== 'active') return state
+      return {
+        ...state,
+        pendingDowngrade: true,
+        success: { kind: 'downgrade-scheduled', renewsOn: state.cycleEnd },
+        events: [event('Downgrade to Growth monthly scheduled', action.today, null), ...state.events],
+      }
+
+    case 'cancel-downgrade':
+      if (!state.pendingDowngrade) return state
+      return {
+        ...state,
+        pendingDowngrade: false,
+        events: [event('Downgrade cancelled · keeping Growth yearly', action.today, null), ...state.events],
+      }
+
     case 'cancel':
-      return { ...state, status: 'cancelling', notice: null }
+      // Cancelling switches Auto top up off: no automatic charges after the plan ends.
+      return { ...state, status: 'cancelling', autoTopUp: false, pendingDowngrade: false, notice: null }
 
     // Opens the "Don't miss out on your plan benefits" confirmation; nothing changes yet.
     case 'request-reactivate':
@@ -132,6 +196,8 @@ function reducer(state: BillingState, action: Action): BillingState {
       return {
         ...state,
         status: 'active',
+        // Growth gets Auto top up back, as it does on any successful Growth subscription.
+        autoTopUp: state.planId !== 'flex',
         notice: null,
         success: { kind: 'reactivated', planId: state.planId, renewsOn: state.cycleEnd },
         events: [event('Subscription reactivated', action.today, null), ...state.events],
@@ -150,6 +216,8 @@ function reducer(state: BillingState, action: Action): BillingState {
         cycleEnd: nextBillingDate(plan.cycle, action.today),
         topUpUsed: false,
         topUpUsedOn: '',
+        autoTopUp: action.planId !== 'flex',
+        pendingDowngrade: false,
         notice: null,
         success: { kind: 'upgraded', planId: action.planId, via: 'subscribe' },
         events: [event(plan.name, action.today, plan.price), ...state.events],
@@ -169,6 +237,8 @@ function reducer(state: BillingState, action: Action): BillingState {
         cycleEnd: nextBillingDate(plan.cycle, action.today),
         topUpUsed: false,
         topUpUsedOn: '',
+        autoTopUp: action.planId !== 'flex',
+        pendingDowngrade: false,
         notice: null,
         success: { kind: 'upgraded', planId: action.planId, via: 'upgrade' },
         events: [event(`Upgrade to ${plan.name}`, action.today, plan.price), ...state.events],
@@ -232,6 +302,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         cycleEnd: CYCLE_END[planId],
         creditsRemaining,
         creditsTotal: credits,
+        autoTopUp: planId !== 'flex',
         topUpUsed: !!action.topUpUsed,
         topUpUsedOn: action.topUpUsed ? '2026-09-30' : '',
         endReason: action.endReason ?? 'cancelled',

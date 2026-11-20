@@ -2227,3 +2227,91 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+
+/* Auto top up: a quiet settings row under the top-up nudge. */
+.autotopup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.autotopup__text {
+  flex: 1 1 0;
+  min-inline-size: 0;
+}
+
+.autotopup__label {
+  color: var(--color-content-main);
+  font-weight: 600;
+}
+
+/* Two equal choices side by side in a dialog; stacks on narrow screens. */
+.dialog__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .dialog__pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Growth yearly: two quiet links stacked under the plan card. */
+.plan-card__foot {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+
+/* Downgrade confirmation: the acknowledgement of unused-credit expiry. */
+.downgrade__ack {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--color-content-main);
+  cursor: pointer;
+}
+
+.downgrade__ack input {
+  flex: none;
+  margin-block-start: 3px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* "Cancel subscription" rests without an underline; it appears on hover and keyboard focus. */
+.plan-card__foot .text-btn {
+  text-decoration-line: none;
+}
+
+.plan-card__foot .text-btn:hover,
+.plan-card__foot .text-btn:focus-visible {
+  text-decoration-line: underline;
+}
+
+/* Downgrade: the box lists what is given up, so it takes the warning colour instead of the brand green. */
+.perk-box--loss {
+  border-color: var(--color-border-warning);
+}
+
+.perk-box--loss .perk-box__title,
+.perk-box--loss .checklist__mark {
+  color: var(--color-content-on-warning-elevated);
+}
+
+/* "Continue to cancel" rests without an underline; it appears on hover and keyboard focus. */
+.stay__actions .text-btn {
+  text-decoration-line: none;
+}
+
+.stay__actions .text-btn:hover,
+.stay__actions .text-btn:focus-visible {
+  text-decoration-line: underline;
+}

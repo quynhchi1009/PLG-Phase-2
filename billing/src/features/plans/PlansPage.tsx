@@ -26,6 +26,7 @@ import {
   type StartingRate,
   type TierId,
 } from '../../data/pricing'
+import { formatDate } from '../../data/history'
 import { canSelectPlan, useBilling, type PaidPlanId } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { UpgradeConfirm } from '../upgrade/UpgradeConfirm'
@@ -38,7 +39,7 @@ export function PlansPage() {
   const [recommended, setRecommended] = useState<PlanId | null>(null)
   const [billing, setBilling] = useState<Billing>(state.planId === 'yearly' ? 'yearly' : 'monthly')
   const plansRef = useRef<HTMLElement>(null)
-  // Active subscribers only see their plan and the plans above it (no downgrades).
+  // Active subscribers see their plan and the plans above it. Growth yearly also sees monthly (a downgrade at renewal).
   const lineup = state.status === 'active' && state.planId !== 'flex' ? state.planId : 'all'
 
   const showPlan = (id: PlanId) => {
@@ -67,9 +68,12 @@ export function PlansPage() {
             <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
           </div>
         ) : lineup === 'yearly' ? (
-          // Growth yearly can only move up to Business.
-          <div className="plans plans--two">
-            <PlanCard plan={PLANS.yearly} recommended={recommended === 'yearly'} onChoose={setPending} />
+          // Growth yearly moves up to Business, or down to Growth monthly at renewal.
+          <div className="plans">
+            <PlanCard plan={PLANS.monthly} recommended={recommended === 'monthly'} onChoose={setPending} />
+            <div className="plans__featured">
+              <PlanCard plan={PLANS.yearly} featured recommended={recommended === 'yearly'} onChoose={setPending} />
+            </div>
             <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
           </div>
         ) : (
@@ -321,6 +325,11 @@ function Estimator({
 function useCta(plan: Plan) {
   const { state } = useBilling()
   if (plan.id === 'business') return { kind: 'sales' as const, label: 'Talk to sales' }
+  // Growth yearly can move down to monthly, at the end of the paid year.
+  if (state.status === 'active' && state.planId === 'yearly' && plan.id === 'monthly')
+    return state.pendingDowngrade
+      ? { kind: 'current' as const, label: `Starts ${formatDate(state.cycleEnd)}` }
+      : { kind: 'downgrade' as const, label: 'Switch at renewal' }
   if (state.status === 'active' && state.planId === plan.id)
     return { kind: 'current' as const, label: 'Your current plan' }
   if (state.status === 'active' && !isUpgrade(state.planId, plan.id))
@@ -419,7 +428,10 @@ function PlanCard({
             else if (cta.kind === 'locked')
               toast('You can choose a new plan when your current plan ends or your credits run out.')
             else if (cta.kind === 'select') onChoose(plan.id as PaidPlanId)
-            else if (cta.kind === 'reactivate') {
+            else if (cta.kind === 'downgrade') {
+              dispatch({ type: 'request-downgrade' })
+              navigate('billing')
+            } else if (cta.kind === 'reactivate') {
               dispatch({ type: 'request-reactivate' })
               navigate('billing')
             }

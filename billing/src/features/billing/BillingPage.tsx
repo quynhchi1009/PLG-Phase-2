@@ -2,9 +2,9 @@ import { useId, useRef, useState } from 'react'
 import { CalendarX2, CircleAlert, Coins, PartyPopper } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Badge, Checklist, InfoTip, Notice } from '../../components/ui/primitives'
-import { PLANS, REPORT_RETENTION_DAYS, formatCount, formatPrice, planBreakdown } from '../../data/plans'
+import { PLANS, REPORT_RETENTION_DAYS, TOP_UP, formatCount, formatPrice, planBreakdown } from '../../data/plans'
 import { addDays, formatDate } from '../../data/history'
-import { FLEX_RESETS_ON, canTopUp, useBilling } from '../../state/billing'
+import { FLEX_RESETS_ON, TODAY, canTopUp, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { HistoryTabs } from './HistoryTabs'
 import { SubscriptionFlow, type FlowStep } from './SubscriptionFlow'
@@ -50,7 +50,7 @@ export function BillingPage() {
 /* Left card: what the plan is. The price identifies the plan; credits and the
    breakdown support it at a quieter weight. */
 function SubscriptionCard({ onCancel }: { onCancel: () => void }) {
-  const { state } = useBilling()
+  const { state, dispatch } = useBilling()
   const plan = PLANS[state.planId]
   const flex = state.planId === 'flex'
   const cancelling = state.status === 'cancelling'
@@ -72,7 +72,13 @@ function SubscriptionCard({ onCancel }: { onCancel: () => void }) {
         <h2 id={headingId} className="plan-card__label">
           {plan.tier}
         </h2>
-        {cancelling ? <Badge tone="warning">Ends {formatDate(state.cycleEnd)}</Badge> : <Badge>Active</Badge>}
+        {cancelling ? (
+          <Badge tone="warning">Ends {formatDate(state.cycleEnd)}</Badge>
+        ) : state.pendingDowngrade ? (
+          <Badge tone="warning">Switches to monthly on {formatDate(state.cycleEnd)}</Badge>
+        ) : (
+          <Badge>Active</Badge>
+        )}
       </div>
 
       <div className="plan-card__figures">
@@ -133,7 +139,7 @@ function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingE
           </div>
           {!cancelling && (
             <Button size="sm" onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}>
-              {state.planId === 'yearly' || flex ? 'Upgrade plan' : 'Change plan'}
+              Upgrade plan
             </Button>
           )}
         </div>
@@ -184,6 +190,23 @@ function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingE
               </div>
             </div>
           </>
+        )}
+
+        {state.pendingDowngrade && !cancelling && (
+          <div className="settings__row settings__changed">
+            <div>
+              <h3 className="settings__subtitle">Switching to Growth monthly on {cycleEnd}</h3>
+              <p className="settings__hint">
+                You keep Growth yearly and your credits until then. Changed your mind? You can stay on yearly any time
+                before that date.
+              </p>
+            </div>
+            <div className="settings__actions">
+              <Button size="sm" variant="secondary" onClick={() => dispatch({ type: 'cancel-downgrade', today: TODAY })}>
+                Keep yearly plan
+              </Button>
+            </div>
+          </div>
         )}
 
         {/* Flex at 0 credits sees the upgrade-or-top-up choice before Stripe. */}
@@ -241,6 +264,7 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
         <p className="settings__hint">You've used all your credits. You can choose a new plan now.</p>
       )}
       {canTopUp(state) && <TopUpRow onFlexTopUp={onFlexTopUp} />}
+      {canTopUp(state) && state.planId !== 'flex' && <AutoTopUp />}
     </div>
   )
 }
@@ -255,6 +279,39 @@ function TopUpRow({ onFlexTopUp }: { onFlexTopUp: () => void }) {
       <Button size="sm" variant="secondary" onClick={askFirst ? onFlexTopUp : topUp}>
         Top up now
       </Button>
+    </div>
+  )
+}
+
+/* Growth only (monthly and yearly): buys a top-up automatically when credits run out. */
+function AutoTopUp() {
+  const { state, dispatch } = useBilling()
+  const labelId = useId()
+  const hintId = useId()
+  const pack = TOP_UP[state.planId]
+  return (
+    <div className="autotopup">
+      <div className="autotopup__text">
+        <p className="autotopup__label" id={labelId}>
+          Auto top up
+        </p>
+        <p className="settings__hint" id={hintId}>
+          {state.autoTopUp
+            ? `On. When your credits run out, we'll add ${formatCount(pack.credits)} credits automatically.`
+            : 'Never get interrupted. When your credits run out, we add more automatically.'}
+        </p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={state.autoTopUp}
+        aria-labelledby={labelId}
+        aria-describedby={hintId}
+        className="switch"
+        onClick={() => dispatch({ type: state.autoTopUp ? 'request-disable-auto-top-up' : 'request-enable-auto-top-up' })}
+      >
+        <span className="switch__knob" aria-hidden />
+      </button>
     </div>
   )
 }

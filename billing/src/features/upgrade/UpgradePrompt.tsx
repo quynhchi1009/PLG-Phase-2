@@ -7,6 +7,12 @@ import { canTopUp, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { useCheckout } from './checkout'
 
+/** Growth-only perk, shown in this prompt where it helps a customer decide to move up. */
+const AUTO_TOP_UP_PERK = {
+  title: 'Auto top up:',
+  detail: "we add credits automatically when you run out",
+}
+
 /**
  * The nudge shown when credits run out (report page) or when a Flex customer
  * asks to top up or upgrade (billing page). What it offers depends on the plan:
@@ -52,7 +58,7 @@ export function UpgradePrompt({
           <p className="confirm-plan__name">
             Growth <Badge tone="accent">Save up to 22%</Badge>
           </p>
-          <Checklist items={UPGRADE_PERKS.yearly} size="sm" />
+          <Checklist items={[...UPGRADE_PERKS.yearly, AUTO_TOP_UP_PERK]} size="sm" />
           <div className="dialog__actions dialog__actions--stack">
             <Button data-autofocus block onClick={viewPlans}>
               View upgrade options

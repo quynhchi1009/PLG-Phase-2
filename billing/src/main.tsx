@@ -10,6 +10,8 @@ import './styles/base.css'
 import './styles/shell.css'
 import './styles/components.css'
 import './styles/pages.css'
+import './styles/billing-b.css'
+import './styles/version-switch.css'
 import App from './App'
 
 createRoot(document.getElementById('root')!).render(

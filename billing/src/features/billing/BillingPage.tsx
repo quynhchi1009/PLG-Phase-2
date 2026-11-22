@@ -50,7 +50,7 @@ export function BillingPage() {
 /* Left card: what the plan is. The price identifies the plan; credits and the
    breakdown support it at a quieter weight. */
 function SubscriptionCard({ onCancel }: { onCancel: () => void }) {
-  const { state, dispatch } = useBilling()
+  const { state } = useBilling()
   const plan = PLANS[state.planId]
   const flex = state.planId === 'flex'
   const cancelling = state.status === 'cancelling'

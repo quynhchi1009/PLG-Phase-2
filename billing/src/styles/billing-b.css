@@ -1,0 +1,544 @@
+/* Version B: the redesigned Billing & Subscription page.
+   Version A's rules stay untouched in pages.css and components.css. These rules
+   share A's class names, so every one is scoped to <html data-version="b"> (set by
+   UiProvider). The extra attribute selector outranks the same selector in A's rules,
+   so B wins wherever it declares a property and A shows through nowhere it does not;
+   switching the version switches the look with no stylesheet swapped. */
+
+[data-version='b'] {
+  /* Billing layout ------------------------------------------------------------
+     Two cards side by side: what you have on the left (plan, price and allowance,
+     what is included, credit balance), what to do on the right (upgrade, cancel,
+     top up, auto top up). Sections are separated by space, not by rules. The
+     price and the remaining credits carry the brand green; the allowance and
+     every label stay in ink. */
+
+  .billing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  /* Left: what you have */
+  .plan-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .plan-card__summary {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .plan-card__head {
+    display: grid;
+    align-items: start;
+    justify-content: start;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  /* Plan name with its status tag beside it. The tag is a quiet annotation to the
+     18px title, so it runs well below the shared badge: 10px text, 16px tall. That
+     is the smallest tag size in the app (the sidebar "New" tag uses it too). */
+  .plan-card__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .plan-card__title .badge {
+    min-block-size: 16px;
+    padding-inline: 5px;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  /* Card titles: Roboto 18 bold, ink. */
+  .plan-card__label,
+  .settings__title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-content-primary);
+  }
+
+  .plan-card__meta {
+    margin: 0;
+    color: var(--color-content-main);
+    font-size: var(--text-md);
+  }
+
+  .plan-card__meta strong {
+    color: var(--color-content-primary);
+    font-weight: 600;
+  }
+
+  .plan-card__figures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-4) var(--space-10);
+    margin: 0;
+  }
+
+  .plan-card__figure {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  /* The price and the allowance sit at the card title's size and weight (Growth,
+     18 bold), so the card reads at one figure size. */
+  .plan-card__price,
+  .plan-card__credits {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-content-primary);
+  }
+
+  .plan-card__price span,
+  .plan-card__credits span {
+    margin-inline-start: var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: 400;
+    color: var(--color-content-main);
+  }
+
+  /* The unit beside the allowance reads as a label: 535 CREDITS. */
+  .plan-card__credits span {
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* "Billed monthly" / "Per month" read at the same size as the billing date above. */
+  .plan-card__caption {
+    margin: 0;
+    color: var(--color-content-tertiary);
+    font-size: var(--text-md);
+  }
+
+  .plan-card__breakdown {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .plan-card__lead {
+    margin: 0;
+    color: var(--color-content-primary);
+    font-size: var(--text-md);
+    font-weight: 700;
+  }
+
+  .plan-card__breakdown .checklist {
+    color: var(--color-content-main);
+  }
+
+  /* Credit balance: no title of its own; the figure is ink while the balance is fine
+     and takes the warning or negative colour when it is low or empty, and the meter agrees. */
+  .balance-block {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .balance-block .balance {
+    align-items: baseline;
+  }
+
+  .balance-block .balance__figure {
+    align-items: baseline;
+    gap: var(--space-2);
+    color: var(--color-content-main);
+    font-size: var(--text-md);
+  }
+
+  .balance-block .balance__figure strong {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-content-primary);
+  }
+
+  .balance-block .balance__figure .infotip {
+    align-self: center;
+  }
+
+  .balance-block .balance--low .balance__figure strong {
+    color: var(--color-content-on-warning-elevated);
+  }
+
+  .balance-block .balance--empty .balance__figure strong {
+    color: var(--color-sentiment-negative);
+  }
+
+  .balance-block .balance__reset {
+    margin: 0;
+    color: var(--color-content-main);
+    font-size: var(--text-md);
+  }
+
+  .balance-block .meter {
+    block-size: 8px;
+  }
+
+  .balance-block__hint {
+    margin: 0;
+    color: var(--color-content-main);
+    font-size: var(--text-md);
+  }
+
+  /* Right: what to do */
+  .settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  /* Siblings are spaced by the card's gap; notices keep their own padding and border. */
+  .settings > * + * {
+    margin: 0;
+  }
+
+  .settings__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: 0;
+    border: 0;
+  }
+
+  .settings__title {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    outline: none;
+  }
+
+  /* One action at the right edge: Choose plan (a menu of upgrade and cancel), or Upgrade plan. */
+  .settings__head-actions {
+    display: grid;
+    flex: none;
+    justify-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .settings > .notice {
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius);
+  }
+
+  .settings > .notice .notice__title {
+    font-size: var(--text-md);
+  }
+
+  .settings > .notice .notice__text {
+    margin-block-start: var(--space-1);
+    font-size: var(--text-md);
+  }
+
+  .settings__changed {
+    gap: var(--space-5);
+  }
+
+  .settings__changed > div {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  /* Section labels inside the cards share one step: 14px semibold. */
+  .settings__subtitle {
+    font-size: var(--text-md);
+    font-weight: 600;
+    color: var(--color-content-primary);
+  }
+
+  .settings__label {
+    font-size: var(--text-md);
+  }
+
+  .settings .settings__hint {
+    font-size: var(--text-md);
+  }
+
+  /* Cancelled: the explanation runs full width, then reactivate follows. */
+  .settings__changed:has(.settings__actions) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .settings__changed:has(.settings__actions) > div:first-child {
+    flex-basis: auto;
+  }
+
+  .settings__changed > .settings__actions {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* Text beside an action fills the row; only the button keeps its own width. */
+  .settings__changed > div {
+    flex: 1 1 0;
+    min-inline-size: 0;
+  }
+
+  .settings__changed > .btn {
+    flex: none;
+  }
+
+  /* Top up: the offer on one line and a quiet link beside it. The link turns into a
+     button only when credits are low or out. One line each, so they centre on each other. */
+  .topup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .topup__offer {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    margin: 0;
+    color: var(--color-content-primary);
+    font-size: var(--text-md);
+  }
+
+  .topup__link,
+  .topup > .btn {
+    flex: none;
+  }
+
+  .topup__link {
+    min-block-size: 24px;
+    white-space: nowrap;
+  }
+
+  /* An add action: a bare plus, then the label, both in the primary green, no
+     underline and no backing shape. With nothing else to react, hover moves the
+     whole link a step toward the ink colour. Keyboard focus uses the global outline. */
+  .topup__link.text-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--color-interactive-primary);
+    /* Same weight as the Choose plan button beside it (.btn is 600). */
+    font-weight: 600;
+    text-decoration-line: none;
+  }
+
+  .topup__link svg {
+    flex: none;
+  }
+
+  .topup__link.text-btn:hover {
+    color: color-mix(in srgb, var(--color-interactive-primary) 75%, var(--color-content-primary));
+  }
+
+  /* Auto top up: title and switch on one line, the terms under it. */
+  .autotopup {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0;
+  }
+
+  .autotopup__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  /* Same label role as the other section labels: 14px semibold, ink. The
+     description under it is body text, not a lighter third style. */
+  .autotopup__label {
+    flex: 1 1 0;
+    margin: 0;
+    color: var(--color-content-primary);
+    font-size: var(--text-md);
+    font-weight: 600;
+  }
+
+  .autotopup .settings__hint {
+    margin: 0;
+    color: var(--color-content-main);
+  }
+
+  @media (max-width: 1040px) {
+    .billing-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Touch widths: every action meets the 44px target. */
+  @media (max-width: 760px) {
+    .settings__head-actions .btn,
+    .topup > .btn,
+    .topup__link {
+      min-block-size: 44px;
+    }
+
+    .settings__head {
+      flex-wrap: wrap;
+    }
+
+    .settings__head-actions {
+      inline-size: 100%;
+    }
+
+    .topup {
+      flex-wrap: wrap;
+    }
+
+    .settings__changed > div {
+      flex-basis: 100%;
+    }
+  }
+
+
+  /* Menu button (Choose plan) ----------------------------------------------- */
+
+
+  .menu {
+    position: relative;
+    display: grid;
+  }
+
+  .menu__chevron {
+    flex: none;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .menu__trigger[aria-expanded='true'] .menu__chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Opens below the button and lines up with its right edge; never narrower than it. */
+  .menu__list {
+    position: absolute;
+    inset-block-start: calc(100% + var(--space-1));
+    inset-inline-end: 0;
+    z-index: 40;
+    display: grid;
+    inline-size: max-content;
+    min-inline-size: 100%;
+    padding: var(--space-1);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius);
+    background: var(--color-background-elevated);
+    box-shadow: var(--shadow-pop);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
+      visibility 0s linear var(--dur-fast);
+  }
+
+  .menu__list[data-open='true'] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  .menu__item {
+    display: flex;
+    align-items: center;
+    min-block-size: 36px;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: calc(var(--radius) - 2px);
+    background: none;
+    color: var(--color-content-primary);
+    font-size: var(--text-md);
+    font-weight: 400;
+    text-align: start;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .menu__item:hover,
+  .menu__item:focus-visible {
+    background: var(--color-background-subtle);
+  }
+
+  /* The global focus ring would spill into the list's padding. */
+  .menu__item:focus-visible {
+    outline-offset: -2px;
+  }
+
+  /* Cancel is set apart below a rule and keeps the negative colour. The plain token
+     is 4.45:1 on the light menu, just short of AA for 14px text, so a touch of ink
+     deepens it there; on dark the same mix leaves the pink almost as it was. */
+  .menu__item--danger {
+    color: color-mix(in srgb, var(--color-sentiment-negative) 82%, var(--color-content-primary));
+  }
+
+  .menu__sep {
+    block-size: 1px;
+    margin-block: var(--space-1);
+    background: var(--color-border-subtle);
+  }
+
+  @media (max-width: 760px) {
+    .menu__item {
+      min-block-size: 44px;
+    }
+  }
+
+  /* The info button is a 24px target in B (22px in A). */
+
+  .infotip__trigger {
+    inline-size: 24px;
+    block-size: 24px;
+  }
+
+  /* Circled marks are drawn a little larger, so the column and the offset follow. */
+  .checklist--circled li {
+    grid-template-columns: 18px 1fr;
+  }
+
+  .checklist--circled .checklist__mark {
+    margin-block-start: 1px;
+  }
+
+  /* A's rules that B shares a selector with but no longer uses ----------------
+     B drops these declarations, so without a reset they would show through from A. */
+
+  /* A rules the price and allowance with a line beneath. */
+  .plan-card__figures {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  /* A sets the balance off with a rule above it. */
+  .balance-block {
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+
+  /* A baseline-aligns the figure's spans at body size; the tip bubble keeps its own size. */
+  .balance-block .balance__figure span {
+    align-self: auto;
+  }
+
+  .balance-block .balance__figure .infotip__bubble {
+    font-size: var(--text-sm);
+  }
+
+  /* A lays the auto top up out as a row with the switch at the far end. */
+  .autotopup {
+    align-items: normal;
+    justify-content: normal;
+  }
+}

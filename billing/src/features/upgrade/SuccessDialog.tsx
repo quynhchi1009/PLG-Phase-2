@@ -27,7 +27,7 @@ const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
  */
 export function SuccessDialog() {
   const { state, dispatch } = useBilling()
-  const { route } = useUi()
+  const { route, version } = useUi()
   const headingId = useId()
   const descId = useId()
   const s = state.success
@@ -38,7 +38,10 @@ export function SuccessDialog() {
   const close = () => {
     // Backing out of the reactivation confirmation changes nothing on the page.
     if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'downgrade-confirm') return dispatch({ type: 'dismiss-success' })
-    const changed = s?.kind === 'topped-up' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' ? ['.settings'] : ['.plan-card', '.settings']
+    // Version B keeps the credit balance in the plan card, so a top up changes that card too.
+    const settingsOnly =
+      s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || (s?.kind === 'topped-up' && version !== 'b')
+    const changed = settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
   }

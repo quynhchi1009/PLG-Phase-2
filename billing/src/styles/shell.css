@@ -255,8 +255,8 @@
 .main {
   grid-area: main;
   min-inline-size: 0;
-  /* Keeps the floating prototype button off the last line of content. */
-  padding-block-end: var(--space-12);
+  /* Keeps the floating prototype buttons off the last line of content. */
+  padding-block-end: calc(var(--space-12) + var(--space-4));
   outline: none;
 }
 

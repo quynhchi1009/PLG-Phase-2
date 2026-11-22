@@ -1,5 +1,5 @@
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
-import { Check, Info, X } from 'lucide-react'
+import { Check, CircleCheck, Info, X } from 'lucide-react'
 import type { PlanFeature } from '../../data/plans'
 import { useUi } from '../../state/ui'
 
@@ -64,17 +64,24 @@ export function InfoTip({ label, icon, children }: { label: string; icon?: React
 export function Checklist({
   items,
   size = 'md',
+  circled = false,
 }: {
   items: (string | PlanFeature)[]
   size?: 'sm' | 'md'
+  /** A check inside a ring instead of a bare check. */
+  circled?: boolean
 }) {
   return (
-    <ul className={`checklist checklist--${size}`}>
+    <ul className={`checklist checklist--${size}${circled ? ' checklist--circled' : ''}`}>
       {items.map((item) => {
         const key = typeof item === 'string' ? item : item.title
         return (
           <li key={key}>
-            <Check className="checklist__mark" size={16} strokeWidth={2.25} aria-hidden />
+            {circled ? (
+              <CircleCheck className="checklist__mark" size={18} strokeWidth={2} aria-hidden />
+            ) : (
+              <Check className="checklist__mark" size={16} strokeWidth={2.25} aria-hidden />
+            )}
             {typeof item === 'string' ? (
               <span>{item}</span>
             ) : (

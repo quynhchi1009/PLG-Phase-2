@@ -1,0 +1,56 @@
+/* Version switch (demo only): flips the portal between Version A and Version B. Shared chrome, so not scoped to either version. */
+
+.version-switch {
+  position: fixed;
+  inset-block-end: var(--space-4);
+  inset-inline-start: 50%;
+  z-index: 50;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px dashed var(--color-chrome-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-background-system);
+  box-shadow: var(--shadow-pop);
+  transform: translateX(-50%);
+}
+
+.version-switch button {
+  min-block-size: 32px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-chrome-content-main);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.version-switch button:hover {
+  background: var(--color-chrome-control-hover);
+}
+
+.version-switch button[aria-pressed='true'] {
+  background: var(--color-chrome-accent);
+  color: var(--color-navy-950);
+}
+
+.version-switch button:focus-visible {
+  outline-color: var(--color-chrome-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .version-switch {
+    inset-inline-start: var(--space-4);
+    transform: none;
+  }
+
+  .version-switch button {
+    padding: 0 var(--space-3);
+  }
+}

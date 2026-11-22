@@ -1,0 +1,852 @@
+diff --git a/billing/src/App.tsx b/billing/src/App.tsx
+index cd1e39f..a870f9d 100644
+--- a/billing/src/App.tsx
++++ b/billing/src/App.tsx
+@@ -1,10 +1,13 @@
+ import { useEffect } from 'react'
+ import { AppShell } from './components/shell/AppShell'
++import { VersionSwitch } from './components/shell/VersionSwitch'
+ import { Toaster } from './components/ui/primitives'
+ import { BillingPage } from './features/billing/BillingPage'
+ import { PrototypeControls } from './features/dev/PrototypeControls'
+ import { CheckoutPage } from './features/checkout/CheckoutPage'
+ import { OrderProvider, useOrder } from './features/checkout/order'
++import { PlanFlowProvider } from './features/my-plan/flow'
++import { MyPlanPage } from './features/my-plan/MyPlanPage'
+ import { PlansPage } from './features/plans/PlansPage'
+ import { ReportPage } from './features/report/ReportPage'
+ import { SuccessDialog } from './features/upgrade/SuccessDialog'
+@@ -12,8 +15,11 @@ import { BillingProvider } from './state/billing'
+ import { UiProvider, useUi } from './state/ui'
+ 
+ function Routes() {
+-  const { route } = useUi()
+-  return route === 'plans' ? <PlansPage /> : route === 'report' ? <ReportPage /> : <BillingPage />
++  const { route, version } = useUi()
++  if (route === 'plans') return <PlansPage />
++  if (route === 'report') return <ReportPage />
++  // Version A is the current Billing & Subscription page; Version B is My Plan.
++  return version === 'b' ? <MyPlanPage /> : <BillingPage />
+ }
+ 
+ function Screen() {
+@@ -37,10 +43,13 @@ export default function App() {
+     <UiProvider>
+       <BillingProvider>
+         <OrderProvider>
+-          <Screen />
+-          <SuccessDialog />
+-          <PrototypeControls />
+-          <Toaster />
++          <PlanFlowProvider>
++            <Screen />
++            <SuccessDialog />
++            <VersionSwitch />
++            <PrototypeControls />
++            <Toaster />
++          </PlanFlowProvider>
+         </OrderProvider>
+       </BillingProvider>
+     </UiProvider>
+diff --git a/billing/src/components/shell/AppShell.tsx b/billing/src/components/shell/AppShell.tsx
+index 17d1a37..df015e7 100644
+--- a/billing/src/components/shell/AppShell.tsx
++++ b/billing/src/components/shell/AppShell.tsx
+@@ -20,6 +20,7 @@ import {
+   Tag,
+   UsersRound,
+ } from 'lucide-react'
++import { StickyBanner } from '../../features/my-plan/Banner'
+ import { useBilling } from '../../state/billing'
+ import { useUi, type Route } from '../../state/ui'
+ 
+@@ -55,6 +56,11 @@ const NAV: NavItem[] = [
+   { label: 'Account Settings', icon: <Settings size={18} />, lapsed: true },
+ ]
+ 
++/* Version B: My Plan is one item. Billing and Top up are no longer separate doors. */
++const NAV_B: NavItem[] = NAV.map((i) =>
++  i.label === 'My Plan' ? { label: 'My Plan', icon: i.icon, route: 'billing', lapsed: true } : i,
++)
++
+ const TITLES: Record<Route, string> = {
+   billing: 'My plan',
+   plans: 'Upgrade',
+@@ -63,12 +69,13 @@ const TITLES: Record<Route, string> = {
+ }
+ 
+ export function AppShell({ children }: { children: ReactNode }) {
+-  const { route, navigate, theme, toggleTheme, toast } = useUi()
++  const { route, navigate, theme, toggleTheme, toast, version } = useUi()
+   const [collapsed, setCollapsed] = useState(false)
+   const [drawerOpen, setDrawerOpen] = useState(false)
+   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ 'My Plan': true })
+   const { state } = useBilling()
+-  const nav = state.status === 'none' ? NAV.filter((i) => i.lapsed) : NAV
++  const items = version === 'b' ? NAV_B : NAV
++  const nav = state.status === 'none' ? items.filter((i) => i.lapsed) : items
+ 
+   useEffect(() => setDrawerOpen(false), [route])
+ 
+@@ -140,7 +147,7 @@ export function AppShell({ children }: { children: ReactNode }) {
+         </div>
+       </header>
+ 
+-      <FlexBanner />
++      {version === 'b' ? <StickyBanner /> : <FlexBanner />}
+ 
+       <div className="shell__scrim" aria-hidden onClick={() => setDrawerOpen(false)} />
+ 
+diff --git a/billing/src/components/ui/primitives.tsx b/billing/src/components/ui/primitives.tsx
+index c167eab..998a04f 100644
+--- a/billing/src/components/ui/primitives.tsx
++++ b/billing/src/components/ui/primitives.tsx
+@@ -9,7 +9,7 @@ export function Badge({
+   tone = 'positive',
+   children,
+ }: {
+-  tone?: 'positive' | 'warning' | 'neutral' | 'accent'
++  tone?: 'positive' | 'warning' | 'negative' | 'neutral' | 'accent'
+   children: ReactNode
+ }) {
+   return <span className={`badge badge--${tone}`}>{children}</span>
+diff --git a/billing/src/features/billing/BillingPage.tsx b/billing/src/features/billing/BillingPage.tsx
+index 76b0cef..4e4b203 100644
+--- a/billing/src/features/billing/BillingPage.tsx
++++ b/billing/src/features/billing/BillingPage.tsx
+@@ -50,7 +50,7 @@ export function BillingPage() {
+ /* Left card: what the plan is. The price identifies the plan; credits and the
+    breakdown support it at a quieter weight. */
+ function SubscriptionCard({ onCancel }: { onCancel: () => void }) {
+-  const { state, dispatch } = useBilling()
++  const { state } = useBilling()
+   const plan = PLANS[state.planId]
+   const flex = state.planId === 'flex'
+   const cancelling = state.status === 'cancelling'
+diff --git a/billing/src/features/billing/HistoryTabs.tsx b/billing/src/features/billing/HistoryTabs.tsx
+index f1bee1d..0eef314 100644
+--- a/billing/src/features/billing/HistoryTabs.tsx
++++ b/billing/src/features/billing/HistoryTabs.tsx
+@@ -260,7 +260,18 @@ const shortDate = (iso: string) =>
+     new Date(`${iso}T00:00:00Z`),
+   )
+ 
+-function DateRange({ from, to, onChange }: { from: string; to: string; onChange: (from: string, to: string) => void }) {
++export function DateRange({
++  from,
++  to,
++  onChange,
++  label = 'Date generated',
++}: {
++  from: string
++  to: string
++  onChange: (from: string, to: string) => void
++  /** What the dates describe, used for assistive names. */
++  label?: string
++}) {
+   const [open, setOpen] = useState(false)
+   const rootRef = useRef<HTMLDivElement>(null)
+   const triggerRef = useRef<HTMLButtonElement>(null)
+@@ -296,7 +307,7 @@ function DateRange({ from, to, onChange }: { from: string; to: string; onChange:
+         className={`select ${open ? 'is-open' : ''}`}
+         aria-expanded={open}
+         aria-controls={panelId}
+-        aria-label={summary ? `Date generated: ${summary}` : 'Filter by date generated'}
++        aria-label={summary ? `${label}: ${summary}` : `Filter by ${label.toLowerCase()}`}
+         onClick={() => setOpen((o) => !o)}
+       >
+         <CalendarDays className="select__chevron" size={16} aria-hidden />
+@@ -312,7 +323,7 @@ function DateRange({ from, to, onChange }: { from: string; to: string; onChange:
+         </button>
+       )}
+       {open && (
+-        <div id={panelId} className="select__menu date-range__panel" role="group" aria-label="Date generated">
++        <div id={panelId} className="select__menu date-range__panel" role="group" aria-label={label}>
+           <label className="date-range__field">
+             <span>Date from</span>
+             <input
+diff --git a/billing/src/features/billing/SubscriptionFlow.tsx b/billing/src/features/billing/SubscriptionFlow.tsx
+index cb64c08..178439e 100644
+--- a/billing/src/features/billing/SubscriptionFlow.tsx
++++ b/billing/src/features/billing/SubscriptionFlow.tsx
+@@ -6,6 +6,7 @@ import { PLANS, REPORT_RETENTION_DAYS, STAY_PERKS, formatCount } from '../../dat
+ import { addDays, formatDate } from '../../data/history'
+ import { useBilling } from '../../state/billing'
+ import { useUi } from '../../state/ui'
++import { usePlanFlow } from '../my-plan/flow'
+ 
+ /**
+  * Cancellation runs inside one dialog that reshapes per step, so it reads as
+@@ -59,7 +60,10 @@ function StepContent({
+   descId: string
+ }) {
+   const { state, dispatch } = useBilling()
+-  const { navigate } = useUi()
++  const { navigate, version } = useUi()
++  const flow = usePlanFlow()
++  // Version B words it "plan" throughout: Cancel plan, Reactivate plan.
++  const reactivateLabel = version === 'b' ? 'Reactivate plan' : 'Reactivate subscription'
+   const plan = PLANS[state.planId]
+   const cycleEnd = formatDate(state.cycleEnd)
+   const deleteOn = formatDate(addDays(state.cycleEnd, REPORT_RETENTION_DAYS))
+@@ -119,7 +123,9 @@ function StepContent({
+               block
+               onClick={() => {
+                 onClose()
+-                navigate('plans')
++                // Version B opens Change plan from here; Version A goes to Products & Pricing.
++                if (version === 'b') flow.openChangePlan()
++                else navigate('plans')
+               }}
+             >
+               Explore other plans
+@@ -188,7 +194,7 @@ function StepContent({
+                   dispatch({ type: 'request-reactivate' })
+                 }}
+               >
+-                Reactivate subscription
++                {reactivateLabel}
+               </Button>
+               <Button
+                 block
+diff --git a/billing/src/features/checkout/CheckoutPage.tsx b/billing/src/features/checkout/CheckoutPage.tsx
+index 9dfc630..0f2c5d1 100644
+--- a/billing/src/features/checkout/CheckoutPage.tsx
++++ b/billing/src/features/checkout/CheckoutPage.tsx
+@@ -37,6 +37,7 @@ export function CheckoutPage() {
+       const t = window.setTimeout(() => {
+         // Payment confirmed: apply it, then return to Billing where the success dialog opens.
+         if (order.kind === 'top-up') dispatch({ type: 'top-up', today: TODAY })
++        else if (order.kind === 'recover') dispatch({ type: 'recover-payment', today: TODAY })
+         else if (order.planId) dispatch({ type: order.kind, planId: order.planId, today: TODAY })
+         navigate('billing')
+       }, WAIT.success)
+diff --git a/billing/src/features/checkout/order.tsx b/billing/src/features/checkout/order.tsx
+index 4554d45..cd9e0e2 100644
+--- a/billing/src/features/checkout/order.tsx
++++ b/billing/src/features/checkout/order.tsx
+@@ -4,7 +4,8 @@ import type { Route } from '../../state/ui'
+ 
+ /** What the customer is about to pay for, handed to the checkout step. */
+ export interface Order {
+-  kind: 'upgrade' | 'subscribe' | 'top-up'
++  /** `recover` retries a failed renewal after the customer updates their payment method. */
++  kind: 'upgrade' | 'subscribe' | 'top-up' | 'recover'
+   planId?: PaidPlanId
+   /** Line shown on the checkout summary, e.g. "Growth (billed yearly)". */
+   item: string
+diff --git a/billing/src/features/dev/PrototypeControls.tsx b/billing/src/features/dev/PrototypeControls.tsx
+index a4c2ec3..4890667 100644
+--- a/billing/src/features/dev/PrototypeControls.tsx
++++ b/billing/src/features/dev/PrototypeControls.tsx
+@@ -11,10 +11,45 @@ interface Scenario {
+   creditsLeft?: number | 'some' | 'none'
+   topUpUsed?: boolean
+   endReason?: EndReason
++  autoTopUp?: boolean
++  pendingDowngrade?: boolean
++  paymentFailed?: boolean
+   route?: Route
+ }
+ 
+-const GROUPS: { title: string; items: Scenario[] }[] = [
++/* Version B states: one scenario per row of Figure 2 in IA draft 4. */
++const GROUPS_B: { title: string; items: Scenario[] }[] = [
++  {
++    title: 'Flex',
++    items: [
++      { id: 'bf-ok', label: 'Credits above 25%', status: 'active', planId: 'flex', creditsLeft: 480 },
++      { id: 'bf-low', label: 'Below 25%, top-up unused', status: 'active', planId: 'flex', creditsLeft: 90 },
++      { id: 'bf-used', label: 'Below 25%, top-up used', status: 'active', planId: 'flex', creditsLeft: 60, topUpUsed: true },
++      { id: 'bf-empty', label: 'Empty, top-up used', status: 'active', planId: 'flex', creditsLeft: 0, topUpUsed: true },
++    ],
++  },
++  {
++    title: 'Growth',
++    items: [
++      { id: 'bg-on', label: 'Monthly, auto top-up on', status: 'active', planId: 'monthly' },
++      { id: 'bg-off', label: 'Monthly, auto top-up off', status: 'active', planId: 'monthly', autoTopUp: false },
++      { id: 'bg-y', label: 'Yearly, auto top-up on', status: 'active', planId: 'yearly' },
++      { id: 'bg-switch', label: 'Yearly, switch to monthly scheduled', status: 'active', planId: 'yearly', pendingDowngrade: true },
++      { id: 'bg-failed', label: 'Payment failed, day 2', status: 'active', planId: 'monthly', paymentFailed: true },
++    ],
++  },
++  {
++    title: 'Plan ended',
++    items: [
++      { id: 'bc-some', label: 'Cancelled, credits left', status: 'cancelling', planId: 'monthly', creditsLeft: 'some' },
++      { id: 'bc-none', label: 'Cancelled, credits used up', status: 'cancelling', planId: 'monthly', creditsLeft: 'none' },
++      { id: 'b-none', label: 'No active plan', status: 'none', planId: 'monthly' },
++      { id: 'b-failed', label: 'No active plan, payment failed', status: 'none', planId: 'monthly', endReason: 'payment-failed' },
++    ],
++  },
++]
++
++const GROUPS_A: { title: string; items: Scenario[] }[] = [
+   {
+     title: 'Growth',
+     items: [
+@@ -47,9 +82,10 @@ const GROUPS: { title: string; items: Scenario[] }[] = [
+ /** Demo-only panel for jumping between account states. Not part of the product UI. */
+ export function PrototypeControls() {
+   const { dispatch } = useBilling()
+-  const { navigate } = useUi()
++  const { navigate, version } = useUi()
+   const [open, setOpen] = useState(false)
+   const [current, setCurrent] = useState('g-m')
++  const groups = version === 'b' ? GROUPS_B : GROUPS_A
+ 
+   if (!open)
+     return (
+@@ -68,6 +104,9 @@ export function PrototypeControls() {
+       creditsLeft: s.creditsLeft,
+       topUpUsed: s.topUpUsed,
+       endReason: s.endReason,
++      autoTopUp: s.autoTopUp,
++      pendingDowngrade: s.pendingDowngrade,
++      paymentFailed: s.paymentFailed,
+     })
+     navigate(s.route ?? 'billing')
+   }
+@@ -83,7 +122,7 @@ export function PrototypeControls() {
+           <X size={16} aria-hidden />
+         </button>
+       </div>
+-      {GROUPS.map((g) => (
++      {groups.map((g) => (
+         <div key={g.title} className="proto__group">
+           <p className="proto__label">{g.title}</p>
+           <div className="proto__seg proto__seg--stack">
+@@ -95,7 +134,11 @@ export function PrototypeControls() {
+           </div>
+         </div>
+       ))}
+-      <p className="proto__hint">"Low credits" scenarios open the report page; generate a report to hit the limit.</p>
++      <p className="proto__hint">
++        {version === 'b'
++          ? 'Each state matches a row of Figure 2 in the IA. Payment failed and Flex below 25% also show the sticky banner.'
++          : '"Low credits" scenarios open the report page; generate a report to hit the limit.'}
++      </p>
+     </div>
+   )
+ }
+diff --git a/billing/src/features/plans/PlansPage.tsx b/billing/src/features/plans/PlansPage.tsx
+index e6d59e3..489cb31 100644
+--- a/billing/src/features/plans/PlansPage.tsx
++++ b/billing/src/features/plans/PlansPage.tsx
+@@ -29,13 +29,19 @@ import {
+ import { formatDate } from '../../data/history'
+ import { canSelectPlan, useBilling, type PaidPlanId } from '../../state/billing'
+ import { useUi } from '../../state/ui'
++import { usePlanFlow } from '../my-plan/flow'
+ import { UpgradeConfirm } from '../upgrade/UpgradeConfirm'
+ 
+ type Billing = 'monthly' | 'yearly'
+ 
+ export function PlansPage() {
+   const { state } = useBilling()
+-  const [pending, setPending] = useState<PaidPlanId | null>(null)
++  const { version } = useUi()
++  const flow = usePlanFlow()
++  const [pendingA, setPending] = useState<PaidPlanId | null>(null)
++  // Version B: "Select plan" opens Change plan at its review step instead of the upgrade dialog.
++  const pending = version === 'b' ? null : pendingA
++  const choose = (id: PaidPlanId) => (version === 'b' ? flow.openChangePlan(id) : setPending(id))
+   const [recommended, setRecommended] = useState<PlanId | null>(null)
+   const [billing, setBilling] = useState<Billing>(state.planId === 'yearly' ? 'yearly' : 'monthly')
+   const plansRef = useRef<HTMLElement>(null)
+@@ -52,7 +58,7 @@ export function PlansPage() {
+     <div className="page page--plans">
+       <h1 className="visually-hidden">Upgrade</h1>
+ 
+-      <Estimator onChoose={setPending} onShow={showPlan} onReset={() => setRecommended(null)} />
++      <Estimator onChoose={choose} onShow={showPlan} onReset={() => setRecommended(null)} />
+ 
+       <section className="choose" ref={plansRef} aria-labelledby="choose-title">
+         <h2 id="choose-title" className="choose__title">
+@@ -61,24 +67,24 @@ export function PlansPage() {
+         {lineup === 'monthly' ? (
+           // Growth monthly can only move up: to yearly or Business.
+           <div className="plans">
+-            <PlanCard plan={PLANS.monthly} recommended={recommended === 'monthly'} onChoose={setPending} />
++            <PlanCard plan={PLANS.monthly} recommended={recommended === 'monthly'} onChoose={choose} />
+             <div className="plans__featured">
+-              <PlanCard plan={PLANS.yearly} featured recommended={recommended === 'yearly'} onChoose={setPending} />
++              <PlanCard plan={PLANS.yearly} featured recommended={recommended === 'yearly'} onChoose={choose} />
+             </div>
+-            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
++            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={choose} />
+           </div>
+         ) : lineup === 'yearly' ? (
+           // Growth yearly moves up to Business, or down to Growth monthly at renewal.
+           <div className="plans">
+-            <PlanCard plan={PLANS.monthly} recommended={recommended === 'monthly'} onChoose={setPending} />
++            <PlanCard plan={PLANS.monthly} recommended={recommended === 'monthly'} onChoose={choose} />
+             <div className="plans__featured">
+-              <PlanCard plan={PLANS.yearly} featured recommended={recommended === 'yearly'} onChoose={setPending} />
++              <PlanCard plan={PLANS.yearly} featured recommended={recommended === 'yearly'} onChoose={choose} />
+             </div>
+-            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
++            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={choose} />
+           </div>
+         ) : (
+           <div className="plans">
+-            <PlanCard plan={PLANS.flex} recommended={recommended === 'flex'} onChoose={setPending} />
++            <PlanCard plan={PLANS.flex} recommended={recommended === 'flex'} onChoose={choose} />
+             <div className="plans__featured">
+               <div className="billing-toggle" role="group" aria-label="Growth billing period">
+                 {(['monthly', 'yearly'] as Billing[]).map((b) => (
+@@ -92,10 +98,10 @@ export function PlansPage() {
+                 title="Growth"
+                 featured
+                 recommended={recommended === billing}
+-                onChoose={setPending}
++                onChoose={choose}
+               />
+             </div>
+-            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={setPending} />
++            <PlanCard plan={PLANS.business} recommended={recommended === 'business'} onChoose={choose} />
+           </div>
+         )}
+       </section>
+@@ -355,7 +361,8 @@ function PlanCard({
+   onChoose: (id: PaidPlanId) => void
+ }) {
+   const cta = useCta(plan)
+-  const { toast, navigate } = useUi()
++  const { toast, navigate, version } = useUi()
++  const flow = usePlanFlow()
+   const { dispatch } = useBilling()
+   const headingId = useId()
+   const monthly = perMonth(plan)
+@@ -429,8 +436,12 @@ function PlanCard({
+               toast('You can choose a new plan when your current plan ends or your credits run out.')
+             else if (cta.kind === 'select') onChoose(plan.id as PaidPlanId)
+             else if (cta.kind === 'downgrade') {
+-              dispatch({ type: 'request-downgrade' })
+-              navigate('billing')
++              // Version B schedules the switch inside Change plan; Version A confirms on the billing page.
++              if (version === 'b') flow.openChangePlan('monthly')
++              else {
++                dispatch({ type: 'request-downgrade' })
++                navigate('billing')
++              }
+             } else if (cta.kind === 'reactivate') {
+               dispatch({ type: 'request-reactivate' })
+               navigate('billing')
+diff --git a/billing/src/features/upgrade/SuccessDialog.tsx b/billing/src/features/upgrade/SuccessDialog.tsx
+index d16b62d..8960c71 100644
+--- a/billing/src/features/upgrade/SuccessDialog.tsx
++++ b/billing/src/features/upgrade/SuccessDialog.tsx
+@@ -19,6 +19,12 @@ const AUTO_TOP_UP_PERK = {
+   detail: "turned on, so we add credits automatically when you run out. Turn it off anytime in your plan settings",
+ }
+ 
++/* Version B: Growth's auto top-up renews the plan early, and the activation dialog says so. */
++const AUTO_TOP_UP_PERK_B = {
++  title: 'Auto top-up:',
++  detail: 'turned on. When your credits run out, we renew your plan early and charge the plan price. Turn it off anytime in My Plan',
++}
++
+ const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
+ 
+ /**
+@@ -27,18 +33,22 @@ const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
+  */
+ export function SuccessDialog() {
+   const { state, dispatch } = useBilling()
+-  const { route } = useUi()
++  const { route, version } = useUi()
++  const b = version === 'b'
+   const headingId = useId()
+   const descId = useId()
+   const s = state.success
+   const open = !!s && route === 'billing'
+   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
+-  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'downgrade-scheduled'
++  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'downgrade-scheduled' || s?.kind === 'payment-recovered'
+ 
+   const close = () => {
+     // Backing out of the reactivation confirmation changes nothing on the page.
+     if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'downgrade-confirm') return dispatch({ type: 'dismiss-success' })
+-    const changed = s?.kind === 'topped-up' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' ? ['.settings'] : ['.plan-card', '.settings']
++    // Ring what changed: the settings card (A) or the strip and modules (B).
++    const credits = ['.settings', '.pb-balance', '.pb-strip']
++    const everything = ['.plan-card', '.settings', '.pb-strip', '.pb-plan', '.pb-balance']
++    const changed = s?.kind === 'topped-up' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' ? credits : everything
+     dispatch({ type: 'dismiss-success' })
+     flagUpdated(changed)
+   }
+@@ -56,7 +66,7 @@ export function SuccessDialog() {
+           </h2>
+           <div className="activated__box success__in" style={at(T.panel)}>
+             <ul id={descId} className="upc__perks" aria-label="What your plan includes">
+-              {(s.planId === 'flex' ? PLANS[s.planId].features : [...PLANS[s.planId].features, AUTO_TOP_UP_PERK]).map((f, i) => (
++              {(s.planId === 'flex' ? PLANS[s.planId].features : [...PLANS[s.planId].features, b ? AUTO_TOP_UP_PERK_B : AUTO_TOP_UP_PERK]).map((f, i) => (
+                 <li key={f.title} className="success__in" style={at(T.list + i * 60)}>
+                   <span className="upc__tick" aria-hidden>
+                     <Check size={12} strokeWidth={3} />
+@@ -95,7 +105,7 @@ export function SuccessDialog() {
+             Don't miss out on your plan benefits
+           </h2>
+           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+-            Reactivate your subscription to continue enjoying your current plan benefits.
++            Reactivate your {b ? 'plan' : 'subscription'} to continue enjoying your current plan benefits.
+           </p>
+           <section className="perk-box perk-box--firm success__in" style={at(T.panel)} aria-label="What you keep">
+             <p className="perk-box__title">Stay on current plan to continue enjoying:</p>
+@@ -111,7 +121,7 @@ export function SuccessDialog() {
+             </ul>
+           </section>
+           <Button data-autofocus block onClick={() => dispatch({ type: 'reactivate', today: TODAY })}>
+-            Reactivate subscription
++            {b ? 'Reactivate plan' : 'Reactivate subscription'}
+           </Button>
+         </div>
+       )}
+@@ -120,7 +130,7 @@ export function SuccessDialog() {
+         <div className="dialog__body success topped">
+           <SuccessMark />
+           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+-            Subscription reactivated
++            {b ? 'Plan reactivated' : 'Subscription reactivated'}
+           </h2>
+           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+             Your {PLANS[s.planId].tier} plan renews on {formatDate(s.renewsOn)} at{' '}
+@@ -132,6 +142,21 @@ export function SuccessDialog() {
+         </div>
+       )}
+ 
++      {open && s?.kind === 'payment-recovered' && (
++        <div className="dialog__body success topped">
++          <SuccessMark />
++          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
++            Payment received
++          </h2>
++          <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
++            Your plan stays active. Your next charge is on {formatDate(s.nextCharge)}.
++          </p>
++          <Button data-autofocus block onClick={close}>
++            Back to My Plan
++          </Button>
++        </div>
++      )}
++
+       {open && s?.kind === 'downgrade-confirm' && (
+         <DowngradeConfirm headingId={headingId} descId={descId} onKeep={close} />
+       )}
+diff --git a/billing/src/features/upgrade/checkout.ts b/billing/src/features/upgrade/checkout.ts
+index 79082fc..77c310e 100644
+--- a/billing/src/features/upgrade/checkout.ts
++++ b/billing/src/features/upgrade/checkout.ts
+@@ -53,5 +53,18 @@ export function useCheckout() {
+     navigate('checkout')
+   }, [navigate, route, setOrder, state.planId])
+ 
+-  return { upgrade, subscribe, topUp }
++  /** Payment failed: Stripe opens in the same tab so the customer can fix the card, then retries the charge. */
++  const recoverPayment = useCallback(() => {
++    const plan = PLANS[state.planId]
++    setOrder({
++      kind: 'recover',
++      item: `${plan.name} renewal`,
++      detail: 'Update your payment method and retry the failed payment',
++      amount: plan.price ?? 0,
++      returnTo: route,
++    })
++    navigate('checkout')
++  }, [navigate, route, setOrder, state.planId])
++
++  return { upgrade, subscribe, topUp, recoverPayment }
+ }
+diff --git a/billing/src/main.tsx b/billing/src/main.tsx
+index dac332d..2442246 100644
+--- a/billing/src/main.tsx
++++ b/billing/src/main.tsx
+@@ -10,6 +10,7 @@ import './styles/base.css'
+ import './styles/shell.css'
+ import './styles/components.css'
+ import './styles/pages.css'
++import './styles/my-plan.css'
+ import App from './App'
+ 
+ createRoot(document.getElementById('root')!).render(
+diff --git a/billing/src/state/billing.tsx b/billing/src/state/billing.tsx
+index badf68a..f723b64 100644
+--- a/billing/src/state/billing.tsx
++++ b/billing/src/state/billing.tsx
+@@ -34,6 +34,8 @@ export type Success =
+   | { kind: 'downgrade-confirm' }
+   /** The switch to monthly is scheduled for the end of the yearly cycle. */
+   | { kind: 'downgrade-scheduled'; renewsOn: string }
++  /** A failed renewal was paid after the customer updated their payment method. */
++  | { kind: 'payment-recovered'; nextCharge: string }
+   | null
+ 
+ export interface LedgerEvent {
+@@ -71,6 +73,8 @@ export interface BillingState {
+   autoTopUp: boolean
+   /** Growth yearly only: a switch to Growth monthly is scheduled for the end of the cycle. */
+   pendingDowngrade: boolean
++  /** ISO date a renewal payment failed, while the plan is still in its grace period. Empty when payments are fine. */
++  paymentFailedOn: string
+   notice: BillingNotice
+   success: Success
+   events: LedgerEvent[]
+@@ -94,6 +98,11 @@ type Action =
+   | { type: 'generate'; report: string; business: string; credits: number; today: string }
+   | { type: 'dismiss-notice' }
+   | { type: 'dismiss-success' }
++  /* My Plan (Version B) actions. They change state without opening the Version A success dialogs,
++     because Version B runs its own confirmation steps. */
++  | { type: 'set-auto-top-up'; on: boolean }
++  | { type: 'switch-to-monthly'; today: string }
++  | { type: 'recover-payment'; today: string }
+   | {
+       type: 'demo'
+       status: SubscriptionStatus
+@@ -101,6 +110,9 @@ type Action =
+       creditsLeft?: number | 'some' | 'none'
+       topUpUsed?: boolean
+       endReason?: EndReason
++      autoTopUp?: boolean
++      pendingDowngrade?: boolean
++      paymentFailed?: boolean
+     }
+ 
+ const CYCLE_END: Record<PaidPlanId, string> = {
+@@ -126,6 +138,7 @@ export const INITIAL_STATE: BillingState = {
+   topUpUsedOn: '',
+   autoTopUp: true,
+   pendingDowngrade: false,
++  paymentFailedOn: '',
+   notice: null,
+   success: null,
+   events: [],
+@@ -180,9 +193,40 @@ function reducer(state: BillingState, action: Action): BillingState {
+         events: [event('Downgrade cancelled · keeping Growth yearly', action.today, null), ...state.events],
+       }
+ 
++    case 'set-auto-top-up':
++      if (state.planId === 'flex' || state.status !== 'active') return state
++      return { ...state, autoTopUp: action.on }
++
++    case 'switch-to-monthly':
++      if (state.planId !== 'yearly' || state.status !== 'active' || state.pendingDowngrade) return state
++      return {
++        ...state,
++        pendingDowngrade: true,
++        events: [event('Switch to monthly billing scheduled', action.today, null), ...state.events],
++      }
++
++    // The retried renewal charge succeeded: the plan carries on as before.
++    case 'recover-payment': {
++      if (!state.paymentFailedOn) return state
++      const plan = PLANS[state.planId]
++      return {
++        ...state,
++        paymentFailedOn: '',
++        success: { kind: 'payment-recovered', nextCharge: state.cycleEnd },
++        events: [event(`${plan.name} renewal`, action.today, plan.price), ...state.events],
++      }
++    }
++
+     case 'cancel':
+       // Cancelling switches Auto top up off: no automatic charges after the plan ends.
+-      return { ...state, status: 'cancelling', autoTopUp: false, pendingDowngrade: false, notice: null }
++      return {
++        ...state,
++        status: 'cancelling',
++        autoTopUp: false,
++        pendingDowngrade: false,
++        paymentFailedOn: '',
++        notice: null,
++      }
+ 
+     // Opens the "Don't miss out on your plan benefits" confirmation; nothing changes yet.
+     case 'request-reactivate':
+@@ -218,6 +262,7 @@ function reducer(state: BillingState, action: Action): BillingState {
+         topUpUsedOn: '',
+         autoTopUp: action.planId !== 'flex',
+         pendingDowngrade: false,
++        paymentFailedOn: '',
+         notice: null,
+         success: { kind: 'upgraded', planId: action.planId, via: 'subscribe' },
+         events: [event(plan.name, action.today, plan.price), ...state.events],
+@@ -239,6 +284,7 @@ function reducer(state: BillingState, action: Action): BillingState {
+         topUpUsedOn: '',
+         autoTopUp: action.planId !== 'flex',
+         pendingDowngrade: false,
++        paymentFailedOn: '',
+         notice: null,
+         success: { kind: 'upgraded', planId: action.planId, via: 'upgrade' },
+         events: [event(`Upgrade to ${plan.name}`, action.today, plan.price), ...state.events],
+@@ -302,7 +348,10 @@ function reducer(state: BillingState, action: Action): BillingState {
+         cycleEnd: CYCLE_END[planId],
+         creditsRemaining,
+         creditsTotal: credits,
+-        autoTopUp: planId !== 'flex',
++        autoTopUp: action.autoTopUp ?? planId !== 'flex',
++        pendingDowngrade: !!action.pendingDowngrade,
++        // Day 2 of the grace period; the plan ends on day 7.
++        paymentFailedOn: action.paymentFailed ? addDays(TODAY, -2) : '',
+         topUpUsed: !!action.topUpUsed,
+         topUpUsedOn: action.topUpUsed ? '2026-09-30' : '',
+         endReason: action.endReason ?? 'cancelled',
+diff --git a/billing/src/state/ui.tsx b/billing/src/state/ui.tsx
+index 690778c..6f7c568 100644
+--- a/billing/src/state/ui.tsx
++++ b/billing/src/state/ui.tsx
+@@ -11,6 +11,10 @@ import {
+ 
+ export type Route = 'billing' | 'plans' | 'report' | 'checkout'
+ export type Theme = 'light' | 'dark'
++/** Version A is the current Billing & Subscription design; Version B is the My Plan redesign. */
++export type Version = 'a' | 'b'
++/** My Plan (Version B) has two tabs, each with its own address: #/billing and #/billing/plan. */
++export type BillingTab = 'credits' | 'plan'
+ 
+ interface Toast {
+   id: number
+@@ -20,6 +24,10 @@ interface Toast {
+ interface UiContextValue {
+   route: Route
+   navigate: (route: Route) => void
++  version: Version
++  setVersion: (version: Version) => void
++  billingTab: BillingTab
++  setBillingTab: (tab: BillingTab) => void
+   theme: Theme
+   toggleTheme: () => void
+   toasts: Toast[]
+@@ -30,10 +38,22 @@ interface UiContextValue {
+ const UiContext = createContext<UiContextValue | null>(null)
+ 
+ function readRoute(): Route {
+-  const h = window.location.hash.replace(/^#\/?/, '')
++  const h = window.location.hash.replace(/^#\/?/, '').split('/')[0]
+   return h === 'plans' || h === 'report' || h === 'checkout' ? h : 'billing'
+ }
+ 
++function readTab(): BillingTab {
++  return /^#\/?billing\/plan\/?$/.test(window.location.hash) ? 'plan' : 'credits'
++}
++
++function initialVersion(): Version {
++  try {
++    return localStorage.getItem('av-version') === 'b' ? 'b' : 'a'
++  } catch {
++    return 'a'
++  }
++}
++
+ function initialTheme(): Theme {
+   try {
+     const saved = localStorage.getItem('av-theme')
+@@ -46,14 +66,21 @@ function initialTheme(): Theme {
+ 
+ export function UiProvider({ children }: { children: ReactNode }) {
+   const [route, setRoute] = useState<Route>(readRoute)
++  const [billingTab, setTab] = useState<BillingTab>(readTab)
++  const [version, setVersionState] = useState<Version>(initialVersion)
+   const [theme, setTheme] = useState<Theme>(initialTheme)
+   const [toasts, setToasts] = useState<Toast[]>([])
+   const nextId = useRef(1)
++  const routeRef = useRef(route)
+ 
+   useEffect(() => {
+     const onHash = () => {
+-      setRoute(readRoute())
+-      window.scrollTo({ top: 0 })
++      const next = readRoute()
++      // Switching tabs on the same page keeps the reader where they are.
++      if (next !== routeRef.current) window.scrollTo({ top: 0 })
++      routeRef.current = next
++      setRoute(next)
++      setTab(readTab())
+     }
+     window.addEventListener('hashchange', onHash)
+     return () => window.removeEventListener('hashchange', onHash)
+@@ -63,10 +90,27 @@ export function UiProvider({ children }: { children: ReactNode }) {
+     document.documentElement.dataset.theme = theme
+   }, [theme])
+ 
++  useEffect(() => {
++    document.documentElement.dataset.version = version
++  }, [version])
++
+   const navigate = useCallback((next: Route) => {
+     window.location.hash = `/${next}`
+   }, [])
+ 
++  const setBillingTab = useCallback((tab: BillingTab) => {
++    window.location.hash = tab === 'plan' ? '/billing/plan' : '/billing'
++  }, [])
++
++  const setVersion = useCallback((next: Version) => {
++    setVersionState(next)
++    try {
++      localStorage.setItem('av-version', next)
++    } catch {
++      /* non-essential preference */
++    }
++  }, [])
++
+   const toggleTheme = useCallback(() => {
+     setTheme((t) => {
+       const next = t === 'dark' ? 'light' : 'dark'
+@@ -93,8 +137,20 @@ export function UiProvider({ children }: { children: ReactNode }) {
+   )
+ 
+   const value = useMemo(
+-    () => ({ route, navigate, theme, toggleTheme, toasts, toast, dismissToast }),
+-    [route, navigate, theme, toggleTheme, toasts, toast, dismissToast],
++    () => ({
++      route,
++      navigate,
++      version,
++      setVersion,
++      billingTab,
++      setBillingTab,
++      theme,
++      toggleTheme,
++      toasts,
++      toast,
++      dismissToast,
++    }),
++    [route, navigate, version, setVersion, billingTab, setBillingTab, theme, toggleTheme, toasts, toast, dismissToast],
+   )
+ 
+   return <UiContext.Provider value={value}>{children}</UiContext.Provider>
+diff --git a/billing/src/styles/components.css b/billing/src/styles/components.css
+index c64271f..4396d98 100644
+--- a/billing/src/styles/components.css
++++ b/billing/src/styles/components.css
+@@ -148,6 +148,12 @@
+   color: var(--color-content-on-warning-elevated);
+ }
+ 
++.badge--negative {
++  background: var(--color-sentiment-negative-elevated);
++  border-color: var(--color-border-negative);
++  color: var(--color-content-on-negative-elevated);
++}
++
+ .badge--accent {
+   background: var(--color-interactive-selected);
+   border-color: var(--color-border-accent);
+diff --git a/billing/src/styles/shell.css b/billing/src/styles/shell.css
+index 51b8e86..4b0e725 100644
+--- a/billing/src/styles/shell.css
++++ b/billing/src/styles/shell.css
+@@ -255,8 +255,8 @@
+ .main {
+   grid-area: main;
+   min-inline-size: 0;
+-  /* Keeps the floating prototype button off the last line of content. */
+-  padding-block-end: var(--space-12);
++  /* Keeps the floating prototype buttons off the last line of content. */
++  padding-block-end: calc(var(--space-12) + var(--space-4));
+   outline: none;
+ }
+ 

@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { AppShell } from './components/shell/AppShell'
+import { VersionSwitch } from './components/shell/VersionSwitch'
 import { Toaster } from './components/ui/primitives'
 import { BillingPage } from './features/billing/BillingPage'
+import { BillingPageB } from './features/billing/BillingPageB'
 import { PrototypeControls } from './features/dev/PrototypeControls'
 import { CheckoutPage } from './features/checkout/CheckoutPage'
 import { OrderProvider, useOrder } from './features/checkout/order'
@@ -12,8 +14,11 @@ import { BillingProvider } from './state/billing'
 import { UiProvider, useUi } from './state/ui'
 
 function Routes() {
-  const { route } = useUi()
-  return route === 'plans' ? <PlansPage /> : route === 'report' ? <ReportPage /> : <BillingPage />
+  const { route, version } = useUi()
+  if (route === 'plans') return <PlansPage />
+  if (route === 'report') return <ReportPage />
+  // Version A is the current Billing & Subscription page; Version B is its redesign.
+  return version === 'b' ? <BillingPageB /> : <BillingPage />
 }
 
 function Screen() {
@@ -39,6 +44,7 @@ export default function App() {
         <OrderProvider>
           <Screen />
           <SuccessDialog />
+          <VersionSwitch />
           <PrototypeControls />
           <Toaster />
         </OrderProvider>

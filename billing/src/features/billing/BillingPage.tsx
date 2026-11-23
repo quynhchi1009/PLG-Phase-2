@@ -139,10 +139,10 @@ function SettingsCard({
               </p>
             )}
           </div>
-          {/* Plan-level actions live together: Upgrade plan leads, Cancel subscription
+          {/* Plan-level actions live together: Change plan leads, Cancel subscription
               sits beside it as a quiet outlined button. While a switch to monthly is
               scheduled, "Keep yearly plan" below is the one primary of the card, so
-              Upgrade plan steps down to secondary. */}
+              Change plan steps down to secondary. */}
           {!cancelling && (
             <div className="settings__head-actions">
               {plan.cycle && (
@@ -155,7 +155,7 @@ function SettingsCard({
                 variant={state.pendingDowngrade ? 'secondary' : 'primary'}
                 onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}
               >
-                Upgrade plan
+                Change plan
               </Button>
             </div>
           )}

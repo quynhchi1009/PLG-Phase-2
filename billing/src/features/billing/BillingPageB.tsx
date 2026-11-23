@@ -197,7 +197,7 @@ function SettingsCard({
                 // Primary while the balance is fine; once credits run low, Top up takes the lead instead.
                 variant={leadVariant}
                 items={[
-                  { label: 'Upgrade plan', onSelect: () => navigate('plans') },
+                  { label: 'Change plan', onSelect: () => navigate('plans') },
                   { label: 'Cancel subscription', onSelect: onCancel, tone: 'danger' },
                 ]}
               />
@@ -208,7 +208,7 @@ function SettingsCard({
                 variant={leadVariant}
                 onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}
               >
-                Upgrade plan
+                Change plan
               </Button>
             )}
           </div>

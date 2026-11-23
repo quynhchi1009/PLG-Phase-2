@@ -218,7 +218,7 @@
     outline: none;
   }
 
-  /* One action at the right edge: Choose plan (a menu of upgrade and cancel), or Upgrade plan. */
+  /* One action at the right edge: Choose plan (a menu of upgrade and cancel), or Change plan. */
   .settings__head-actions {
     display: grid;
     flex: none;

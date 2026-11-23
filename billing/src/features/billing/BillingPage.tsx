@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge, Checklist, InfoTip, Notice } from '../../components/ui/primitives'
 import { PLANS, REPORT_RETENTION_DAYS, TOP_UP, formatCount, formatPrice, planBreakdown } from '../../data/plans'
 import { addDays, formatDate } from '../../data/history'
-import { FLEX_RESETS_ON, TODAY, canTopUp, useBilling } from '../../state/billing'
+import { FLEX_RESETS_ON, canTopUp, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { HistoryTabs } from './HistoryTabs'
 import { SubscriptionFlow, type FlowStep } from './SubscriptionFlow'
@@ -77,7 +77,9 @@ function SubscriptionCard() {
           {cancelling ? (
             <Badge tone="warning">Ends {formatDate(state.cycleEnd)}</Badge>
           ) : state.pendingDowngrade ? (
-            <Badge tone="warning">Switches to monthly on {formatDate(state.cycleEnd)}</Badge>
+            // The date lives in the settings card ("Next billing date" and the switch notice), so the
+            // tag only names the state and stays short enough for the 388px card.
+            <Badge tone="warning">Switching to monthly</Badge>
           ) : (
             <Badge>Active</Badge>
           )}
@@ -138,7 +140,9 @@ function SettingsCard({
             )}
           </div>
           {/* Plan-level actions live together: Upgrade plan leads, Cancel subscription
-              sits beside it as a quiet outlined button. */}
+              sits beside it as a quiet outlined button. While a switch to monthly is
+              scheduled, "Keep yearly plan" below is the one primary of the card, so
+              Upgrade plan steps down to secondary. */}
           {!cancelling && (
             <div className="settings__head-actions">
               {plan.cycle && (
@@ -146,7 +150,11 @@ function SettingsCard({
                   Cancel subscription
                 </Button>
               )}
-              <Button size="sm" onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}>
+              <Button
+                size="sm"
+                variant={state.pendingDowngrade ? 'secondary' : 'primary'}
+                onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}
+              >
                 Upgrade plan
               </Button>
             </div>
@@ -201,8 +209,11 @@ function SettingsCard({
           </>
         )}
 
+        {/* The way back from a scheduled switch: text on the left, the primary button on the
+            card's right edge with the other controls. It opens a confirmation first
+            ("Keep your yearly plan?"); the switch is only cancelled once that is confirmed. */}
         {state.pendingDowngrade && !cancelling && (
-          <div className="settings__row settings__changed">
+          <div className="settings__row settings__changed settings__changed--downgrade">
             <div>
               <h3 className="settings__subtitle">Switching to Growth monthly on {cycleEnd}</h3>
               <p className="settings__hint">
@@ -211,7 +222,7 @@ function SettingsCard({
               </p>
             </div>
             <div className="settings__actions">
-              <Button size="sm" variant="secondary" onClick={() => dispatch({ type: 'cancel-downgrade', today: TODAY })}>
+              <Button size="sm" onClick={() => dispatch({ type: 'request-cancel-downgrade' })}>
                 Keep yearly plan
               </Button>
             </div>

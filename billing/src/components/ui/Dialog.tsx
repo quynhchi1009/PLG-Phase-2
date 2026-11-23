@@ -10,6 +10,9 @@ interface DialogProps {
   size?: 'sm' | 'md' | 'lg'
   /** Changes when the flow moves to another step, so the content re-enters. */
   stepKey?: string
+  /** Drops the X when the primary button already closes the dialog, so there is one obvious way out.
+   *  Escape and a click on the backdrop still close it. */
+  hideClose?: boolean
   children: ReactNode
 }
 
@@ -20,6 +23,7 @@ export function Dialog({
   describedBy,
   size = 'md',
   stepKey,
+  hideClose = false,
   children,
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -56,9 +60,11 @@ export function Dialog({
     >
       {open && (
         <div className="dialog__surface" key={stepKey}>
-          <button type="button" className="dialog__close icon-btn" aria-label="Close" onClick={onClose}>
-            <X size={18} aria-hidden />
-          </button>
+          {!hideClose && (
+            <button type="button" className="dialog__close icon-btn" aria-label="Close" onClick={onClose}>
+              <X size={18} aria-hidden />
+            </button>
+          )}
           {children}
         </div>
       )}

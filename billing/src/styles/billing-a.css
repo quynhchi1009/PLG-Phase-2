@@ -242,6 +242,27 @@
     gap: var(--space-2);
     margin-inline-start: auto;
   }
+
+  /* Scheduled switch to monthly: the way back sits like the other rows of the card, text on
+     the left and its control on the shared right edge, instead of stacked and left-aligned.
+     "Keep yearly plan" is the card's one primary button (Upgrade plan drops to secondary).
+     When the sentence needs the full row the button wraps beneath and stays flush right. */
+  .settings__changed--downgrade:has(.settings__actions) {
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-4);
+  }
+
+  .settings__changed--downgrade:has(.settings__actions) > div:first-child {
+    flex: 1 1 22rem;
+    min-inline-size: 0;
+  }
+
+  .settings__changed--downgrade > .settings__actions {
+    justify-content: flex-end;
+    margin-inline-start: auto;
+  }
 }
 
 /* Auto top up payment buttons (the pay-now confirm and the report prompt). While the charge

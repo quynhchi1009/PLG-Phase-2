@@ -31,6 +31,7 @@ export function SubscriptionFlow({
 }) {
   const headingId = useId()
   const descId = useId()
+  const { version } = useUi()
   return (
     <Dialog
       open={step !== null}
@@ -39,6 +40,8 @@ export function SubscriptionFlow({
       describedBy={descId}
       size={step ? SIZE[step] : 'md'}
       stepKey={step ?? undefined}
+      // Version A: "Keep current plan" is the primary and already closes this step, so the X is redundant.
+      hideClose={version === 'a' && step === 'cancel-confirm'}
     >
       {step && <StepContent step={step} onStep={onStep} onClose={onClose} headingId={headingId} descId={descId} />}
     </Dialog>

@@ -37,21 +37,43 @@ export function SuccessDialog() {
   const onReport = route === 'report' && s?.kind === 'auto-top-up-charged'
   const open = !!s && (route === 'billing' || onReport)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
-  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'downgrade-scheduled'
+  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'downgrade-scheduled' || s?.kind === 'downgrade-cancelled'
+
+  // Version A: when the primary button already just closes the dialog (every result dialog, and the
+  // confirmations whose primary is "stay as you are"), the X is a second way to do the same thing,
+  // so it goes. Where the primary does something else (reactivate, enable, keep yearly plan), the
+  // X stays as the neutral way out. Escape and the backdrop still close every dialog.
+  const hideClose =
+    version === 'a' &&
+    (s?.kind === 'upgraded' ||
+      s?.kind === 'topped-up' ||
+      s?.kind === 'reactivated' ||
+      s?.kind === 'downgrade-scheduled' ||
+      s?.kind === 'downgrade-cancelled' ||
+      s?.kind === 'auto-top-up-on' ||
+      s?.kind === 'auto-top-up-off' ||
+      s?.kind === 'auto-top-up-charged' ||
+      s?.kind === 'auto-top-up-confirm' ||
+      s?.kind === 'downgrade-confirm')
 
   const close = () => {
     // Backing out of the reactivation confirmation changes nothing on the page.
-    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm') return dispatch({ type: 'dismiss-success' })
+    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
     // Version B keeps the credit balance in the plan card, so a top up changes that card too.
     const settingsOnly =
       s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || (s?.kind === 'topped-up' && version !== 'b')
     const changed = settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
+    // "Keep yearly plan" left the page when the switch was cancelled, so there is nothing to
+    // hand focus back to: land on the settings card instead of <body>.
+    if (s?.kind === 'downgrade-cancelled') {
+      requestAnimationFrame(() => document.querySelector<HTMLElement>('.settings__title')?.focus())
+    }
   }
 
   return (
-    <Dialog open={open} onClose={close} labelledBy={headingId} describedBy={descId} size={compact ? 'sm' : 'md'} stepKey={s?.kind}>
+    <Dialog open={open} onClose={close} labelledBy={headingId} describedBy={descId} size={compact ? 'sm' : 'md'} stepKey={s?.kind} hideClose={hideClose}>
       {open && s?.kind === 'upgraded' && (
         <div className="activated">
           <span className="activated__badge success__in success__in--pop" style={at(T.head)}>
@@ -141,6 +163,26 @@ export function SuccessDialog() {
 
       {open && s?.kind === 'downgrade-confirm' && (
         <DowngradeConfirm headingId={headingId} descId={descId} onKeep={close} />
+      )}
+
+      {open && s?.kind === 'keep-yearly-confirm' && (
+        <KeepYearlyConfirm headingId={headingId} descId={descId} onBack={close} />
+      )}
+
+      {open && s?.kind === 'downgrade-cancelled' && (
+        <div className="dialog__body success topped">
+          <SuccessMark />
+          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+            Switch to monthly cancelled
+          </h2>
+          <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+            You're staying on Growth yearly. Your plan renews on {formatDate(s.renewsOn)} at{' '}
+            {formatPrice(PLANS.yearly.price ?? 0)}, and your credits stay as they are.
+          </p>
+          <Button data-autofocus block onClick={close}>
+            Back to my plan
+          </Button>
+        </div>
       )}
 
       {open && s?.kind === 'downgrade-scheduled' && (
@@ -285,6 +327,52 @@ function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string;
         </Button>
         <Button block variant="secondary" aria-disabled={paying} onClick={paying ? undefined : onStay}>
           Stay disabled
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/* The one step before a scheduled switch to monthly is cancelled (Version A): nothing changes until
+   the customer confirms, and "Go back" leaves the switch scheduled. It mirrors the step that
+   scheduled it: that one lists what is lost, this one lists what is kept. */
+function KeepYearlyConfirm({ headingId, descId, onBack }: { headingId: string; descId: string; onBack: () => void }) {
+  const { state, dispatch } = useBilling()
+  const date = formatDate(state.cycleEnd)
+
+  // Confirming cancels the switch and hands over to the "Switch to monthly cancelled" dialog.
+  const keep = () => dispatch({ type: 'cancel-downgrade', today: TODAY })
+
+  return (
+    <div className="dialog__body success">
+      <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+        Keep your yearly plan?
+      </h2>
+      <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+        Your switch to Growth monthly on <strong>{date}</strong> will be cancelled. Growth yearly stays as it is and
+        renews on <strong>{date}</strong> at {formatPrice(PLANS.yearly.price ?? 0)}.
+      </p>
+
+      <section className="perk-box perk-box--firm success__in" style={at(T.panel)} aria-label="What you keep">
+        <p className="perk-box__title">What you keep on Growth yearly:</p>
+        <ul className="checklist checklist--md">
+          {stayPerks('yearly').map((f, i) => (
+            <li key={f.title} className="success__in" style={at(T.list + i * 80)}>
+              <Check className="checklist__mark" size={18} strokeWidth={2.25} aria-hidden />
+              <span>
+                <strong>{f.title}</strong> {f.detail}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="dialog__pair success__in" style={at(T.list)}>
+        <Button data-autofocus block onClick={keep}>
+          Keep yearly plan
+        </Button>
+        <Button block variant="secondary" onClick={onBack}>
+          Go back
         </Button>
       </div>
     </div>

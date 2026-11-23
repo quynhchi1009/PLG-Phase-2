@@ -215,7 +215,7 @@ export function HistoryTabs() {
                 {usage.slice(start, end).map((row) => (
                   <tr key={row.orderId}>
                     <td className="nowrap">{row.report}</td>
-                    <td className="strong">{row.business}</td>
+                    <td>{row.business}</td>
                     <td className="mono">{row.orderId}</td>
                     <td>{row.channel}</td>
                     <td className="num">{row.credits}</td>

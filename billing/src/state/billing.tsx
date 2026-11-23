@@ -38,6 +38,10 @@ export type Success =
   | { kind: 'downgrade-confirm' }
   /** The switch to monthly is scheduled for the end of the yearly cycle. */
   | { kind: 'downgrade-scheduled'; renewsOn: string }
+  /** Version A: asked to keep Growth yearly while a switch to monthly is scheduled: confirm before it is cancelled. */
+  | { kind: 'keep-yearly-confirm' }
+  /** Version A: the scheduled switch to monthly was cancelled; the yearly plan renews on `renewsOn`. */
+  | { kind: 'downgrade-cancelled'; renewsOn: string }
   | null
 
 export interface LedgerEvent {
@@ -101,6 +105,7 @@ type Action =
   | { type: 'generate'; report: string; business: string; credits: number; today: string }
   | { type: 'dismiss-notice' }
   | { type: 'dismiss-success' }
+  | { type: 'request-cancel-downgrade' }
   | {
       type: 'demo'
       status: SubscriptionStatus
@@ -205,11 +210,21 @@ function reducer(state: BillingState, action: Action): BillingState {
         events: [event('Downgrade to Growth monthly scheduled', action.today, null), ...state.events],
       }
 
+    // Opens the "Keep your yearly plan?" confirmation; nothing changes yet.
+    case 'request-cancel-downgrade':
+      if (!state.pendingDowngrade || state.status !== 'active') return state
+      return { ...state, success: { kind: 'keep-yearly-confirm' } }
+
     case 'cancel-downgrade':
       if (!state.pendingDowngrade) return state
       return {
         ...state,
         pendingDowngrade: false,
+        // When the confirmation asked, it hands over to the result dialog (Version B cancels directly, with none).
+        success:
+          state.success?.kind === 'keep-yearly-confirm'
+            ? { kind: 'downgrade-cancelled', renewsOn: state.cycleEnd }
+            : state.success,
         events: [event('Downgrade cancelled · keeping Growth yearly', action.today, null), ...state.events],
       }
 

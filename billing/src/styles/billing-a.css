@@ -1,6 +1,6 @@
 /* Version A: the current Billing & Subscription page, tidied.
-   Version B has its own sheet (billing-b.css) and A's older rules in pages.css stay as
-   they were. These rules share the same class names, so every one is scoped to
+   A's older rules in pages.css stay as they were (Version B lives on the version-b branch,
+   with its own sheet). These rules share the same class names, so every one is scoped to
    <html data-version="a"> and to the two billing cards (.billing-grid). The usage and
    subscription history tables, the dialogs and every other route are not touched.
 

@@ -220,7 +220,7 @@ function reducer(state: BillingState, action: Action): BillingState {
       return {
         ...state,
         pendingDowngrade: false,
-        // When the confirmation asked, it hands over to the result dialog (Version B cancels directly, with none).
+        // When the confirmation asked, it hands over to the result dialog; a cancel with no confirmation behind it shows none.
         success:
           state.success?.kind === 'keep-yearly-confirm'
             ? { kind: 'downgrade-cancelled', renewsOn: state.cycleEnd }

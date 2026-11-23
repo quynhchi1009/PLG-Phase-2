@@ -28,7 +28,7 @@ const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
  */
 export function SuccessDialog() {
   const { state, dispatch } = useBilling()
-  const { route, version } = useUi()
+  const { route } = useUi()
   const headingId = useId()
   const descId = useId()
   const s = state.success
@@ -39,29 +39,27 @@ export function SuccessDialog() {
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
   const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'downgrade-scheduled' || s?.kind === 'downgrade-cancelled'
 
-  // Version A: when the primary button already just closes the dialog (every result dialog, and the
+  // When the primary button already just closes the dialog (every result dialog, and the
   // confirmations whose primary is "stay as you are"), the X is a second way to do the same thing,
   // so it goes. Where the primary does something else (reactivate, enable, keep yearly plan), the
   // X stays as the neutral way out. Escape and the backdrop still close every dialog.
   const hideClose =
-    version === 'a' &&
-    (s?.kind === 'upgraded' ||
-      s?.kind === 'topped-up' ||
-      s?.kind === 'reactivated' ||
-      s?.kind === 'downgrade-scheduled' ||
-      s?.kind === 'downgrade-cancelled' ||
-      s?.kind === 'auto-top-up-on' ||
-      s?.kind === 'auto-top-up-off' ||
-      s?.kind === 'auto-top-up-charged' ||
-      s?.kind === 'auto-top-up-confirm' ||
-      s?.kind === 'downgrade-confirm')
+    s?.kind === 'upgraded' ||
+    s?.kind === 'topped-up' ||
+    s?.kind === 'reactivated' ||
+    s?.kind === 'downgrade-scheduled' ||
+    s?.kind === 'downgrade-cancelled' ||
+    s?.kind === 'auto-top-up-on' ||
+    s?.kind === 'auto-top-up-off' ||
+    s?.kind === 'auto-top-up-charged' ||
+    s?.kind === 'auto-top-up-confirm' ||
+    s?.kind === 'downgrade-confirm'
 
   const close = () => {
     // Backing out of the reactivation confirmation changes nothing on the page.
     if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
-    // Version B keeps the credit balance in the plan card, so a top up changes that card too.
     const settingsOnly =
-      s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || (s?.kind === 'topped-up' && version !== 'b')
+      s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || s?.kind === 'topped-up'
     const changed = settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
@@ -227,18 +225,9 @@ export function SuccessDialog() {
             Turn on Auto top up?
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            {version === 'b' ? (
-              <>
-                When your credits run out, we'll add {formatCount(TOP_UP[state.planId].credits)} credits for{' '}
-                {formatPrice(TOP_UP[state.planId].price)} automatically, so your reports keep running.
-              </>
-            ) : (
-              <>
-                When your credits run out, we'll renew your plan early for {formatPrice(TOP_UP[state.planId].price)} and
-                add {formatCount(TOP_UP[state.planId].credits)} credits, so your reports keep running. Your next billing
-                date moves to the day we renew.
-              </>
-            )}
+            When your credits run out, we'll renew your plan early for {formatPrice(TOP_UP[state.planId].price)} and add{' '}
+            {formatCount(TOP_UP[state.planId].credits)} credits, so your reports keep running. Your next billing date
+            moves to the day we renew.
           </p>
           <div className="dialog__pair success__in" style={at(T.panel)}>
             <Button data-autofocus block onClick={() => dispatch({ type: 'enable-auto-top-up' })}>
@@ -305,7 +294,7 @@ export function SuccessDialog() {
 }
 
 /* Turning Auto top up on with 0 credits left: the first pack is paid for now, so the customer
-   sees the charge before agreeing to it. Version A only (Version B keeps the plain confirm). */
+   sees the charge before agreeing to it. */
 function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string; descId: string; onStay: () => void }) {
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]

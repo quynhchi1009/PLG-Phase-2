@@ -27,7 +27,7 @@ type Tab = 'products' | 'kyb' | 'ubo' | 'legal'
 
 export function ReportPage() {
   const { state, dispatch } = useBilling()
-  const { toast, version } = useUi()
+  const { toast } = useUi()
   const [tab, setTab] = useState<Tab>('kyb')
   const [report, setReport] = useState('basic')
   const [aml, setAml] = useState(false)
@@ -38,9 +38,9 @@ export function ReportPage() {
   const total = chosen.credits + (aml ? 1 : 0)
   const enough = state.creditsRemaining >= total
   const inactive = state.status === 'none'
-  // Version A, Growth: too few credits no longer means the upgrade prompt. With Auto top up
+  // Growth: too few credits no longer means the upgrade prompt. With Auto top up
   // off, the only way on is to turn it on (and renew early); with it on, it renews early itself.
-  const growthA = version === 'a' && state.status === 'active' && state.planId !== 'flex'
+  const growthA = state.status === 'active' && state.planId !== 'flex'
   const autoTopUpGate = growthA && !state.autoTopUp
   const autoTopUpRenewal = growthA && state.autoTopUp
 

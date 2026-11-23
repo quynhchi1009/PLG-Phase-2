@@ -11,8 +11,6 @@ import {
 
 export type Route = 'billing' | 'plans' | 'report' | 'checkout'
 export type Theme = 'light' | 'dark'
-/** Version A is the current Billing & Subscription design; Version B is its redesign. */
-export type Version = 'a' | 'b'
 
 interface Toast {
   id: number
@@ -22,8 +20,6 @@ interface Toast {
 interface UiContextValue {
   route: Route
   navigate: (route: Route) => void
-  version: Version
-  setVersion: (version: Version) => void
   theme: Theme
   toggleTheme: () => void
   toasts: Toast[]
@@ -38,14 +34,6 @@ function readRoute(): Route {
   return h === 'plans' || h === 'report' || h === 'checkout' ? h : 'billing'
 }
 
-function initialVersion(): Version {
-  try {
-    return localStorage.getItem('av-version') === 'b' ? 'b' : 'a'
-  } catch {
-    return 'a'
-  }
-}
-
 function initialTheme(): Theme {
   try {
     const saved = localStorage.getItem('av-theme')
@@ -58,7 +46,6 @@ function initialTheme(): Theme {
 
 export function UiProvider({ children }: { children: ReactNode }) {
   const [route, setRoute] = useState<Route>(readRoute)
-  const [version, setVersionState] = useState<Version>(initialVersion)
   const [theme, setTheme] = useState<Theme>(initialTheme)
   const [toasts, setToasts] = useState<Toast[]>([])
   const nextId = useRef(1)
@@ -76,21 +63,8 @@ export function UiProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  useEffect(() => {
-    document.documentElement.dataset.version = version
-  }, [version])
-
   const navigate = useCallback((next: Route) => {
     window.location.hash = `/${next}`
-  }, [])
-
-  const setVersion = useCallback((next: Version) => {
-    setVersionState(next)
-    try {
-      localStorage.setItem('av-version', next)
-    } catch {
-      /* non-essential preference */
-    }
   }, [])
 
   const toggleTheme = useCallback(() => {
@@ -122,15 +96,13 @@ export function UiProvider({ children }: { children: ReactNode }) {
     () => ({
       route,
       navigate,
-      version,
-      setVersion,
       theme,
       toggleTheme,
       toasts,
       toast,
       dismissToast,
     }),
-    [route, navigate, version, setVersion, theme, toggleTheme, toasts, toast, dismissToast],
+    [route, navigate, theme, toggleTheme, toasts, toast, dismissToast],
   )
 
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>

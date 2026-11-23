@@ -15,7 +15,7 @@ interface Scenario {
   route?: Route
 }
 
-/* Version A only: the four Auto top up cases, each starting where its customer is.
+/* The four Auto top up cases, each starting where its customer is.
    Auto top up renews the plan early: it charges the pack, adds the credits and moves the
    billing date to one cycle from today.
    1 turn it off (billing page, credits left)
@@ -23,7 +23,7 @@ interface Scenario {
    3 out of credits at the report page with it off: the prompt offers to turn it on
    4 out of credits at the report page with it on: it renews early by itself */
 const AUTO_TOP_UP_GROUP: { title: string; items: Scenario[] } = {
-  title: 'Auto top up (Version A)',
+  title: 'Auto top up',
   items: [
     { id: 'a-off', label: '1 · Toggle off', status: 'active', planId: 'monthly', autoTopUp: true },
     {
@@ -88,7 +88,7 @@ const GROUPS: { title: string; items: Scenario[] }[] = [
 /** Demo-only panel for jumping between account states. Not part of the product UI. */
 export function PrototypeControls() {
   const { dispatch } = useBilling()
-  const { navigate, version } = useUi()
+  const { navigate } = useUi()
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState('g-m')
 
@@ -125,7 +125,7 @@ export function PrototypeControls() {
           <X size={16} aria-hidden />
         </button>
       </div>
-      {(version === 'a' ? [AUTO_TOP_UP_GROUP, ...GROUPS] : GROUPS).map((g) => (
+      {[AUTO_TOP_UP_GROUP, ...GROUPS].map((g) => (
         <div key={g.title} className="proto__group">
           <p className="proto__label">{g.title}</p>
           <div className="proto__seg proto__seg--stack">

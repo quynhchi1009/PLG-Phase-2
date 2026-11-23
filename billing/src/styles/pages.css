@@ -2286,7 +2286,7 @@
   opacity: 0.5;
 }
 
-/* "Cancel subscription" rests without an underline; it appears on hover and keyboard focus. */
+/* "Cancel plan" rests without an underline; it appears on hover and keyboard focus. */
 .plan-card__foot .text-btn {
   text-decoration-line: none;
 }

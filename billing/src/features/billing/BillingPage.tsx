@@ -139,7 +139,7 @@ function SettingsCard({
               </p>
             )}
           </div>
-          {/* Plan-level actions live together: Change plan leads, Cancel subscription
+          {/* Plan-level actions live together: Change plan leads, Cancel plan
               sits beside it as a quiet outlined button. While a switch to monthly is
               scheduled, "Keep yearly plan" below is the one primary of the card, so
               Change plan steps down to secondary. */}
@@ -147,7 +147,7 @@ function SettingsCard({
             <div className="settings__head-actions">
               {plan.cycle && (
                 <Button size="sm" variant="ghost" onClick={onCancel}>
-                  Cancel subscription
+                  Cancel plan
                 </Button>
               )}
               <Button

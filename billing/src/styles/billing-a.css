@@ -215,7 +215,7 @@
 
   /* Plan-level actions share the header, ranked by button tier: Change plan is the
      primary (solid green, rightmost, on the same edge as Top up now and the switch)
-     and Cancel subscription is the tertiary beside it: the shared Ghost button as it
+     and Cancel plan is the tertiary beside it: the shared Ghost button as it
      is, with no fill and no stroke, a graphite label and a Subtle Fill on hover. */
   .settings__head {
     flex-wrap: wrap;

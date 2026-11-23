@@ -198,7 +198,7 @@ function SettingsCard({
                 variant={leadVariant}
                 items={[
                   { label: 'Change plan', onSelect: () => navigate('plans') },
-                  { label: 'Cancel subscription', onSelect: onCancel, tone: 'danger' },
+                  { label: 'Cancel plan', onSelect: onCancel, tone: 'danger' },
                 ]}
               />
             ) : (

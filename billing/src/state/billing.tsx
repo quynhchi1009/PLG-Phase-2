@@ -30,6 +30,10 @@ export type Success =
   | { kind: 'auto-top-up-enable-confirm' }
   /** Auto top up was switched back on. */
   | { kind: 'auto-top-up-on' }
+  /** Version A: asked to turn Auto top up on with 0 credits left, so turning it on also pays now. */
+  | { kind: 'auto-top-up-pay-confirm' }
+  /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved. */
+  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string }
   /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
   | { kind: 'downgrade-confirm' }
   /** The switch to monthly is scheduled for the end of the yearly cycle. */
@@ -83,8 +87,11 @@ type Action =
   | { type: 'schedule-downgrade'; today: string }
   | { type: 'cancel-downgrade'; today: string }
   | { type: 'request-reactivate' }
-  | { type: 'request-enable-auto-top-up' }
+  /** `payNow` (Version A, 0 credits left): turning it on also buys the first pack right away. */
+  | { type: 'request-enable-auto-top-up'; payNow?: boolean }
   | { type: 'enable-auto-top-up' }
+  /** Auto top up renews the plan early with the payment method on file: pays the pack, adds the credits, moves the billing date, turns Auto top up on. */
+  | { type: 'charge-auto-top-up'; today: string }
   | { type: 'request-disable-auto-top-up' }
   | { type: 'disable-auto-top-up' }
   | { type: 'reactivate'; today: string }
@@ -101,6 +108,8 @@ type Action =
       creditsLeft?: number | 'some' | 'none'
       topUpUsed?: boolean
       endReason?: EndReason
+      /** Growth only: start with Auto top up off. Defaults to on, as after a Growth purchase. */
+      autoTopUp?: boolean
     }
 
 const CYCLE_END: Record<PaidPlanId, string> = {
@@ -145,11 +154,35 @@ function reducer(state: BillingState, action: Action): BillingState {
     // Growth only. Turning it on or off asks first, then confirms.
     case 'request-enable-auto-top-up':
       if (state.planId === 'flex' || state.status !== 'active' || state.autoTopUp) return state
-      return { ...state, success: { kind: 'auto-top-up-enable-confirm' } }
+      return {
+        ...state,
+        success: { kind: action.payNow ? 'auto-top-up-pay-confirm' : 'auto-top-up-enable-confirm' },
+      }
 
     case 'enable-auto-top-up':
       if (state.planId === 'flex' || state.status !== 'active') return state
       return { ...state, autoTopUp: true, success: { kind: 'auto-top-up-on' } }
+
+    // Auto top up renews the subscription early and adds credits immediately: when credits
+    // run out with it on (report page), or when it is turned on while out of credits
+    // (billing page, or the report page's "not enough credits" prompt). The pack is paid
+    // for now, the new billing period starts today, so the next billing date moves to one
+    // cycle from today. The card on file is charged, so there is no checkout page.
+    case 'charge-auto-top-up': {
+      if (state.planId === 'flex' || state.status !== 'active') return state
+      const pack = TOP_UP[state.planId]
+      const credits = state.creditsRemaining + pack.credits
+      const renewsOn = earlyRenewalDate(state.planId, action.today)
+      return {
+        ...state,
+        autoTopUp: true,
+        creditsRemaining: credits,
+        creditsTotal: credits,
+        cycleEnd: renewsOn,
+        success: { kind: 'auto-top-up-charged', credits: pack.credits, renewsOn },
+        events: [event(`Auto top up · plan renewed early (${pack.credits} credits)`, action.today, pack.price), ...state.events],
+      }
+    }
 
     case 'request-disable-auto-top-up':
       if (!state.autoTopUp) return state
@@ -302,7 +335,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         cycleEnd: CYCLE_END[planId],
         creditsRemaining,
         creditsTotal: credits,
-        autoTopUp: planId !== 'flex',
+        autoTopUp: planId !== 'flex' && (action.autoTopUp ?? true),
         topUpUsed: !!action.topUpUsed,
         topUpUsedOn: action.topUpUsed ? '2026-09-30' : '',
         endReason: action.endReason ?? 'cancelled',
@@ -337,6 +370,11 @@ export function nextBillingDate(cycle: 'month' | 'year' | null, from: string) {
   if (cycle === 'year') d.setUTCFullYear(d.getUTCFullYear() + 1)
   else d.setUTCMonth(d.getUTCMonth() + 1)
   return d.toISOString().slice(0, 10)
+}
+
+/** The next billing date if Auto top up renews the plan today: one cycle from today. */
+export function earlyRenewalDate(planId: PaidPlanId, today: string) {
+  return nextBillingDate(PLANS[planId].cycle, today)
 }
 
 /** Can the customer buy a new plan right now? */

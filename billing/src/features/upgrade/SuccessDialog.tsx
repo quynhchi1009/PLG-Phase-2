@@ -5,9 +5,10 @@ import { Dialog } from '../../components/ui/Dialog'
 import { SuccessMark } from '../../components/ui/SuccessMark'
 import { PLANS, TOP_UP, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
-import { TODAY, useBilling } from '../../state/billing'
+import { TODAY, earlyRenewalDate, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { flagUpdated } from './flagUpdated'
+import { useAutoTopUpPayment } from './useAutoTopUpPayment'
 
 /* Choreography (ms after the dialog opens). Each step lands before the next
    starts: the badge, the title, then what the customer now has. */
@@ -31,16 +32,19 @@ export function SuccessDialog() {
   const headingId = useId()
   const descId = useId()
   const s = state.success
-  const open = !!s && route === 'billing'
+  // An Auto top up that was paid for on the report page confirms there, so the customer
+  // can carry on with the report they were generating.
+  const onReport = route === 'report' && s?.kind === 'auto-top-up-charged'
+  const open = !!s && (route === 'billing' || onReport)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
-  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'downgrade-scheduled'
+  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'downgrade-scheduled'
 
   const close = () => {
     // Backing out of the reactivation confirmation changes nothing on the page.
-    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'downgrade-confirm') return dispatch({ type: 'dismiss-success' })
+    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm') return dispatch({ type: 'dismiss-success' })
     // Version B keeps the credit balance in the plan card, so a top up changes that card too.
     const settingsOnly =
-      s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || (s?.kind === 'topped-up' && version !== 'b')
+      s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || (s?.kind === 'topped-up' && version !== 'b')
     const changed = settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
@@ -181,8 +185,18 @@ export function SuccessDialog() {
             Turn on Auto top up?
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            When your credits run out, we'll add {formatCount(TOP_UP[state.planId].credits)} credits for{' '}
-            {formatPrice(TOP_UP[state.planId].price)} automatically, so your reports keep running.
+            {version === 'b' ? (
+              <>
+                When your credits run out, we'll add {formatCount(TOP_UP[state.planId].credits)} credits for{' '}
+                {formatPrice(TOP_UP[state.planId].price)} automatically, so your reports keep running.
+              </>
+            ) : (
+              <>
+                When your credits run out, we'll renew your plan early for {formatPrice(TOP_UP[state.planId].price)} and
+                add {formatCount(TOP_UP[state.planId].credits)} credits, so your reports keep running. Your next billing
+                date moves to the day we renew.
+              </>
+            )}
           </p>
           <div className="dialog__pair success__in" style={at(T.panel)}>
             <Button data-autofocus block onClick={() => dispatch({ type: 'enable-auto-top-up' })}>
@@ -192,6 +206,26 @@ export function SuccessDialog() {
               Stay disabled
             </Button>
           </div>
+        </div>
+      )}
+
+      {open && s?.kind === 'auto-top-up-pay-confirm' && (
+        <AutoTopUpPayConfirm headingId={headingId} descId={descId} onStay={close} />
+      )}
+
+      {open && s?.kind === 'auto-top-up-charged' && (
+        <div className="dialog__body success topped">
+          <SuccessMark />
+          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+            {formatCount(s.credits)} credits added
+          </h2>
+          <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+            {formatPrice(TOP_UP[state.planId].price)} was charged and your plan renewed early. Your next billing date is{' '}
+            {formatDate(s.renewsOn)}. Auto top up is on, so we'll do this whenever you run out.
+          </p>
+          <Button data-autofocus block onClick={close}>
+            {onReport ? 'Continue with report' : 'View balance'}
+          </Button>
         </div>
       )}
 
@@ -225,6 +259,35 @@ export function SuccessDialog() {
         </div>
       )}
     </Dialog>
+  )
+}
+
+/* Turning Auto top up on with 0 credits left: the first pack is paid for now, so the customer
+   sees the charge before agreeing to it. Version A only (Version B keeps the plain confirm). */
+function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string; descId: string; onStay: () => void }) {
+  const { state, dispatch } = useBilling()
+  const pack = TOP_UP[state.planId]
+  const { paying, pay } = useAutoTopUpPayment(() => dispatch({ type: 'charge-auto-top-up', today: TODAY }))
+
+  return (
+    <div className="dialog__body success" aria-busy={paying}>
+      <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+        Turn on Auto top up?
+      </h2>
+      <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+        You've used all your credits. Turn it on and we'll renew your plan early: we'll charge {formatPrice(pack.price)},
+        add {formatCount(pack.credits)} credits and move your next billing date to{' '}
+        {formatDate(earlyRenewalDate(state.planId, TODAY))}. After that, we'll do the same whenever you run out.
+      </p>
+      <div className="dialog__pair success__in" style={at(T.panel)}>
+        <Button data-autofocus block aria-disabled={paying} onClick={pay}>
+          {paying ? 'Processing payment…' : `Enable and pay ${formatPrice(pack.price)}`}
+        </Button>
+        <Button block variant="secondary" aria-disabled={paying} onClick={paying ? undefined : onStay}>
+          Stay disabled
+        </Button>
+      </div>
+    </div>
   )
 }
 

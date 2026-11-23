@@ -1,0 +1,258 @@
+/* Version A: the current Billing & Subscription page, tidied.
+   Version B has its own sheet (billing-b.css) and A's older rules in pages.css stay as
+   they were. These rules share the same class names, so every one is scoped to
+   <html data-version="a"> and to the two billing cards (.billing-grid). The usage and
+   subscription history tables, the dialogs and every other route are not touched.
+
+   Grouping. Left card = fixed facts about the plan (name, price, allowance, what is
+   included). Right card = everything you can change or act on (upgrade, credits,
+   top-ups, cancel). Nothing actionable sits in the left card.
+
+   Type. The cards speak in four text styles and nothing else:
+     1 Headline  Roboto 700 26px       the page title only (set outside these cards);
+                                       the only Roboto here
+     2 Title     Open Sans 600 18px    the two card titles, the plan name, and the three
+                                       figures a customer checks (price, allowance, balance)
+     3 Body      Open Sans 400 14px    every sentence, unit and hint
+     4 Button    Open Sans 600 14px    buttons, text buttons, badges, field and section labels
+   Size and weight stop there. Emphasis beyond that comes from colour only: green for
+   the plan name, ink for labels, dates and figures, graphite for running text,
+   tertiary for hints and units, sentiment colours for status (a low or empty balance
+   figure turns amber or red).
+
+   Surfaces. No rules between sections (space does the grouping) and no tinted boxes
+   inside a card. */
+
+[data-version='a'] .billing-grid {
+  /* Columns: the plan card is a fixed 388px and the settings card takes the rest, so
+     the controls (header actions, top-up, Auto top up) get the room. At 1152px of
+     content that is 388 / 744 with the 20px gap, as in the Figma file. Under 1280px
+     the settings card would shrink below about 550px, so the 1fr / 1.4fr split from
+     pages.css stays there, and so does its one-column layout under 1040px. */
+  @media (min-width: 1280px) {
+    grid-template-columns: 388px minmax(0, 1fr);
+  }
+
+  /* 1 · Headline: the page title only, which lives outside these cards. ---------- */
+
+  /* 2 · Title ---------------------------------------------------------------- */
+  .plan-card__label,
+  .settings__title,
+  .plan-card__price,
+  .plan-card__credits,
+  .balance-block .balance__figure strong {
+    font-family: var(--font-body);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  /* The three figures are plain text now: ink, not green, with aligned digits.
+     "Growth" stays the one green word. The balance keeps its status colours
+     (amber when low, red when empty) because they carry information. */
+  .plan-card__price,
+  .plan-card__credits,
+  .balance--ok .balance__figure strong {
+    color: var(--color-content-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .balance-block .balance__figure strong {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The coin keeps pace with an 18px figure instead of a 26px one. */
+  .balance-block .balance__figure svg {
+    inline-size: 20px;
+    block-size: 20px;
+  }
+
+  /* 3 · Body ----------------------------------------------------------------- */
+  .plan-card__price span,
+  .plan-card__credits span,
+  .balance-block .balance__figure span,
+  .balance-block .balance__reset,
+  .settings__meta,
+  .settings .settings__hint,
+  .settings .notice .notice__text,
+  .topup__text,
+  .checklist,
+  .checklist--sm,
+  .infotip__bubble {
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* Dates and counts inside a sentence are ink, not bold. */
+  .settings__meta strong,
+  .checklist strong,
+  .settings .notice .notice__text strong {
+    font-weight: 400;
+    color: var(--color-content-primary);
+  }
+
+  .settings__meta {
+    color: var(--color-content-tertiary);
+  }
+
+  .topup__text {
+    color: var(--color-content-main);
+  }
+
+  /* 4 · Button --------------------------------------------------------------- */
+  .btn,
+  .text-btn,
+  .badge,
+  .plan-card__lead,
+  .settings__label,
+  .settings__subtitle,
+  .autotopup__label,
+  .settings .notice .notice__title {
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .plan-card__lead,
+  .settings__label,
+  .settings__subtitle,
+  .autotopup__label,
+  .settings .notice .notice__title {
+    line-height: 1.4;
+    color: var(--color-content-primary);
+  }
+
+  /* Dividers: none ------------------------------------------------------------ */
+  .plan-card__figures {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  .plan-card__credits {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .settings__head {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  .balance-block {
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+
+  /* Left card: fixed information ------------------------------------------------ */
+  .plan-card {
+    gap: var(--space-8);
+  }
+
+  .plan-card__summary {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .plan-card__figures {
+    gap: var(--space-2) var(--space-8);
+  }
+
+  .plan-card__breakdown {
+    gap: var(--space-3);
+  }
+
+  /* Right card: configuration -------------------------------------------------- */
+  .settings {
+    gap: var(--space-8);
+  }
+
+  /* The balance and what you can do about it are one block under one header.
+     Three intervals set the hierarchy:
+       12px  label, figure and meter: the balance reads as a single cluster
+       16px  from the meter to its actions, and between the two action rows: the
+             actions hang from the balance as a pair, each text left and control right
+       32px  the card's gap, between the header and this block
+     The 16px matches the Figma settings card (set by hand on the reference screen). */
+  .balance-block {
+    gap: var(--space-4);
+  }
+
+  .balance-group {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .balance-actions {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  /* Every control in the block ends on one right edge, wrapped or not. */
+  .topup > .btn {
+    margin-inline-start: auto;
+  }
+
+  /* Top-up nudge: text and button on the card's own edge, no tinted box. */
+  .topup {
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .autotopup {
+    padding: 0;
+  }
+
+  /* The balance tip is a touch target: 24px is the WCAG 2.2 minimum. */
+  .infotip__trigger {
+    inline-size: 24px;
+    block-size: 24px;
+  }
+
+  /* Plan-level actions share the header, ranked by button tier: Upgrade plan is the
+     primary (solid green, rightmost, on the same edge as Top up now and the switch)
+     and Cancel subscription is the tertiary beside it: the shared Ghost button as it
+     is, with no fill and no stroke, a graphite label and a Subtle Fill on hover. */
+  .settings__head {
+    flex-wrap: wrap;
+  }
+
+  .settings__head-text {
+    flex: 1 1 16rem;
+    min-inline-size: 0;
+  }
+
+  /* Flex has no billing date, so the title stands alone beside a 32px button: centre
+     the two on one line instead of hanging the button below the title's midline. */
+  .settings__head:not(:has(.settings__meta)) {
+    align-items: center;
+  }
+
+  /* Always right-aligned: on the title's row when there is room, and flush right on
+     their own row when the card is too narrow for both. */
+  .settings__head-actions {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    margin-inline-start: auto;
+  }
+}
+
+/* Auto top up payment buttons (the pay-now confirm and the report prompt). While the charge
+   is in flight the button stays focusable, so keyboard focus is not lost, but reads as busy
+   and ignores clicks. Dialogs sit outside the cards, so this is scoped to Version A only. */
+[data-version='a'] .dialog .btn[aria-disabled='true'] {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+/* While a charge is in flight the dialog cannot be dismissed, so its close button goes too. */
+[data-version='a'] .dialog__surface:has(> .dialog__body[aria-busy='true']) .dialog__close {
+  display: none;
+}

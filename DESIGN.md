@@ -224,7 +224,7 @@ A restrained neutral floor with a single deep-teal-green voice, framed by navy c
 
 ### Hierarchy
 - **Headline** (Roboto 700, 26px, 1.25, -0.01em): page titles; drops to 22px under 760px.
-- **Price** (Open Sans 700, 26px, tabular numerals): plan prices, plan credits and the credit balance; the unit ("/ billed monthly") follows at 16px 500. Smaller mini-plan price is 22px.
+- **Price** (Open Sans 700, 26px, tabular numerals): plan prices, plan credits and the credit balance; the unit ("/ billed monthly") follows at 16px 500. Smaller mini-plan price is 22px. On Billing (Version A) these three figures take the Headline style instead (Roboto 700); see The Four Styles Rule.
 - **Section Title** (Roboto 700, 22px): in-page section heads such as the comparison block; the lapsed-plan title uses 500.
 - **Title** (Roboto 700, 18px): dialog titles, plan names; 500 weight in green for the subscription card label.
 - **Card Title** (Roboto 500, 18px): card headers such as "Subscription settings", offer titles (700).
@@ -235,17 +235,23 @@ A restrained neutral floor with a single deep-teal-green voice, framed by navy c
 - **Badge** (Open Sans 600, 12px): status and accent badges; also table sub-lines at 400.
 
 ### Named Rules
-**The One Figure Size Rule.** On Billing (PM layout: plan card left, Subscription settings right) the three numbers a customer checks share one size: plan price, plan credits and the credit balance are all Open Sans 700, 26px, Deep Ledger Green, each followed by a 14px tertiary unit ("/billed monthly", "credits per month", "of 535 remaining"). Card titles sit above them at 18px 500; section labels ("Subscription plan breakdown", "Changed your mind?", "Current credit balance", notice titles) are Roboto 14px 700; body and hints are 14px. No figure is enlarged beyond the others.
+**The One Figure Size Rule.** On Billing (plan card left, Subscription settings right) the three numbers a customer checks share one style: plan price, plan credits and the credit balance are all the Title style (Open Sans 600, 18px, tabular numerals), the same size as the plan name "Growth", in ink rather than green, each followed by a 14px tertiary Body unit ("/billed monthly", "credits per month", "of 535 remaining"). No figure is enlarged beyond the others. The one colour exception is status: a low balance turns amber and an empty one red.
+
+**The Four Styles Rule (Billing, Version A).** The two Billing cards and the page head use four text styles and no others; the history tables and dialogs keep their own. Size and weight stop there, so emphasis comes from colour only (green for the plan name, ink for labels, dates and figures, graphite for running text, tertiary for hints and units, sentiment colours for status).
+- **Headline** (Roboto 700, 26px, 1.15, -0.01em): the page title only. The only Roboto on the page.
+- **Title** (Open Sans 600, 18px, 1.25): the two card titles ("Growth", "Subscription settings") and the three figures (price, credits, balance), the figures in ink with tabular numerals. "Growth" is the one green word.
+- **Body** (Open Sans 400, 14px, 1.5): every sentence, unit, hint, checklist item, date and tooltip. A date inside a sentence is ink-coloured Body, never bold.
+- **Button** (Open Sans 600, 14px): buttons, text buttons, badges, section and field labels ("Subscription plan breakdown", "Current credit balance", "Auto top up") and notice titles.
 
 **The Ledger Numerals Rule.** Every amount, credit count, date column and pager count uses tabular numerals (`font-variant-numeric: tabular-nums`); body text keeps lining numerals.
 
-**The Two Families Rule.** Every heading is Roboto: h1–h6, card and dialog titles, section labels, notice titles, plan names and the top-bar product title. Everything else is Open Sans, including prices, credit figures, buttons, labels, tables and tooltips. In code, `base.css` owns the rule: h1–h6 plus the heading-styled classes share one `font-family: var(--font-head)` selector list, and new heading-styled classes join that list rather than setting the font themselves.
+**The Two Families Rule.** Every heading is Roboto: h1–h6, card and dialog titles, section labels, notice titles, plan names and the top-bar product title. Everything else is Open Sans, including prices, credit figures, buttons, labels, tables and tooltips. In code, `base.css` owns the rule: h1–h6 plus the heading-styled classes share one `font-family: var(--font-head)` selector list, and new heading-styled classes join that list rather than setting the font themselves. **Billing (Version A) exception:** Roboto is the Headline style only (the page title); the figures, card titles, labels, notice titles, buttons and body are Open Sans. `billing-a.css` sets this under `[data-version='a']`; see The Four Styles Rule.
 
 ## Layout
 
 The shell is a CSS grid: a 56px sticky top bar across, a 236px sticky sidebar (68px collapsed) and a fluid main column. Pages cap at 1240px with 32px/40px/48px padding (top/sides/bottom), dropping to 24px/16px/40px under 760px.
 
-Page heads are a title, a one-paragraph lede and a single hairline rule beneath (24px below, 24px after). Content below sits in cards; inside a card, sibling sections are separated by a hairline with 20px above and below rather than by nested cards.
+Page heads are a title, a one-paragraph lede and a single hairline rule beneath (24px below, 24px after). Content below sits in cards; elsewhere inside a card, sibling sections are separated by a hairline with 20px above and below rather than by nested cards. The two Billing cards (Version A) use no hairlines: groups are separated by 32px of space and rows sit flush on the card's padding edge. The left card holds only fixed facts about the plan (name, price, allowance, what is included); the right card holds everything you can change or act on, in two places: plan-level actions (Cancel subscription, Upgrade plan) are right-aligned in the card header, and "Current credit balance" is one block that owns its credit-level actions. Inside that block the intervals set the hierarchy: 12px between label, figure and meter (one cluster), then 16px from the meter to its actions (they hang from it) and 16px between the two action rows (Top up now, and on Growth Auto top up), each with text left and its control on the shared right edge. The actions never get a header of their own, because a header would make them a peer of the balance instead of part of it; the whole block is one labelled group for assistive technology. The action rows are absent whenever top-up is unavailable.
 
 Spacing is a 4px-based scale (4, 8, 12, 16, 20, 24, 32, 40, 48). Card padding is 24px (20px on mobile); grid gutters are 20px; card-to-section gaps are 32px.
 
@@ -274,10 +280,12 @@ Solid, compact and unmistakably green.
 - **Shape:** 6px radius, 40px tall (32px small), 600 weight label.
 - **Primary:** Registry Green fill, white label; hover deepens to Deep Ledger Green; active adds a slight inset press.
 - **Secondary:** white with a 1px Registry Green border and green label; hover fills with Soft Mint Wash.
-- **Ghost:** transparent, Body Graphite; hover Subtle Fill. **Link-style:** transparent, green label, underline on hover.
+- **Ghost (the tertiary button):** no fill and no stroke, Body Graphite label; hover Subtle Fill. **Link-style:** transparent, green label, underline on hover.
 - **Current:** Pale Ledger Tint with Mint Hairline and Deep Ledger Green label, inert; marks the plan the user already has.
 - **Quiet:** neutral fill with disabled ink; still focusable so it can explain why it is not yet actionable.
-- **Text button:** underlined link-coloured text; the quiet variant (13px, tertiary) is used for destructive exits like "Cancel subscription".
+- **Text button:** underlined link-coloured text for actions inside a sentence (for example "upgrade your plan"). On Billing a plain-text control in the Button style can read as a section heading, so a tertiary action there keeps its button box (32px tall, 16px side padding, hover fill) and sits beside a solid button rather than among the labels.
+- **Button tiers on Billing:** primary is solid green, secondary is outlined green ("Top up now"), tertiary is Ghost. "Cancel subscription" is the tertiary: Ghost as it is, with no stroke, chosen by the product owner on 22 Nov 2026 over an outlined variant. It sits in the Subscription settings header beside the solid Upgrade plan, right-aligned, with Upgrade plan rightmost on the same edge as Top up now and the Auto top up switch. Both are 32px tall, 8px apart; when the card is too narrow for them beside the title they drop to their own row and stay flush right.
+- **With icon:** a 16px Lucide icon leads the label with an 8px gap ("Top up now" uses CirclePlus). On narrow screens, where its sentence takes a full row, the button wraps beneath and stays flush right.
 - **Focus:** 2px Registry Green outline, 2px offset, everywhere; chrome controls switch the outline to Chrome Signal Green.
 
 ### Badges
@@ -289,7 +297,7 @@ Solid, compact and unmistakably green.
 - **Background:** Paper White on Floor Grey.
 - **Shadow Strategy:** Card shadow only (see Elevation).
 - **Border:** 1px Hairline.
-- **Internal Padding:** 24px; internal sections split by hairlines.
+- **Internal Padding:** 24px; internal sections split by hairlines (the Billing cards split by space alone and hold no tinted wells; the top-up nudge is plain text and a button).
 - **Featured plan:** Pale Ledger Tint with an inset Mint Hairline, 14px radius; unfeatured plan columns are borderless on desktop and gain a hairline when stacked.
 
 ### Inputs / Fields
@@ -337,7 +345,7 @@ Navy (background-system) bars, 10px radius, 13px chrome text, Pop shadow, bottom
 - **Do** take every colour from the `--color-*` tokens generated from the AsiaVerify Colour Tokens sheet, and test both themes.
 - **Do** keep the shell's navy gradient (navy-700 to navy-900 at 55% to navy-950) and chrome tokens unchanged in dark mode.
 - **Do** set money, credits and date columns in tabular numerals, with prices in Open Sans 700.
-- **Do** separate sections inside a card with a 1px Hairline and 20px spacing before adding another card.
+- **Do** separate sections inside a card with a 1px Hairline and 20px spacing before adding another card; the Billing cards separate by space alone.
 - **Do** pair every Pale Ledger Tint surface with a Mint Hairline edge.
 - **Do** run multi-step flows inside one dialog that reshapes (440/560/880px) instead of opening a second modal.
 - **Do** honour `prefers-reduced-motion`: the build collapses all animation and transition to 1ms.

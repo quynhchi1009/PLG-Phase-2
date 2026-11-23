@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react'
-import { CalendarX2, CircleAlert, Coins, PartyPopper } from 'lucide-react'
+import { CalendarX2, CircleAlert, CirclePlus, Coins, PartyPopper } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Badge, Checklist, InfoTip, Notice } from '../../components/ui/primitives'
 import { PLANS, REPORT_RETENTION_DAYS, TOP_UP, formatCount, formatPrice, planBreakdown } from '../../data/plans'
@@ -35,8 +35,8 @@ export function BillingPage() {
         <Resubscribe />
       ) : (
         <div className="billing-grid">
-          <SubscriptionCard onCancel={() => setStep('cancel-confirm')} />
-          <SettingsCard headingRef={settingsRef} />
+          <SubscriptionCard />
+          <SettingsCard headingRef={settingsRef} onCancel={() => setStep('cancel-confirm')} />
         </div>
       )}
 
@@ -47,9 +47,10 @@ export function BillingPage() {
   )
 }
 
-/* Left card: what the plan is. The price identifies the plan; credits and the
-   breakdown support it at a quieter weight. */
-function SubscriptionCard({ onCancel }: { onCancel: () => void }) {
+/* Left card: fixed facts about the plan (name, price, allowance, what is
+   included). Nothing here is actionable; everything you can change lives in
+   the settings card on the right. */
+function SubscriptionCard() {
   const { state } = useBilling()
   const plan = PLANS[state.planId]
   const flex = state.planId === 'flex'
@@ -68,51 +69,53 @@ function SubscriptionCard({ onCancel }: { onCancel: () => void }) {
 
   return (
     <section className="card plan-card" aria-labelledby={headingId}>
-      <div className="plan-card__head">
-        <h2 id={headingId} className="plan-card__label">
-          {plan.tier}
-        </h2>
-        {cancelling ? (
-          <Badge tone="warning">Ends {formatDate(state.cycleEnd)}</Badge>
-        ) : state.pendingDowngrade ? (
-          <Badge tone="warning">Switches to monthly on {formatDate(state.cycleEnd)}</Badge>
-        ) : (
-          <Badge>Active</Badge>
-        )}
-      </div>
+      <div className="plan-card__summary">
+        <div className="plan-card__head">
+          <h2 id={headingId} className="plan-card__label">
+            {plan.tier}
+          </h2>
+          {cancelling ? (
+            <Badge tone="warning">Ends {formatDate(state.cycleEnd)}</Badge>
+          ) : state.pendingDowngrade ? (
+            <Badge tone="warning">Switches to monthly on {formatDate(state.cycleEnd)}</Badge>
+          ) : (
+            <Badge>Active</Badge>
+          )}
+        </div>
 
-      <div className="plan-card__figures">
-        <p className="plan-card__price">
-          {formatPrice(plan.price ?? 0)}
-          <span>{plan.cycle ? `/billed ${cadence}` : 'one-time'}</span>
-        </p>
-        <p className="plan-card__credits">
-          {formatCount(plan.credits ?? 0)}
-          <span>credits {plan.cycle ? (plan.cycle === 'year' ? 'per year' : 'per month') : 'included'}</span>
-        </p>
+        <div className="plan-card__figures">
+          <p className="plan-card__price">
+            {formatPrice(plan.price ?? 0)}
+            <span>{plan.cycle ? `/billed ${cadence}` : 'one-time'}</span>
+          </p>
+          <p className="plan-card__credits">
+            {formatCount(plan.credits ?? 0)}
+            <span>credits {plan.cycle ? (plan.cycle === 'year' ? 'per year' : 'per month') : 'included'}</span>
+          </p>
+        </div>
       </div>
 
       <div className="plan-card__breakdown">
         <p className="plan-card__lead">Subscription plan breakdown</p>
         <Checklist items={included} size="sm" />
       </div>
-
-      {!cancelling && plan.cycle && (
-        <div className="plan-card__foot">
-          <button type="button" className="text-btn text-btn--quiet" onClick={onCancel}>
-            Cancel subscription
-          </button>
-        </div>
-      )}
     </section>
   )
 }
 
-/* Right card: what to do next. The credit balance is the one large figure. */
-function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+/* Right card: everything you can configure or act on: upgrade, credits and
+   top-ups, and the way out (cancel). */
+function SettingsCard({
+  headingRef,
+  onCancel,
+}: {
+  headingRef: React.RefObject<HTMLHeadingElement | null>
+  onCancel: () => void
+}) {
   const { state, dispatch } = useBilling()
   const { navigate } = useUi()
   const [prompt, setPrompt] = useState(false)
+  const plan = PLANS[state.planId]
   const flex = state.planId === 'flex'
   const cancelling = state.status === 'cancelling'
   const oneTime = !state.cycleEnd
@@ -127,20 +130,26 @@ function SettingsCard({ headingRef }: { headingRef: React.RefObject<HTMLHeadingE
             <h2 id={headingId} ref={headingRef} tabIndex={-1} className="settings__title">
               Subscription settings
             </h2>
-            <p className="settings__meta">
-              {oneTime ? (
-                'One-time purchase · no recurring billing'
-              ) : (
-                <>
-                  {cancelling ? 'Your current plan will end on:' : 'Next billing date:'} <strong>{cycleEnd}</strong>
-                </>
-              )}
-            </p>
+            {/* One-time plans (Flex) have no billing date, so there is no line under the title. */}
+            {!oneTime && (
+              <p className="settings__meta">
+                {cancelling ? 'Your current plan will end on:' : 'Next billing date:'} <strong>{cycleEnd}</strong>
+              </p>
+            )}
           </div>
+          {/* Plan-level actions live together: Upgrade plan leads, Cancel subscription
+              sits beside it as a quiet outlined button. */}
           {!cancelling && (
-            <Button size="sm" onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}>
-              Upgrade plan
-            </Button>
+            <div className="settings__head-actions">
+              {plan.cycle && (
+                <Button size="sm" variant="ghost" onClick={onCancel}>
+                  Cancel subscription
+                </Button>
+              )}
+              <Button size="sm" onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}>
+                Upgrade plan
+              </Button>
+            </div>
           )}
         </div>
 
@@ -233,38 +242,45 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
       : `Resets ${formatDate(state.cycleEnd)}`
 
   return (
-    <div className="balance-block">
-      <p className="settings__label" id={labelId}>
-        Current credit balance
-        <InfoTip label="About credits">
-          Each report uses credits depending on its type and jurisdiction. Top up anytime if you run out before your
-          billing cycle ends.
-        </InfoTip>
-      </p>
-      <div className={`balance balance--${tone}`}>
-        <p className="balance__figure">
-          <Coins size={24} aria-hidden />
-          <strong>{formatCount(remaining)}</strong>
-          <span>of {formatCount(total)} remaining</span>
+    <div className="balance-block" role="group" aria-labelledby={labelId}>
+      {/* One block, read top to bottom: what you have, then what you can do about it.
+          The actions carry no header of their own; they belong to the balance. */}
+      <div className="balance-group">
+        <p className="settings__label">
+          <span id={labelId}>Current credit balance</span>
+          <InfoTip label="About credits">
+            Each report uses credits depending on its type and jurisdiction.
+          </InfoTip>
         </p>
-        <p className="balance__reset">{resets}</p>
+        <div className={`balance balance--${tone}`}>
+          <p className="balance__figure">
+            <Coins size={24} aria-hidden />
+            <strong>{formatCount(remaining)}</strong>
+            <span>of {formatCount(total)} remaining</span>
+          </p>
+          <p className="balance__reset">{resets}</p>
+        </div>
+        <div
+          className={`meter meter--${tone}`}
+          role="meter"
+          aria-labelledby={labelId}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={remaining}
+          aria-valuetext={`${remaining} of ${total} credits remaining`}
+        >
+          <span className="meter__fill" style={{ inlineSize: `${pct}%` }} />
+        </div>
+        {cancelling && remaining === 0 && (
+          <p className="settings__hint">You've used all your credits. You can choose a new plan now.</p>
+        )}
       </div>
-      <div
-        className={`meter meter--${tone}`}
-        role="meter"
-        aria-labelledby={labelId}
-        aria-valuemin={0}
-        aria-valuemax={total}
-        aria-valuenow={remaining}
-        aria-valuetext={`${remaining} of ${total} credits remaining`}
-      >
-        <span className="meter__fill" style={{ inlineSize: `${pct}%` }} />
-      </div>
-      {cancelling && remaining === 0 && (
-        <p className="settings__hint">You've used all your credits. You can choose a new plan now.</p>
+      {canTopUp(state) && (
+        <div className="balance-actions">
+          <TopUpRow onFlexTopUp={onFlexTopUp} />
+          {state.planId !== 'flex' && <AutoTopUp />}
+        </div>
       )}
-      {canTopUp(state) && <TopUpRow onFlexTopUp={onFlexTopUp} />}
-      {canTopUp(state) && state.planId !== 'flex' && <AutoTopUp />}
     </div>
   )
 }
@@ -276,7 +292,7 @@ function TopUpRow({ onFlexTopUp }: { onFlexTopUp: () => void }) {
   return (
     <div className="topup" id="top-up">
       <p className="topup__text">Top up credits to keep generating reports without interruption.</p>
-      <Button size="sm" variant="secondary" onClick={askFirst ? onFlexTopUp : topUp}>
+      <Button size="sm" variant="secondary" icon={<CirclePlus size={16} aria-hidden />} onClick={askFirst ? onFlexTopUp : topUp}>
         Top up now
       </Button>
     </div>
@@ -289,6 +305,12 @@ function AutoTopUp() {
   const labelId = useId()
   const hintId = useId()
   const pack = TOP_UP[state.planId]
+  // Turning it on with no credits left also pays for a pack now ("toggle ON to continue
+  // immediately"); with credits left it only switches the setting on.
+  const toggle = () => {
+    if (state.autoTopUp) dispatch({ type: 'request-disable-auto-top-up' })
+    else dispatch({ type: 'request-enable-auto-top-up', payNow: state.creditsRemaining === 0 })
+  }
   return (
     <div className="autotopup">
       <div className="autotopup__text">
@@ -296,9 +318,8 @@ function AutoTopUp() {
           Auto top up
         </p>
         <p className="settings__hint" id={hintId}>
-          {state.autoTopUp
-            ? `On. When your credits run out, we'll add ${formatCount(pack.credits)} credits automatically.`
-            : 'Never get interrupted. When your credits run out, we add more automatically.'}
+          {state.autoTopUp ? 'On. ' : ''}
+          Adds {formatCount(pack.credits)} credits when your credits run out.
         </p>
       </div>
       <button
@@ -308,7 +329,7 @@ function AutoTopUp() {
         aria-labelledby={labelId}
         aria-describedby={hintId}
         className="switch"
-        onClick={() => dispatch({ type: state.autoTopUp ? 'request-disable-auto-top-up' : 'request-enable-auto-top-up' })}
+        onClick={toggle}
       >
         <span className="switch__knob" aria-hidden />
       </button>

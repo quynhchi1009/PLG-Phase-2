@@ -5,6 +5,7 @@ import { Badge, Tabs } from '../../components/ui/primitives'
 import { formatCount } from '../../data/plans'
 import { TODAY, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
+import { AutoTopUpGate, AutoTopUpRenewal } from '../upgrade/AutoTopUpGate'
 import { UpgradePrompt } from '../upgrade/UpgradePrompt'
 
 // A sample entity for the prototype. Fictional company and registration number.
@@ -26,7 +27,7 @@ type Tab = 'products' | 'kyb' | 'ubo' | 'legal'
 
 export function ReportPage() {
   const { state, dispatch } = useBilling()
-  const { toast } = useUi()
+  const { toast, version } = useUi()
   const [tab, setTab] = useState<Tab>('kyb')
   const [report, setReport] = useState('basic')
   const [aml, setAml] = useState(false)
@@ -37,6 +38,11 @@ export function ReportPage() {
   const total = chosen.credits + (aml ? 1 : 0)
   const enough = state.creditsRemaining >= total
   const inactive = state.status === 'none'
+  // Version A, Growth: too few credits no longer means the upgrade prompt. With Auto top up
+  // off, the only way on is to turn it on (and renew early); with it on, it renews early itself.
+  const growthA = version === 'a' && state.status === 'active' && state.planId !== 'flex'
+  const autoTopUpGate = growthA && !state.autoTopUp
+  const autoTopUpRenewal = growthA && state.autoTopUp
 
   const generate = () => {
     if (inactive) return toast('Choose a plan to generate new reports.')
@@ -132,7 +138,9 @@ export function ReportPage() {
         </aside>
       </div>
 
-      <UpgradePrompt open={prompt} onClose={() => setPrompt(false)} reason="insufficient" />
+      <UpgradePrompt open={prompt && !growthA} onClose={() => setPrompt(false)} reason="insufficient" />
+      <AutoTopUpGate open={prompt && autoTopUpGate} onClose={() => setPrompt(false)} needed={total} />
+      <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} />
     </div>
   )
 }

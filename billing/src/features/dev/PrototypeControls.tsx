@@ -11,7 +11,48 @@ interface Scenario {
   creditsLeft?: number | 'some' | 'none'
   topUpUsed?: boolean
   endReason?: EndReason
+  autoTopUp?: boolean
   route?: Route
+}
+
+/* Version A only: the four Auto top up cases, each starting where its customer is.
+   Auto top up renews the plan early: it charges the pack, adds the credits and moves the
+   billing date to one cycle from today.
+   1 turn it off (billing page, credits left)
+   2 turn it back on after running out (billing page, 0 credits): on renews early right away
+   3 out of credits at the report page with it off: the prompt offers to turn it on
+   4 out of credits at the report page with it on: it renews early by itself */
+const AUTO_TOP_UP_GROUP: { title: string; items: Scenario[] } = {
+  title: 'Auto top up (Version A)',
+  items: [
+    { id: 'a-off', label: '1 · Toggle off', status: 'active', planId: 'monthly', autoTopUp: true },
+    {
+      id: 'a-on',
+      label: '2 · Toggle back on, renew early',
+      status: 'active',
+      planId: 'monthly',
+      creditsLeft: 0,
+      autoTopUp: false,
+    },
+    {
+      id: 'a-gate',
+      label: '3 · Out of credits at report',
+      status: 'active',
+      planId: 'monthly',
+      creditsLeft: 6,
+      autoTopUp: false,
+      route: 'report',
+    },
+    {
+      id: 'a-auto',
+      label: '4 · Auto top up on, out of credits at report',
+      status: 'active',
+      planId: 'monthly',
+      creditsLeft: 6,
+      autoTopUp: true,
+      route: 'report',
+    },
+  ],
 }
 
 const GROUPS: { title: string; items: Scenario[] }[] = [
@@ -47,7 +88,7 @@ const GROUPS: { title: string; items: Scenario[] }[] = [
 /** Demo-only panel for jumping between account states. Not part of the product UI. */
 export function PrototypeControls() {
   const { dispatch } = useBilling()
-  const { navigate } = useUi()
+  const { navigate, version } = useUi()
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState('g-m')
 
@@ -68,6 +109,7 @@ export function PrototypeControls() {
       creditsLeft: s.creditsLeft,
       topUpUsed: s.topUpUsed,
       endReason: s.endReason,
+      autoTopUp: s.autoTopUp,
     })
     navigate(s.route ?? 'billing')
   }
@@ -83,7 +125,7 @@ export function PrototypeControls() {
           <X size={16} aria-hidden />
         </button>
       </div>
-      {GROUPS.map((g) => (
+      {(version === 'a' ? [AUTO_TOP_UP_GROUP, ...GROUPS] : GROUPS).map((g) => (
         <div key={g.title} className="proto__group">
           <p className="proto__label">{g.title}</p>
           <div className="proto__seg proto__seg--stack">

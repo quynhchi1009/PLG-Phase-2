@@ -216,7 +216,9 @@
   /* Plan-level actions share the header, ranked by button tier: Change plan is the
      primary (solid green, rightmost, on the same edge as Top up now and the switch)
      and Cancel plan is the tertiary beside it: the shared Ghost button as it
-     is, with no fill and no stroke, a graphite label and a Subtle Fill on hover. */
+     is, with no fill and no stroke, a graphite label and a Subtle Fill on hover.
+     Change plan is absent while a cancellation or a switch to monthly is scheduled
+     (Cancel plan stays on the switch, and goes with the cancellation). */
   .settings__head {
     flex-wrap: wrap;
   }
@@ -245,7 +247,7 @@
 
   /* Scheduled switch to monthly: the way back sits like the other rows of the card, text on
      the left and its control on the shared right edge, instead of stacked and left-aligned.
-     "Keep yearly plan" is the card's one primary button (Change plan drops to secondary).
+     "Keep yearly plan" is the card's one primary button (Change plan is hidden in this state).
      When the sentence needs the full row the button wraps beneath and stays flush right. */
   .settings__changed--downgrade:has(.settings__actions) {
     flex-flow: row wrap;

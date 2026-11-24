@@ -152,9 +152,11 @@ function SettingsCard({
             )}
           </div>
           {/* Plan-level actions live together: Change plan leads, Cancel plan
-              sits beside it as a quiet outlined button. While a switch to monthly is
-              scheduled, "Keep yearly plan" below is the one primary of the card, so
-              Change plan steps down to secondary. */}
+              sits beside it as a quiet ghost button. Change plan only shows while the plan is
+              untouched: once a cancellation or a switch to monthly is scheduled, the card's one
+              story is the way back ("Reactivate subscription" / "Keep yearly plan" below), and
+              every other plan is either already included or opens from Products & Pricing.
+              Cancel plan stays while a switch is scheduled (cancelling clears the switch). */}
           {!cancelling && (
             <div className="settings__head-actions">
               {plan.cycle && (
@@ -162,13 +164,14 @@ function SettingsCard({
                   Cancel plan
                 </Button>
               )}
-              <Button
-                size="sm"
-                variant={state.pendingDowngrade ? 'secondary' : 'primary'}
-                onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}
-              >
-                Change plan
-              </Button>
+              {!state.pendingDowngrade && (
+                <Button
+                  size="sm"
+                  onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}
+                >
+                  Change plan
+                </Button>
+              )}
             </div>
           )}
         </div>

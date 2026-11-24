@@ -264,6 +264,8 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
   const labelId = useId()
   const pct = total ? Math.min(100, (remaining / total) * 100) : 0
   const cancelling = state.status === 'cancelling'
+  const flexTopUp = canTopUp(state)
+  const growthActive = state.status === 'active' && state.planId !== 'flex'
   const tone = remaining === 0 ? 'empty' : pct <= 15 ? 'low' : 'ok'
   const resets = !state.cycleEnd
     ? `Resets ${formatDate(FLEX_RESETS_ON)}`
@@ -305,23 +307,25 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
           <p className="settings__hint">You've used all your credits. You can choose a new plan now.</p>
         )}
       </div>
-      {canTopUp(state) && (
+      {/* Flex: the one manual top-up. Growth: no manual top-up (Phase 2), only Auto top up. */}
+      {(flexTopUp || growthActive) && (
         <div className="balance-actions">
-          <TopUpRow onFlexTopUp={onFlexTopUp} />
+          {flexTopUp && <TopUpRow onFlexTopUp={onFlexTopUp} />}
           {state.paymentIssue && (
             <PaymentWarning dueOn={state.paymentIssue.graceEndsOn} failure={state.paymentIssue.lastFailure} />
           )}
-          {state.planId !== 'flex' && <AutoTopUp />}
+          {growthActive && <AutoTopUp />}
         </div>
       )}
     </div>
   )
 }
 
+/* Flex only: its one manual top-up. Growth never sees this row. */
 function TopUpRow({ onFlexTopUp }: { onFlexTopUp: () => void }) {
   const { state } = useBilling()
   const { topUp } = useCheckout()
-  const askFirst = state.planId === 'flex' && state.creditsRemaining === 0
+  const askFirst = state.creditsRemaining === 0
   return (
     <div className="topup" id="top-up">
       <p className="topup__text">Top up credits to keep generating reports without interruption.</p>
@@ -334,8 +338,9 @@ function TopUpRow({ onFlexTopUp }: { onFlexTopUp: () => void }) {
 
 /* Grace period after a failed renewal payment (PRD, Payment Failed: "My Plan page: red payment update
    warning with due date", with the Update payment method CTA). It stays for the whole grace period,
-   whether or not the popup or the sticky banner is showing, and sits right under Top up now: a top-up
-   is charged to the same card. The button goes straight to Stripe (simulated in the popup).
+   whether or not the popup or the sticky banner is showing, and sits right above Auto top up (Growth has
+   no Top up now): Auto top up is charged to the same card. The button goes straight to Stripe (simulated
+   in the popup).
    Two states, one sentence of news each:
    - nothing tried yet: the renewal failed, the deadline, and what is on hold meanwhile;
    - an attempt to save a card failed: what failed and how to recover, in the words the popup used
@@ -402,7 +407,7 @@ function AutoTopUp() {
 
 const TILES = [
   { title: 'Full verification suite', text: 'KYB, AML & UBO checks, with real-time monitoring across Asia' },
-  { title: 'Full flexibility', text: 'Unlimited top-ups, upgrade, or cancel anytime' },
+  { title: 'Full flexibility', text: 'Auto top up, upgrade, or cancel anytime' },
 ]
 
 /* A lapsed account: why the plan ended, what a new plan brings back, and the

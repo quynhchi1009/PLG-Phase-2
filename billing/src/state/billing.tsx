@@ -77,7 +77,7 @@ export interface BillingState {
   endedOn: string
   /** Why the last plan ended, when status is 'none'. */
   endReason: EndReason
-  /** Flex allows one top-up. */
+  /** Flex allows one manual top-up. Growth has none (it has Auto top up). */
   topUpUsed: boolean
   topUpUsedOn: string
   /** Growth only: automatically buy a top-up when credits run out. */
@@ -346,6 +346,8 @@ function reducer(state: BillingState, action: Action): BillingState {
     }
 
     case 'top-up': {
+      // Manual top-ups are Flex-only (one, then used). Growth tops up through 'charge-auto-top-up'.
+      if (!canTopUp(state)) return state
       const pack = TOP_UP[state.planId]
       return {
         ...state,
@@ -465,7 +467,10 @@ export function canSelectPlan(state: BillingState) {
   return state.status !== 'cancelling' || state.creditsRemaining === 0
 }
 
-/** Is a top-up available on the current plan? */
+/**
+ * Can the customer buy a manual top-up right now? Only Flex can, and only once: Growth has no manual
+ * top-ups (Phase 2); its credits are topped up by Auto top up. No "Top up" CTA or page for Growth.
+ */
 export function canTopUp(state: BillingState) {
-  return state.status === 'active' && !(state.planId === 'flex' && state.topUpUsed)
+  return state.status === 'active' && state.planId === 'flex' && !state.topUpUsed
 }

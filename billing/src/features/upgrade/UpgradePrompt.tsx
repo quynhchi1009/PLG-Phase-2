@@ -2,7 +2,7 @@ import { useId } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
 import { Badge, Checklist } from '../../components/ui/primitives'
-import { PLANS, TOP_UP, UPGRADE_PERKS, formatCount, formatPrice } from '../../data/plans'
+import { PLANS, UPGRADE_PERKS, formatCount, formatPrice } from '../../data/plans'
 import { canTopUp, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { useCheckout } from './checkout'
@@ -16,7 +16,7 @@ const AUTO_TOP_UP_PERK = {
 /**
  * The nudge shown when credits run out (report page) or when a Flex customer
  * asks to top up or upgrade (billing page). What it offers depends on the plan:
- * plans only move up.
+ * plans only move up. Only Flex is offered a (one-time) top-up; Growth never is.
  */
 export function UpgradePrompt({
   open,
@@ -78,7 +78,7 @@ export function UpgradePrompt({
           Upgrade your plan
         </h2>
         <p id={descId} className="dialog__lede dialog__lede--left">
-          {short}Top up now, or move to Business for volume pricing.
+          {short}Move to Business for volume pricing.
         </p>
         <section className="confirm-plan confirm-plan--plain" aria-label="Business plan">
           <p className="confirm-plan__name">
@@ -96,7 +96,6 @@ export function UpgradePrompt({
             Talk to sales
           </Button>
         </section>
-        <TopUpFooter onTopUp={doTopUp} />
       </>
     )
   } else {
@@ -111,7 +110,7 @@ export function UpgradePrompt({
           {short}
           {state.planId === 'flex'
             ? 'Upgrade to a Growth plan and enjoy lower report costs.'
-            : 'Top up now, or switch to yearly for credits that last longer.'}
+            : 'Switch to yearly for credits that last longer.'}
         </p>
         <section className="confirm-plan confirm-plan--plain" aria-label="Growth billed yearly">
           <p className="confirm-plan__name">{y.name}</p>
@@ -137,7 +136,6 @@ export function UpgradePrompt({
             </Button>
           </div>
         </section>
-        {state.planId !== 'flex' && topUpOpen && <TopUpFooter onTopUp={doTopUp} />}
       </>
     )
   }
@@ -149,18 +147,3 @@ export function UpgradePrompt({
   )
 }
 
-function TopUpFooter({ onTopUp }: { onTopUp: () => void }) {
-  const { state } = useBilling()
-  const pack = TOP_UP[state.planId]
-  return (
-    <div className="prompt-foot">
-      <p>
-        Not ready to upgrade?{' '}
-        <button type="button" className="text-btn" onClick={onTopUp}>
-          Top up {formatCount(pack.credits)} credits for {formatPrice(pack.price)}
-        </button>
-      </p>
-      <p className="prompt-foot__note">Top-up credits expire at the end of your current billing cycle.</p>
-    </div>
-  )
-}

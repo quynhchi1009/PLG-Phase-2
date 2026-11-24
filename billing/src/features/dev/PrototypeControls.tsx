@@ -193,7 +193,7 @@ const GROUPS: Group[] = [
         id: 'p-grace',
         label: 'Grace period · Update payment method',
         steps:
-          'Opens Search with the popup. Update payment method opens Stripe (simulated) and the card saves. Close the popup and a sticky banner follows you on every page; Generate report brings the popup back and generates nothing. My Plan shows the red warning under Top up now.',
+          'Opens Search with the popup. Update payment method opens Stripe (simulated) and the card saves. Close the popup and a sticky banner follows you on every page; Generate report brings the popup back and generates nothing. My Plan shows the red warning above Auto top up.',
         status: 'active',
         planId: 'monthly',
         paymentIssue: 'ok',

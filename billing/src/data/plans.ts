@@ -58,7 +58,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: 'Save 8%',
     features: [
       VERIFICATION,
-      { title: 'Full flexibility:', detail: 'unlimited top-ups, upgrade, or cancel anytime' },
+      { title: 'Full flexibility:', detail: 'Auto top up, upgrade, or cancel anytime' },
       { title: 'API access:', detail: "unlimited use for as long as you're subscribed" },
       {
         title: 'Recurring billing:',
@@ -77,7 +77,7 @@ export const PLANS: Record<PlanId, Plan> = {
     badge: 'Save 22%',
     features: [
       VERIFICATION,
-      { title: 'Full flexibility:', detail: 'unlimited top-ups, upgrade, or cancel anytime' },
+      { title: 'Full flexibility:', detail: 'Auto top up, upgrade, or cancel anytime' },
       { title: 'API access:', detail: "unlimited use for as long as you're subscribed" },
       {
         title: 'Recurring billing:',
@@ -113,7 +113,10 @@ export function isUpgrade(from: PlanId, to: PlanId) {
   return PLAN_RANK[to] > PLAN_RANK[from]
 }
 
-/** Credit packs bought on top of a plan. Flex allows one; Growth allows unlimited. */
+/**
+ * Credit packs bought on top of a plan. Flex allows one manual top-up. Growth has no manual top-up
+ * (Phase 2): its pack is only ever bought by Auto top up, so `once` is irrelevant for Growth.
+ */
 export const TOP_UP: Record<'flex' | 'monthly' | 'yearly', { credits: number; price: number; once: boolean }> = {
   flex: { credits: 623, price: 249, once: true },
   monthly: { credits: 535, price: 99, once: false },
@@ -124,13 +127,13 @@ export const TOP_UP: Record<'flex' | 'monthly' | 'yearly', { credits: number; pr
 export const UPGRADE_PERKS: Record<'monthly' | 'yearly', PlanFeature[]> = {
   monthly: [
     { title: 'Better value:', detail: 'save up to 8% per report' },
-    { title: 'Full flexibility:', detail: 'unlimited top-ups, upgrade or cancel anytime' },
+    { title: 'Full flexibility:', detail: 'Auto top up, upgrade or cancel anytime' },
     { title: 'Unlimited API access:', detail: "unlimited use for as long as you're subscribed" },
     { title: 'Recurring billing:', detail: 'auto-renews monthly' },
   ],
   yearly: [
     { title: 'Better value:', detail: 'save up to 22% per report' },
-    { title: 'Full flexibility:', detail: 'unlimited top-ups, upgrade or cancel anytime' },
+    { title: 'Full flexibility:', detail: 'Auto top up, upgrade or cancel anytime' },
     { title: 'Unlimited API access:', detail: "unlimited use for as long as you're subscribed" },
     { title: 'Recurring billing:', detail: 'auto-renews yearly' },
   ],
@@ -139,7 +142,7 @@ export const UPGRADE_PERKS: Record<'monthly' | 'yearly', PlanFeature[]> = {
 /** Growth perks before a billing period is picked (Flex → Growth upgrade confirmation). */
 export const GROWTH_PERKS: PlanFeature[] = [
   { title: 'Better value:', detail: `Save up to ${PLANS.yearly.badge?.replace(/^Save\s+/i, '')} per report` },
-  { title: 'Full flexibility:', detail: 'Unlimited top-ups, upgrade or cancel anytime' },
+  { title: 'Full flexibility:', detail: 'Auto top up, upgrade or cancel anytime' },
   { title: 'Unlimited API access:', detail: "Unlimited use for as long as you're subscribed" },
   { title: 'Recurring billing:', detail: 'auto-renews yearly/monthly' },
 ]
@@ -153,7 +156,7 @@ export function perMonth(plan: Plan) {
 export const RECOMMEND_BLURB: Record<PlanId, string> = {
   flex: 'A one-time purchase to try the core features. Fixed credits with a one-time manual top-up.',
   monthly: 'A monthly subscription with credits that refresh every billing cycle. Cancel anytime.',
-  yearly: 'Your best value per credit, with credits refreshed every year and unlimited top-ups.',
+  yearly: 'Your best value per credit, with credits refreshed every year and Auto top up when you run out.',
   business: 'Volume pricing, API and bulk data, and a dedicated team for your usage.',
 }
 
@@ -175,7 +178,7 @@ export function planBreakdown(plan: Plan): string[] {
   return [
     `${cadence} access: credits refresh automatically at the start of each billing cycle.`,
     'Access to all features available in the Portal',
-    'Top up anytime if you run out of credits before the billing cycle ends.',
+    'Turn on Auto top up to add credits automatically if you run out before the billing cycle ends.',
     'Sales and client support',
   ]
 }

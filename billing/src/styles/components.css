@@ -1593,22 +1593,6 @@
   color: var(--color-interactive-primary);
 }
 
-.prompt-foot {
-  display: grid;
-  gap: var(--space-1);
-  text-align: center;
-  font-size: var(--text-sm);
-}
-
-.prompt-foot .text-btn {
-  font-size: inherit;
-}
-
-.prompt-foot__note {
-  color: var(--color-content-tertiary);
-  font-size: var(--text-xs);
-}
-
 /* One line of context under a dialog's main content: what the button will do, or how long there is to retry. */
 .dialog__hint {
   color: var(--color-content-tertiary);

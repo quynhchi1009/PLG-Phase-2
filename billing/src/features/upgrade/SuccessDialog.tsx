@@ -188,8 +188,8 @@ export function SuccessDialog() {
             Turn off Auto top up?
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            If your credits run out, we won't add more automatically. Reports will pause until you top up manually or your
-            plan renews.
+            If your credits run out, we won't add more automatically. Reports will pause until your plan renews or you turn
+            Auto top up back on.
           </p>
           <div className="dialog__pair success__in" style={at(T.panel)}>
             <Button data-autofocus block onClick={close}>

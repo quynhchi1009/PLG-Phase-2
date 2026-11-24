@@ -274,7 +274,9 @@ function Estimator({
             </div>
             <p className="recommend__blurb">
               {covered
-                ? 'Your current plan already covers this usage. Top up anytime if you need more credits.'
+                ? state.planId === 'flex'
+                  ? 'Your current plan already covers this usage. Top up anytime if you need more credits.'
+                  : 'Your current plan already covers this usage.'
                 : RECOMMEND_BLURB[estimate.plan]}
             </p>
             <div className="recommend__actions">
@@ -487,7 +489,7 @@ const ROWS: { label: string; info?: string; values: [Cell, Cell, Cell, Cell] }[]
   { label: 'All services access (KYB, AML, UBO etc.) via Portal & API', values: [true, true, true, true] },
   { label: 'Real-time data access', values: [true, true, true, true] },
   { label: 'Discounted reports', values: [false, 'Save 8%', 'Save 22%', 'Save up to 64%'] },
-  { label: 'Top-up', values: ['One-time top-up', 'Unlimited top-ups', 'Unlimited top-ups', 'Volume-based'] },
+  { label: 'Top-up', values: ['One-time top-up', 'Auto top up', 'Auto top up', 'Volume-based'] },
   { label: 'Flexible commitment', values: [false, 'Cancel anytime', 'Cancel anytime', 'Contract terms'] },
   { label: 'Support type', values: ['Standard', 'Standard', 'Standard', 'Dedicated team'] },
   { label: 'User management & custom roles', values: [false, false, false, true] },
@@ -599,7 +601,7 @@ function CreditRates() {
             <p className="notice__title">This feature is only available for Growth and Business users.</p>
             <p className="notice__text">
               Monitoring uses credits each time a monitored company's records change. If you don't have enough credits,
-              monitoring stops until you top up.
+              monitoring stops until your credits are topped up.
             </p>
           </div>
         </div>
@@ -740,7 +742,7 @@ const FAQS: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'What happens if I run out of credits mid-report?',
-    a: 'You can top up anytime if you run out of credits before your billing cycle ends. Flex includes one top-up of 623 credits; Growth includes unlimited top-ups.',
+    a: 'Flex includes one top-up of 623 credits. Growth has no manual top-ups: with Auto top up on, we add credits automatically when you run out before your billing cycle ends.',
   },
   {
     q: 'Can I switch between monthly and yearly billing?',

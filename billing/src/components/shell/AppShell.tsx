@@ -21,6 +21,8 @@ import {
 interface NavChild {
   label: string
   route?: Route
+  /** Manual top-ups exist for Flex only: Growth has no Top up page (it has Auto top up on Billing). */
+  flexOnly?: boolean
 }
 
 interface NavItem {
@@ -41,7 +43,7 @@ const NAV: NavItem[] = [
   { label: 'Billing', icon: <MyPlanIcon />, route: 'billing', lapsed: true },
   { label: 'Onboarding Management', icon: <OnboardingIcon /> },
   { label: 'pKYB', icon: <Radar size={25} strokeWidth={2.2} />, isNew: true },
-  { label: 'My Plan', icon: <MyPlanIcon />, lapsed: true, children: [{ label: 'Top up' }] },
+  { label: 'My Plan', icon: <MyPlanIcon />, lapsed: true, children: [{ label: 'Top up', flexOnly: true }] },
   { label: 'Products & Pricing', icon: <ProductsPricingIcon />, route: 'plans', lapsed: true },
   { label: 'API Key', icon: <KeyRound size={25} strokeWidth={2.2} />, isNew: true },
   { label: 'MCP', icon: <McpIcon />, isNew: true },
@@ -61,7 +63,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const { state } = useBilling()
-  const nav = state.status === 'none' ? NAV.filter((i) => i.lapsed) : NAV
+  // Growth (any status) gets no Top up page; a group left with no children (My Plan) is dropped too.
+  const growth = state.planId !== 'flex'
+  const nav = (state.status === 'none' ? NAV.filter((i) => i.lapsed) : NAV)
+    .map((item) =>
+      item.children ? { ...item, children: item.children.filter((c) => !(growth && c.flexOnly)) } : item,
+    )
+    .filter((item) => !item.children || item.children.length > 0)
 
   useEffect(() => setDrawerOpen(false), [route])
 

@@ -267,13 +267,10 @@
   }
 }
 
-/* Auto top up payment buttons (the pay-now confirm and the report prompt). While the charge
-   is in flight the button stays focusable, so keyboard focus is not lost, but reads as busy
-   and ignores clicks. Dialogs sit outside the cards, so this is scoped to Version A only. */
-[data-version='a'] .dialog .btn[aria-disabled='true'] {
-  cursor: progress;
-  opacity: 0.6;
-}
+/* Auto top up payment buttons (the pay-now confirm and the report prompt). While the charge is in
+   flight the button stays focusable, so keyboard focus is not lost, and ignores clicks. How it looks
+   (a spinner in its own colour; the buttons that wait dim) is the shared payment loading state:
+   `.btn.is-loading` and `.pay-note` in components.css. */
 
 /* While a charge is in flight the dialog cannot be dismissed, so its close button goes too. */
 [data-version='a'] .dialog__surface:has(> .dialog__body[aria-busy='true']) .dialog__close {

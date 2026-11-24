@@ -7,6 +7,7 @@ import {
   type PaymentFailure,
   type SubscriptionStatus,
 } from '../../state/billing'
+import { usePaymentSim, type PaymentSpeed } from '../../state/paymentSim'
 import { useUi, type Route } from '../../state/ui'
 
 /** One row of the panel: a flow, opened on the screen where that flow starts. */
@@ -246,10 +247,17 @@ const GROUPS: Group[] = [
   },
 ]
 
+const PAYMENT_SPEEDS: { id: PaymentSpeed; label: string; hint: string }[] = [
+  { id: 'normal', label: 'Normal', hint: 'Payments take about a second.' },
+  { id: 'slow', label: 'Slow', hint: 'Payments take 10 seconds. After 8 the loading state says it is taking longer than usual.' },
+  { id: 'hold', label: 'Hold', hint: 'Loading stays until you press “Prototype: finish payment” under it.' },
+]
+
 /** Demo-only panel for jumping between account states. Not part of the product UI. */
 export function PrototypeControls() {
   const { dispatch } = useBilling()
   const { navigate, theme, toggleTheme } = useUi()
+  const { speed, setSpeed } = usePaymentSim()
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState<string | null>(null)
 
@@ -299,6 +307,19 @@ export function PrototypeControls() {
         </span>
       </div>
       <p className="proto__hint">Pick a flow to open it where it starts. The next click appears under it.</p>
+      {/* Every payment (Stripe checkout, a charge to the card on file, saving a new card) shows a loading
+          state while it goes through. Normal flashes by in about a second; these keep it on screen. */}
+      <div className="proto__group">
+        <p className="proto__label">Payment loading</p>
+        <div className="proto__seg" role="group" aria-label="How long payments take">
+          {PAYMENT_SPEEDS.map((p) => (
+            <button key={p.id} type="button" aria-pressed={speed === p.id} onClick={() => setSpeed(p.id)}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <p className="proto__hint">{PAYMENT_SPEEDS.find((p) => p.id === speed)?.hint}</p>
+      </div>
       {GROUPS.map((g) => (
         <div key={g.title} className="proto__group">
           <p className="proto__label">{g.title}</p>

@@ -1905,43 +1905,10 @@
   text-align: center;
 }
 
-.checkout__status-title {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  color: var(--color-content-primary);
-}
-
-.checkout__status-text {
-  color: var(--color-content-main);
-}
-
 .checkout--status .checkout__sim {
   margin-block-start: var(--space-6);
 }
 
-.checkout__spinner {
-  inline-size: 40px;
-  block-size: 40px;
-  border: 3px solid var(--color-interactive-accent-hover);
-  border-block-start-color: var(--color-interactive-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-
-/* Reduced motion: a still ring still reads as "in progress" next to the text. */
-@media (prefers-reduced-motion: reduce) {
-  .checkout__spinner {
-    animation: none;
-    border-color: var(--color-interactive-primary);
-    border-inline-end-color: var(--color-interactive-accent-hover);
-  }
-}
 
 @media (max-width: 760px) {
   .checkout {

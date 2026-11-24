@@ -1,9 +1,12 @@
 import { useEffect, useId, useState } from 'react'
 import { ArrowLeft, CreditCard, FlaskConical, Lock } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
+import { PaymentStatus } from '../../components/ui/PaymentProgress'
 import { SuccessMark } from '../../components/ui/SuccessMark'
+import { useTakingLonger } from '../../components/ui/useTakingLonger'
 import { formatAmount } from '../../data/plans'
 import { TODAY, useBilling } from '../../state/billing'
+import { simulateWait } from '../../state/paymentSim'
 import { useUi } from '../../state/ui'
 import { useOrder } from './order'
 
@@ -22,17 +25,14 @@ export function CheckoutPage() {
   const { navigate, toast } = useUi()
   const [phase, setPhase] = useState<Phase>('redirect')
   const titleId = useId()
+  const longer = useTakingLonger(phase === 'redirect' || phase === 'processing')
 
   useEffect(() => {
     if (!order) return
-    if (phase === 'redirect') {
-      const t = window.setTimeout(() => setPhase('form'), WAIT.redirect)
-      return () => window.clearTimeout(t)
-    }
-    if (phase === 'processing') {
-      const t = window.setTimeout(() => setPhase('success'), WAIT.processing)
-      return () => window.clearTimeout(t)
-    }
+    // The two waits on Stripe (the hand-off and the charge) go through the prototype's payment speed,
+    // so they can be held on screen; the success flash is only a beat before returning.
+    if (phase === 'redirect') return simulateWait(() => setPhase('form'), WAIT.redirect)
+    if (phase === 'processing') return simulateWait(() => setPhase('success'), WAIT.processing)
     if (phase === 'success') {
       const t = window.setTimeout(() => {
         // Payment confirmed: apply it, then return to Billing where the success dialog opens.
@@ -61,28 +61,36 @@ export function CheckoutPage() {
       </div>
     )
 
+  /* Between the Portal and Stripe the page is one status: a spinner, what is happening, what is being
+     paid for, and the same note the in-dialog payments carry. It is the full-page version of the
+     payment status in the dialogs, so the two read as one family. */
   if (phase === 'redirect' || phase === 'processing' || phase === 'success')
     return (
-      <div className="checkout checkout--status" role="status" aria-live="polite">
-        {phase === 'success' ? (
-          <SuccessMark />
-        ) : (
-          <span className="checkout__spinner" aria-hidden />
-        )}
-        <p className="checkout__status-title">
-          {phase === 'redirect'
-            ? 'Redirecting to secure checkout…'
-            : phase === 'processing'
-              ? 'Processing payment…'
-              : 'Payment successful'}
-        </p>
-        <p className="checkout__status-text">
+      <div className="checkout checkout--status">
+        <PaymentStatus
+          className="pay-status--page"
+          title={
+            phase === 'redirect'
+              ? 'Redirecting to secure checkout…'
+              : phase === 'processing'
+                ? 'Processing payment…'
+                : 'Payment successful'
+          }
+          longer={longer}
+          mark={phase === 'success' ? <SuccessMark /> : undefined}
+          busyText={
+            phase === 'redirect'
+              ? 'Taking you to Stripe’s secure page. Please don’t close this page.'
+              : 'Please don’t close or refresh this page.'
+          }
+          facts={[{ label: order.item, value: formatAmount(order.amount) }]}
+        >
           {phase === 'redirect'
             ? 'You’ll complete your payment with Stripe.'
             : phase === 'processing'
-              ? 'Please don’t close this page.'
+              ? 'Stripe is confirming your payment.'
               : 'Returning you to AsiaVerify…'}
-        </p>
+        </PaymentStatus>
         <SimNote />
       </div>
     )

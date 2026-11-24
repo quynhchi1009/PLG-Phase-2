@@ -1,7 +1,8 @@
-import { useId, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
 import { Check, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
+import { PaymentNote } from '../../components/ui/PaymentProgress'
 import { SuccessMark } from '../../components/ui/SuccessMark'
 import { PLANS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
@@ -32,6 +33,8 @@ export function SuccessDialog() {
   const headingId = useId()
   const descId = useId()
   const s = state.success
+  // A charge is going through (set by the pay step below): the dialog can't be closed until it answers.
+  const [paying, setPaying] = useState(false)
   // An Auto top up that was paid for on the report page confirms there, so the customer
   // can carry on with the report they were generating.
   const onReport = route === 'report' && s?.kind === 'auto-top-up-charged'
@@ -71,7 +74,15 @@ export function SuccessDialog() {
   }
 
   return (
-    <Dialog open={open} onClose={close} labelledBy={headingId} describedBy={descId} size={compact ? 'sm' : 'md'} stepKey={s?.kind} hideClose={hideClose}>
+    <Dialog
+      open={open}
+      onClose={paying ? () => {} : close}
+      labelledBy={headingId}
+      describedBy={descId}
+      size={compact ? 'sm' : 'md'}
+      stepKey={s?.kind}
+      hideClose={hideClose || paying}
+    >
       {open && s?.kind === 'upgraded' && (
         <div className="activated">
           <span className="activated__badge success__in success__in--pop" style={at(T.head)}>
@@ -197,9 +208,8 @@ export function SuccessDialog() {
             Turn on Auto top up?
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            When your credits run out, we'll renew your plan early for {formatPrice(TOP_UP[state.planId].price)} and add{' '}
-            {formatCount(TOP_UP[state.planId].credits)} credits, so your reports keep running. Your next billing date
-            moves to the day we renew.
+            When your credits run out, we'll charge {formatPrice(TOP_UP[state.planId].price)} and add{' '}
+            {formatCount(TOP_UP[state.planId].credits)} credits. Your next billing date moves to the day we renew.
           </p>
           <div className="dialog__pair success__in" style={at(T.panel)}>
             <Button data-autofocus block onClick={() => dispatch({ type: 'enable-auto-top-up' })}>
@@ -213,7 +223,7 @@ export function SuccessDialog() {
       )}
 
       {open && s?.kind === 'auto-top-up-pay-confirm' && (
-        <AutoTopUpPayConfirm headingId={headingId} descId={descId} onStay={close} />
+        <AutoTopUpPayConfirm headingId={headingId} descId={descId} onStay={close} onPaying={setPaying} />
       )}
 
       {open && s?.kind === 'auto-top-up-charged' && (
@@ -223,10 +233,8 @@ export function SuccessDialog() {
             {formatCount(s.credits)} credits added
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            We charged {formatPrice(TOP_UP[state.planId].price)} and renewed your plan early. You now have{' '}
-            {formatCount(state.creditsRemaining)} credits and your next billing date is {formatDate(s.renewsOn)}. Auto
-            top up is still on, so we'll charge {formatPrice(TOP_UP[state.planId].price)} and add{' '}
-            {formatCount(TOP_UP[state.planId].credits)} credits again whenever you run out.
+            We charged {formatPrice(TOP_UP[state.planId].price)} and moved your next billing date to{' '}
+            {keepTogether(formatDate(s.renewsOn))}.
           </p>
           <Button data-autofocus block onClick={close}>
             {onReport ? 'Continue with report' : 'View balance'}
@@ -389,11 +397,28 @@ function DowngradeCancelled({ renewsOn, ...rest }: { headingId: string; descId: 
 }
 
 /* Turning Auto top up on with 0 credits left: the first pack is paid for now, so the customer
-   sees the charge before agreeing to it. */
-function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string; descId: string; onStay: () => void }) {
+   sees the charge before agreeing to it. Once they agree the dialog stays as it is while the card on
+   file is charged: the button turns into a spinner, "Stay disabled" waits, and the note under the
+   buttons asks the customer to stay. The result dialog takes over when Stripe answers. */
+function AutoTopUpPayConfirm({
+  headingId,
+  descId,
+  onStay,
+  onPaying,
+}: {
+  headingId: string
+  descId: string
+  onStay: () => void
+  /** Tells the dialog a charge is in flight, so it can refuse to close. */
+  onPaying: (paying: boolean) => void
+}) {
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
-  const { paying, pay } = useAutoTopUpPayment(() => dispatch({ type: 'charge-auto-top-up', today: TODAY }))
+  const { paying, longer, pay } = useAutoTopUpPayment(() => dispatch({ type: 'charge-auto-top-up', today: TODAY }))
+  useEffect(() => {
+    onPaying(paying)
+    return () => onPaying(false)
+  }, [paying, onPaying])
 
   return (
     <div className="dialog__body success" aria-busy={paying}>
@@ -401,18 +426,19 @@ function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string;
         Turn on Auto top up?
       </h2>
       <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-        You've used all your credits. Turn it on and we'll renew your plan early: we'll charge {formatPrice(pack.price)},
-        add {formatCount(pack.credits)} credits and move your next billing date to{' '}
-        {formatDate(earlyRenewalDate(state.planId, TODAY))}. After that, we'll do the same whenever you run out.
+        You're out of credits. We'll charge {formatPrice(pack.price)} now, add {formatCount(pack.credits)} credits and
+        move your next billing date to {formatDate(earlyRenewalDate(state.planId, TODAY))}. We'll do the same whenever
+        you run out.
       </p>
       <div className="dialog__pair success__in" style={at(T.panel)}>
-        <Button data-autofocus block aria-disabled={paying} onClick={pay}>
-          {paying ? 'Processing payment…' : `Enable and pay ${formatPrice(pack.price)}`}
+        <Button data-autofocus block loading={paying} onClick={pay}>
+          {paying ? 'Processing…' : `Enable and pay ${formatPrice(pack.price)}`}
         </Button>
         <Button block variant="secondary" aria-disabled={paying} onClick={paying ? undefined : onStay}>
           Stay disabled
         </Button>
       </div>
+      <PaymentNote busy={paying} longer={longer} />
     </div>
   )
 }

@@ -1615,6 +1615,181 @@
   font-size: var(--text-sm);
 }
 
+/* Payment in progress -------------------------------------------------------
+   Three pieces, one per place a payment can be going through:
+   - the pay button turns into a spinner (.is-loading), and the line under it (.pay-note) changes;
+   - a payment with no button (Auto top up charging by itself, the page between Stripe and the Portal)
+     is a status (.pay-status): spinner, what is happening, what is being paid, the same note.
+   The spinner is the same size and weight as the success mark, so when the payment answers the mark
+   takes the spinner's place. */
+
+.spinner {
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 3px solid var(--color-interactive-accent-hover);
+  border-block-start-color: var(--color-interactive-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Inside a button it takes the button's own text colour, so it works on solid and outlined buttons. */
+.spinner--btn {
+  inline-size: 16px;
+  block-size: 16px;
+  border-width: 2px;
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
+  border-block-start-color: currentColor;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Reduced motion: a still ring still reads as "in progress" next to the text. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-color: var(--color-interactive-primary);
+    border-inline-end-color: var(--color-interactive-accent-hover);
+  }
+
+  .spinner--btn {
+    border-color: currentColor;
+    border-inline-end-color: color-mix(in srgb, currentColor 30%, transparent);
+  }
+}
+
+/* Working, not unavailable: the loading button keeps its colour. Anything else that waits for the
+   payment (the "Not now" link, the second button) dims instead. */
+.btn.is-loading {
+  cursor: progress;
+}
+
+.btn[aria-disabled='true']:not(.is-loading):not(.btn--quiet):not(.btn--current):not(.btn--locked) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Under the buttons: "Secured by Stripe" at rest, what is happening while the payment goes through. */
+.pay-note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-content-tertiary);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.pay-note svg {
+  flex: none;
+  margin-block-start: 3px;
+}
+
+.pay-note.is-busy {
+  color: var(--color-content-main);
+}
+
+.dialog__actions + .pay-note,
+.dialog__pair + .pay-note {
+  margin-block-start: calc(var(--space-2) * -1);
+}
+
+/* Prototype only: releases a payment held by the prototype panel's "Hold". Dashed, like the panel's own toggle. */
+.pay-release {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: center;
+  min-block-size: 32px;
+  padding: 0 var(--space-4);
+  border: 1px dashed var(--color-border-warning);
+  border-radius: var(--radius-pill);
+  background: var(--color-sentiment-warning-elevated);
+  color: var(--color-content-on-warning-elevated);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+/* In place of a dialog's hint line: reads like the hint, left-aligned. */
+.pay-note--hint {
+  justify-content: flex-start;
+  text-align: start;
+}
+
+.pay-status {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+}
+
+.pay-status__title {
+  margin-block-start: var(--space-3);
+  color: var(--color-content-primary);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  outline: none;
+}
+
+.pay-status__text {
+  max-inline-size: 46ch;
+  color: var(--color-content-main);
+  font-size: var(--text-md);
+}
+
+.pay-status__facts {
+  display: grid;
+  gap: var(--space-2);
+  inline-size: 100%;
+  margin-block: var(--space-3) var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.pay-status__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.pay-status__facts dt {
+  color: var(--color-content-tertiary);
+}
+
+.pay-status__facts dd {
+  color: var(--color-content-primary);
+  font-weight: 600;
+  text-align: end;
+}
+
+.pay-status .pay-note {
+  justify-content: flex-start;
+  text-align: start;
+}
+
+/* The whole page (between the Portal and Stripe): centred, no dialog padding. */
+.pay-status--page {
+  justify-items: center;
+  inline-size: min(100%, 420px);
+  padding: 0;
+  text-align: center;
+}
+
+.pay-status--page .pay-status__title {
+  margin-block-start: 0;
+}
+
+.pay-status--page .pay-status__facts {
+  inline-size: min(100%, 320px);
+}
+
+.pay-status--page .pay-note {
+  justify-content: center;
+  text-align: center;
+}
+
 .proto {
   max-block-size: calc(100dvh - 32px);
   overflow-y: auto;

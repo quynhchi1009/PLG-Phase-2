@@ -1,6 +1,7 @@
 import { useEffect, useId } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
+import { PaymentNote, PaymentStatus } from '../../components/ui/PaymentProgress'
 import { TOP_UP, formatCount, formatPrice } from '../../data/plans'
 import { formatDate } from '../../data/history'
 import { TODAY, earlyRenewalDate, useBilling } from '../../state/billing'
@@ -14,6 +15,9 @@ import { useAutoTopUpPayment } from './useAutoTopUpPayment'
  * the customer has. The only way to keep going before the plan resets is to turn Auto
  * top up on, which renews the plan early. Closing it changes nothing, so the same
  * prompt returns on the next "Generate report".
+ *
+ * While the charge goes through the dialog stays as it is: the button becomes a spinner, "Not now"
+ * and the X wait, and the note under the buttons asks the customer to stay.
  */
 export function AutoTopUpGate({
   open,
@@ -29,34 +33,41 @@ export function AutoTopUpGate({
   const descId = useId()
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
-  const { paying, pay } = useAutoTopUpPayment(() => {
+  const { paying, longer, pay } = useAutoTopUpPayment(() => {
     // The success dialog takes over from here, and it also opens on this page.
     onClose()
     dispatch({ type: 'charge-auto-top-up', today: TODAY })
   })
 
   return (
-    <Dialog open={open} onClose={paying ? () => {} : onClose} labelledBy={headingId} describedBy={descId} size="sm">
+    <Dialog
+      open={open}
+      onClose={paying ? () => {} : onClose}
+      labelledBy={headingId}
+      describedBy={descId}
+      size="sm"
+      hideClose={paying}
+    >
       {open && (
         <div className="dialog__body success" aria-busy={paying}>
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
             Not enough credits for this report
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left">
-            This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Auto top
-            up is off, so turn it on to renew your plan early: we'll charge {formatPrice(pack.price)}, add{' '}
-            {formatCount(pack.credits)} credits and move your next billing date to{' '}
-            {formatDate(earlyRenewalDate(state.planId, TODAY))}. Or wait until {formatDate(state.cycleEnd)}, when your
-            credits reset.
+            This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Turn on
+            Auto top up and we'll charge {formatPrice(pack.price)}, add {formatCount(pack.credits)} credits and move your
+            next billing date to {formatDate(earlyRenewalDate(state.planId, TODAY))}. Or wait until{' '}
+            {formatDate(state.cycleEnd)} for your credits to reset.
           </p>
           <div className="dialog__actions dialog__actions--stack">
-            <Button data-autofocus block aria-disabled={paying} onClick={pay}>
-              {paying ? 'Processing payment…' : `Enable Auto top up and pay ${formatPrice(pack.price)}`}
+            <Button data-autofocus block loading={paying} onClick={pay}>
+              {paying ? 'Processing…' : `Enable and pay ${formatPrice(pack.price)}`}
             </Button>
             <Button variant="link" aria-disabled={paying} onClick={paying ? undefined : onClose}>
               Not now
             </Button>
           </div>
+          <PaymentNote busy={paying} longer={longer} />
         </div>
       )}
     </Dialog>
@@ -83,7 +94,7 @@ export function AutoTopUpRenewal({
   const descId = useId()
   return (
     // Not dismissible: closing mid-charge would leave the customer unsure what happened.
-    <Dialog open={open} onClose={() => {}} labelledBy={headingId} describedBy={descId} size="sm">
+    <Dialog open={open} onClose={() => {}} labelledBy={headingId} describedBy={descId} size="sm" hideClose>
       {open && <Renewing headingId={headingId} descId={descId} onDone={onClose} needed={needed} />}
     </Dialog>
   )
@@ -102,7 +113,7 @@ function Renewing({
 }) {
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
-  const { pay } = useAutoTopUpPayment(() => {
+  const { longer, pay } = useAutoTopUpPayment(() => {
     onDone()
     dispatch({ type: 'charge-auto-top-up', today: TODAY })
   })
@@ -112,16 +123,20 @@ function Renewing({
   }, [pay])
 
   return (
-    <div className="dialog__body success topped" role="status" aria-busy>
-      <span className="checkout__spinner" aria-hidden />
-      <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
-        Adding credits to your plan
-      </h2>
-      <p id={descId} className="dialog__lede dialog__lede--left">
-        This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Auto top up
-        is charging {formatPrice(pack.price)} to add {formatCount(pack.credits)} credits and renew your plan early.
-        Your next billing date moves to {formatDate(earlyRenewalDate(state.planId, TODAY))}.
-      </p>
-    </div>
+    <PaymentStatus
+      className="dialog__body"
+      title="Adding credits to your plan"
+      headingId={headingId}
+      descId={descId}
+      longer={longer}
+      facts={[
+        { label: 'Charged to your card', value: formatPrice(pack.price) },
+        { label: 'Credits added', value: formatCount(pack.credits) },
+        { label: 'Next billing date', value: formatDate(earlyRenewalDate(state.planId, TODAY)) },
+      ]}
+    >
+      This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Auto top up is
+      adding more.
+    </PaymentStatus>
   )
 }

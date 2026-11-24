@@ -87,7 +87,7 @@ function SubscriptionCard() {
           ) : state.pendingDowngrade ? (
             // The date lives in the settings card ("Next billing date" and the switch notice), so the
             // tag only names the state and stays short enough for the 388px card.
-            <Badge tone="warning">Switching to monthly</Badge>
+            <Badge tone="warning">Downgrade scheduled</Badge>
           ) : state.paymentIssue ? (
             // Grace period after a failed renewal: the plan is still running, but the one thing to do
             // is update the card. The red warning in the settings card carries the date and the button.
@@ -227,7 +227,7 @@ function SettingsCard({
         {state.pendingDowngrade && !cancelling && (
           <div className="settings__row settings__changed settings__changed--downgrade">
             <div>
-              <h3 className="settings__subtitle">Switching to Growth monthly on {cycleEnd}</h3>
+              <h3 className="settings__subtitle">Your plan changes to Growth monthly on {cycleEnd}</h3>
               <p className="settings__hint">
                 You keep Growth yearly and your credits until then. Changed your mind? You can stay on yearly any time
                 before that date.

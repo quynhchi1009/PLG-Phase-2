@@ -1,4 +1,4 @@
-import { useId, type CSSProperties } from 'react'
+import { useId, type CSSProperties, type ReactNode } from 'react'
 import { Check, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
@@ -37,7 +37,7 @@ export function SuccessDialog() {
   const onReport = route === 'report' && s?.kind === 'auto-top-up-charged'
   const open = !!s && (route === 'billing' || onReport)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
-  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'downgrade-scheduled' || s?.kind === 'downgrade-cancelled'
+  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged'
 
   // When the primary button already just closes the dialog (every result dialog, and the
   // confirmations whose primary is "stay as you are"), the X is a second way to do the same thing,
@@ -164,39 +164,12 @@ export function SuccessDialog() {
       )}
 
       {open && s?.kind === 'keep-yearly-confirm' && (
-        <KeepYearlyConfirm headingId={headingId} descId={descId} onBack={close} />
+        <KeepYearlyConfirm headingId={headingId} descId={descId} />
       )}
 
-      {open && s?.kind === 'downgrade-cancelled' && (
-        <div className="dialog__body success topped">
-          <SuccessMark />
-          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-            Switch to monthly cancelled
-          </h2>
-          <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            You're staying on Growth yearly. Your plan renews on {formatDate(s.renewsOn)} at{' '}
-            {formatPrice(PLANS.yearly.price ?? 0)}, and your credits stay as they are.
-          </p>
-          <Button data-autofocus block onClick={close}>
-            Back to my plan
-          </Button>
-        </div>
-      )}
+      {open && s?.kind === 'downgrade-cancelled' && <DowngradeCancelled headingId={headingId} descId={descId} renewsOn={s.renewsOn} onDone={close} />}
 
-      {open && s?.kind === 'downgrade-scheduled' && (
-        <div className="dialog__body success topped">
-          <SuccessMark />
-          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-            Switch to monthly scheduled
-          </h2>
-          <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            Growth monthly starts on {formatDate(s.renewsOn)} at {formatPrice(PLANS.monthly.price ?? 0)} per month.
-          </p>
-          <Button data-autofocus block onClick={close}>
-            Back to my plan
-          </Button>
-        </div>
-      )}
+      {open && s?.kind === 'downgrade-scheduled' && <DowngradeScheduled headingId={headingId} descId={descId} renewsOn={s.renewsOn} onDone={close} />}
 
       {open && s?.kind === 'auto-top-up-confirm' && (
         <div className="dialog__body success">
@@ -294,6 +267,127 @@ export function SuccessDialog() {
   )
 }
 
+/* A date is read as one thing, so a row may wrap before it but not inside it ("28 / September 2027"). */
+const keepTogether = (date: string) => date.replace(/ /g, ' ')
+
+/* The receipt for a change to the plan's billing: it is built like "Plan activated" (centred badge and
+   title, one white box of ticked rows, the way back), since what changes, and when, is the one thing the
+   customer needs to leave with. Every row comes from the confirmation step and the Billing notice, so the
+   two switch receipts (scheduled, cancelled) share this layout and differ only in their finish:
+   - 'plain': the neutral floor, neutral marks and a secondary button, for a plan that is about to change;
+   - 'activated': exactly "Plan activated" (green tint, green ticks, primary button), for a plan that
+     stays as it was. */
+function SwitchReceipt({
+  headingId,
+  descId,
+  badge,
+  warn,
+  look,
+  title,
+  rows,
+  rowsLabel,
+  onDone,
+}: {
+  headingId: string
+  descId: string
+  badge: string
+  /* Amber pill when the plan is about to change; the default green when it stays as it was. */
+  warn?: boolean
+  look: 'plain' | 'activated'
+  title: ReactNode
+  rows: { title: string; detail: string }[]
+  rowsLabel: string
+  onDone: () => void
+}) {
+  const plain = look === 'plain'
+  return (
+    <div className={`activated${plain ? ' activated--neutral' : ''}`}>
+      <span
+        className={`activated__badge${warn ? ' activated__badge--warning' : ''} success__in success__in--pop`}
+        style={at(T.head)}
+      >
+        {badge}
+      </span>
+      <h2 id={headingId} tabIndex={-1} className="dialog__title success__in" style={at(T.title)}>
+        {title}
+      </h2>
+      <div className="activated__box success__in" style={at(T.panel)}>
+        <ul id={descId} className="upc__perks" aria-label={rowsLabel}>
+          {rows.map((r, i) => (
+            <li key={r.title} className="success__in" style={at(T.list + i * 60)}>
+              <span className={`upc__tick${plain ? ' upc__tick--neutral' : ''}`} aria-hidden>
+                <Check size={12} strokeWidth={3} />
+              </span>
+              <span>
+                <strong>{r.title}</strong> {r.detail}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <Button data-autofocus block variant={plain ? 'secondary' : 'primary'} onClick={onDone}>
+          Back to my plan
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/* Amber pill, like Billing's "Downgrade scheduled" tag and the "Plan cancelled" receipt: the plan is
+   changing. Rows: what is kept until the date, what starts on it, the way out. */
+function DowngradeScheduled({ renewsOn, ...rest }: { headingId: string; descId: string; renewsOn: string; onDone: () => void }) {
+  const date = keepTogether(formatDate(renewsOn))
+  const y = PLANS.yearly
+  const m = PLANS.monthly
+  return (
+    <SwitchReceipt
+      {...rest}
+      badge="Downgrade scheduled"
+      warn
+      look="plain"
+      title={
+        <>
+          Your plan will switch to <span className="dialog__title-accent">{m.name}</span>
+        </>
+      }
+      rowsLabel="What changes and when"
+      rows={[
+        { title: `Until ${date}:`, detail: `you keep ${y.name} and your credits as they are` },
+        {
+          title: `From ${date}:`,
+          detail: `${m.name} starts at ${formatPrice(m.price ?? 0)} per month, with ${formatCount(m.credits ?? 0)} credits each month`,
+        },
+        { title: 'Changed your mind?', detail: `You can keep your yearly plan from your plan page any time before ${date}` },
+      ]}
+    />
+  )
+}
+
+/* Green pill and the full "Plan activated" finish: the yearly plan stays as it was, the same state the
+   Billing page returns to. Rows come from the earlier cancelled copy: the switch is off, the renewal date
+   and price, the credits. */
+function DowngradeCancelled({ renewsOn, ...rest }: { headingId: string; descId: string; renewsOn: string; onDone: () => void }) {
+  const date = keepTogether(formatDate(renewsOn))
+  const y = PLANS.yearly
+  return (
+    <SwitchReceipt
+      {...rest}
+      badge="Downgrade cancelled"
+      look="activated"
+      title={
+        <>
+          You're staying on <span className="dialog__title-accent">{y.name}</span>
+        </>
+      }
+      rowsLabel="What stays the same"
+      rows={[
+        { title: 'Downgrade to monthly:', detail: `cancelled, so your plan won't change on ${date}` },
+        { title: `Renews on ${date}:`, detail: `${y.name} renews at ${formatPrice(y.price ?? 0)}` },
+        { title: 'Your credits:', detail: 'stay as they are' },
+      ]}
+    />
+  )
+}
+
 /* Turning Auto top up on with 0 credits left: the first pack is paid for now, so the customer
    sees the charge before agreeing to it. */
 function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string; descId: string; onStay: () => void }) {
@@ -324,24 +418,27 @@ function AutoTopUpPayConfirm({ headingId, descId, onStay }: { headingId: string;
 }
 
 /* The one step before a scheduled switch to monthly is cancelled (Version A): nothing changes until
-   the customer confirms, and "Go back" leaves the switch scheduled. It mirrors the step that
-   scheduled it: that one lists what is lost, this one lists what is kept. */
-function KeepYearlyConfirm({ headingId, descId, onBack }: { headingId: string; descId: string; onBack: () => void }) {
+   the customer confirms, and the dialog's X leaves the switch scheduled. It mirrors the step that
+   scheduled it: that one lists what is lost, this one lists what is kept. Its head and credit sum are
+   built like the Upgrade confirmation's, so the three read as a family. */
+function KeepYearlyConfirm({ headingId, descId }: { headingId: string; descId: string }) {
   const { state, dispatch } = useBilling()
+  const y = PLANS.yearly
   const date = formatDate(state.cycleEnd)
 
-  // Confirming cancels the switch and hands over to the "Switch to monthly cancelled" dialog.
+  // Confirming cancels the switch and hands over to the "Downgrade cancelled" dialog.
   const keep = () => dispatch({ type: 'cancel-downgrade', today: TODAY })
 
   return (
-    <div className="dialog__body success">
-      <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-        Keep your yearly plan?
-      </h2>
-      <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-        Your switch to Growth monthly on <strong>{date}</strong> will be cancelled. Growth yearly stays as it is and
-        renews on <strong>{date}</strong> at {formatPrice(PLANS.yearly.price ?? 0)}.
-      </p>
+    <div className="dialog__body upc">
+      <div className="upc__head">
+        <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+          Keep your yearly plan?
+        </h2>
+        <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+          You're keeping your Growth plan on <strong>yearly billing</strong>, renewing on <strong>{date}</strong>
+        </p>
+      </div>
 
       <section className="perk-box perk-box--firm success__in" style={at(T.panel)} aria-label="What you keep">
         <p className="perk-box__title">What you keep on Growth yearly:</p>
@@ -357,14 +454,24 @@ function KeepYearlyConfirm({ headingId, descId, onBack }: { headingId: string; d
         </ul>
       </section>
 
-      <div className="dialog__pair success__in" style={at(T.list)}>
-        <Button data-autofocus block onClick={keep}>
-          Keep yearly plan
-        </Button>
-        <Button block variant="secondary" onClick={onBack}>
-          Go back
-        </Button>
-      </div>
+      {/* The same credit sum as the Upgrade confirmation, without a rolled-over line: the yearly plan
+          renews with its full allowance, as in the renewal confirmation, so the total is that alone. */}
+      <dl className="upc__ledger success__in" style={at(T.list)}>
+        <div className="upc__line">
+          <dt>{y.name}</dt>
+          <dd>
+            {formatAmount(y.price ?? 0)} = {formatCount(y.credits ?? 0)} Credits
+          </dd>
+        </div>
+        <div className="upc__total">
+          <dt>Total credits after renewal</dt>
+          <dd>{formatCount(y.credits ?? 0)} Credits</dd>
+        </div>
+      </dl>
+
+      <Button data-autofocus block className="success__in" style={at(T.list + 60)} onClick={keep}>
+        Keep yearly plan
+      </Button>
     </div>
   )
 }

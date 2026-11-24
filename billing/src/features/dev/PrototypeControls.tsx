@@ -75,7 +75,7 @@ const GROUPS: Group[] = [
       {
         id: 'g-down-keep',
         label: 'Downgrade scheduled · Keep yearly plan',
-        steps: 'The switch to monthly is already scheduled. Click Keep yearly plan to undo it.',
+        steps: 'The downgrade to monthly is already scheduled. Click Keep yearly plan to undo it.',
         status: 'active',
         planId: 'yearly',
         pendingDowngrade: true,

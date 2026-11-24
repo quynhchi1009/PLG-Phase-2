@@ -2140,6 +2140,24 @@
   font-weight: 600;
 }
 
+/* The scheduled switch to monthly states a fact rather than celebrates one, so its panel is the plain
+   neutral floor and its marks are neutral grey instead of the green "Plan activated" uses. */
+.activated--neutral {
+  background: var(--color-base-contrast);
+}
+
+.upc__tick--neutral {
+  background: var(--color-background-subtle);
+  color: var(--color-content-main);
+}
+
+/* A plan that is changing, not starting (the scheduled switch to monthly): the same pill in the
+   amber the "Plan cancelled" receipt and Billing's "Downgrade scheduled" tag use. */
+.activated__badge--warning {
+  background: var(--color-sentiment-warning-elevated);
+  color: var(--color-content-on-warning-elevated);
+}
+
 .activated .dialog__title {
   font-size: var(--text-xl);
 }

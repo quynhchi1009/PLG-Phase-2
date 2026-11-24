@@ -16,7 +16,7 @@ npm run dev
 - `src/components/ui` — Button, Dialog (native `<dialog>`), Badge, Switch, InfoTip, Notice, Tabs, Toaster.
 - `src/features/billing` — Billing page, history tabs, and the cancel/reactivate flow (one dialog that reshapes per step).
 - `src/features/plans` — plan cards, plan-change confirmation, comparison tables.
-- `src/features/dev/PrototypeControls.tsx` — demo-only switcher (Active / Cancelled / No plan, Monthly / Yearly). Remove before production.
+- `src/features/dev/PrototypeControls.tsx` — demo-only "Prototype states" panel. Groups follow the Figma journeys (Growth, Auto top up, Flex, Cancellation, Failed payment); each row opens a flow on its starting screen, including Growth yearly → monthly downgrade, and says what to click next. Remove before production.
 - `src/state` — billing reducer and UI context (hash routing `#/billing`, `#/plans`, theme, toasts).
 
 ## Placeholder data to replace

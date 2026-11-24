@@ -7,6 +7,7 @@ import { CheckoutPage } from './features/checkout/CheckoutPage'
 import { OrderProvider, useOrder } from './features/checkout/order'
 import { PlansPage } from './features/plans/PlansPage'
 import { ReportPage } from './features/report/ReportPage'
+import { PaymentMethodPrompt } from './features/upgrade/PaymentMethodPrompt'
 import { SuccessDialog } from './features/upgrade/SuccessDialog'
 import { BillingProvider } from './state/billing'
 import { UiProvider, useUi } from './state/ui'
@@ -41,6 +42,7 @@ export default function App() {
         <OrderProvider>
           <Screen />
           <SuccessDialog />
+          <PaymentMethodPrompt />
           <PrototypeControls />
           <Toaster />
         </OrderProvider>

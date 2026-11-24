@@ -88,11 +88,11 @@ function UpgradeBody({
             // Same plan, new billing period: name the change, not the plan twice.
             <>
               You're upgrading your {plan.tier} plan from {from.cycle === 'year' ? 'yearly' : 'monthly'} to{' '}
-              <strong>{plan.cycle === 'year' ? 'yearly' : 'monthly'} billing</strong>!
+              <strong>{plan.cycle === 'year' ? 'yearly' : 'monthly'} billing</strong>
             </>
           ) : (
             <>
-              You're upgrading from {from.tier} to the <strong>{plan.tier}</strong> plan!
+              You're upgrading from {from.tier} to the <strong>{plan.tier}</strong> plan
             </>
           )}
         </p>

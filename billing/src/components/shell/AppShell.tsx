@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { CircleArrowLeft, KeyRound, Menu, Radar } from 'lucide-react'
 import { useBilling } from '../../state/billing'
 import { useUi, type Route } from '../../state/ui'
+import { PaymentBanner } from '../../features/upgrade/PaymentBanner'
 import {
   AccountSettingsIcon,
   BellIcon,
@@ -271,6 +272,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
+        <PaymentBanner />
         <FlexBanner />
 
         <main id="main" className="main" tabIndex={-1}>

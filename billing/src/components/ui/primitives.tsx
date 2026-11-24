@@ -98,15 +98,18 @@ export function Notice({
   title,
   children,
   onDismiss,
+  action,
 }: {
   tone: 'positive' | 'negative' | 'warning'
   icon: ReactNode
   title: string
   children: ReactNode
   onDismiss?: () => void
+  /** The one thing to do about it, a button on the notice's right edge (below the text on narrow screens). */
+  action?: ReactNode
 }) {
   return (
-    <div className={`notice notice--${tone}`} role={tone === 'negative' ? 'alert' : 'status'}>
+    <div className={`notice notice--${tone} ${action ? 'notice--action' : ''}`} role={tone === 'negative' ? 'alert' : 'status'}>
       <span className="notice__icon" aria-hidden>
         {icon}
       </span>
@@ -114,6 +117,7 @@ export function Notice({
         <p className="notice__title">{title}</p>
         <p className="notice__text">{children}</p>
       </div>
+      {action && <div className="notice__action">{action}</div>}
       {onDismiss && (
         <button type="button" className="icon-btn notice__dismiss" aria-label={`Dismiss: ${title}`} onClick={onDismiss}>
           <X size={16} aria-hidden />

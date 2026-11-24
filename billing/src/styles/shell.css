@@ -550,3 +550,62 @@
 .flex-banner .text-btn {
   font-size: inherit;
 }
+
+/* Failed renewal payment, popup closed: pinned under the top bar on every page until the card is
+   updated. Other sticky elements add --banner-h to their own offset so they stop below it. */
+.shell:has(.pay-banner) {
+  /* One line of text beside the 32px button: 8 + 32 + 8 padding + 1 border. */
+  --banner-h: 49px;
+}
+
+.pay-banner {
+  position: sticky;
+  inset-block-start: var(--topbar-h);
+  z-index: 29;
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-5);
+  border-block-end: 1px solid var(--color-border-warning);
+  background: var(--color-sentiment-warning-elevated);
+  color: var(--color-content-main);
+  font-size: var(--text-sm);
+  animation: notice-in var(--dur) var(--ease-out);
+}
+
+/* Icon and text stay together and take the free width, wrapping inside themselves, so the button
+   stays on the right edge; only on a narrow screen (under 20rem beside the button) does it drop below. */
+.pay-banner__body {
+  flex: 1 1 0;
+  min-inline-size: min(100%, 20rem);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.pay-banner__icon {
+  display: inline-grid;
+  margin-block-start: 1px;
+  color: var(--color-content-on-warning-elevated);
+}
+
+.pay-banner__text {
+  margin: 0;
+}
+
+.pay-banner .btn {
+  flex: none;
+}
+
+.pay-banner__title {
+  font-weight: 600;
+  color: var(--color-content-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pay-banner {
+    animation: none;
+  }
+}

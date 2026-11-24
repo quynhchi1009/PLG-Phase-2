@@ -299,7 +299,7 @@ function ChangeStep({
           </p>
           <label className="downgrade__ack" htmlFor={ackId}>
             <input id={ackId} type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
-            <span>I understand unused credits from my yearly plan expire on {date}.</span>
+            <span>I understand unused credits from my yearly plan expire on {date}</span>
           </label>
           <div className="dialog__pair">
             <Button data-autofocus onClick={onClose}>

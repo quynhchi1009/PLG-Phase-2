@@ -69,18 +69,37 @@ export function AutoTopUpGate({
  * happening while the charge goes through, then hands over to the success dialog, and
  * the customer carries on with the same report.
  */
-export function AutoTopUpRenewal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function AutoTopUpRenewal({
+  open,
+  onClose,
+  needed,
+}: {
+  open: boolean
+  onClose: () => void
+  /** Credits the chosen report costs. */
+  needed: number
+}) {
   const headingId = useId()
   const descId = useId()
   return (
     // Not dismissible: closing mid-charge would leave the customer unsure what happened.
     <Dialog open={open} onClose={() => {}} labelledBy={headingId} describedBy={descId} size="sm">
-      {open && <Renewing headingId={headingId} descId={descId} onDone={onClose} />}
+      {open && <Renewing headingId={headingId} descId={descId} onDone={onClose} needed={needed} />}
     </Dialog>
   )
 }
 
-function Renewing({ headingId, descId, onDone }: { headingId: string; descId: string; onDone: () => void }) {
+function Renewing({
+  headingId,
+  descId,
+  onDone,
+  needed,
+}: {
+  headingId: string
+  descId: string
+  onDone: () => void
+  needed: number
+}) {
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
   const { pay } = useAutoTopUpPayment(() => {
@@ -96,12 +115,12 @@ function Renewing({ headingId, descId, onDone }: { headingId: string; descId: st
     <div className="dialog__body success topped" role="status" aria-busy>
       <span className="checkout__spinner" aria-hidden />
       <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
-        Adding credits with Auto top up
+        Adding credits to your plan
       </h2>
       <p id={descId} className="dialog__lede dialog__lede--left">
-        You don't have enough credits for this report, so we're renewing your plan early: charging{' '}
-        {formatPrice(pack.price)}, adding {formatCount(pack.credits)} credits and moving your next billing date to{' '}
-        {formatDate(earlyRenewalDate(state.planId, TODAY))}.
+        This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Auto top up
+        is charging {formatPrice(pack.price)} to add {formatCount(pack.credits)} credits and renew your plan early.
+        Your next billing date moves to {formatDate(earlyRenewalDate(state.planId, TODAY))}.
       </p>
     </div>
   )

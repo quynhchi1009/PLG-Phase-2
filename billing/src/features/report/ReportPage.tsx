@@ -46,6 +46,10 @@ export function ReportPage() {
 
   const generate = () => {
     if (inactive) return toast('Choose a plan to generate new reports.')
+    // During the grace period after a failed payment, generating a report brings the popup back
+    // instead of running (PRD, Payment Failed). It comes before the credit check, and closing it
+    // does not generate anything: the customer clicks again, or updates the card first.
+    if (state.paymentIssue) return dispatch({ type: 'open-payment-prompt', reason: 'generate' })
     if (!enough) return setPrompt(true)
     dispatch({ type: 'generate', report: chosen.name, business: ENTITY.name, credits: total, today: TODAY })
     toast(`${chosen.name} report requested for ${ENTITY.name}. ${total} credits used.`)
@@ -130,7 +134,7 @@ export function ReportPage() {
           <p className={`report-summary__balance ${enough ? '' : 'is-short'}`}>
             <Coins size={16} aria-hidden />
             {formatCount(state.creditsRemaining)} credits available
-            {!enough && !inactive && <span> · {formatCount(total - state.creditsRemaining)} short</span>}
+            {!enough && !inactive && <span> · {formatCount(total - state.creditsRemaining)} more needed</span>}
           </p>
           <Button block onClick={generate}>
             Generate report
@@ -140,7 +144,7 @@ export function ReportPage() {
 
       <UpgradePrompt open={prompt && !growthA} onClose={() => setPrompt(false)} reason="insufficient" />
       <AutoTopUpGate open={prompt && autoTopUpGate} onClose={() => setPrompt(false)} needed={total} />
-      <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} />
+      <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} needed={total} />
     </div>
   )
 }

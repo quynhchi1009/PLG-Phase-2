@@ -111,7 +111,7 @@ function StepContent({
           <h2 id={headingId} tabIndex={-1} className="dialog__title">
             Don't leave just yet
           </h2>
-          <p className="offer__title">You could be missing out on better savings!</p>
+          <p className="offer__title">You could be missing out on better savings</p>
           <p id={descId} className="dialog__lede">
             Explore other plans tailored to your needs and see how report credits can give you more value from your
             subscription.

@@ -79,7 +79,7 @@ export function SuccessDialog() {
           </span>
           <h2 id={headingId} tabIndex={-1} className="dialog__title success__in" style={at(T.title)}>
             You successfully {s.via === 'subscribe' ? 'subscribed' : 'upgraded'} to{' '}
-            <span className="dialog__title-accent">{PLANS[s.planId].name}</span>!
+            <span className="dialog__title-accent">{PLANS[s.planId].name}</span>
           </h2>
           <div className="activated__box success__in" style={at(T.panel)}>
             <ul id={descId} className="upc__perks" aria-label="What your plan includes">
@@ -251,8 +251,10 @@ export function SuccessDialog() {
             {formatCount(s.credits)} credits added
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            {formatPrice(TOP_UP[state.planId].price)} was charged and your plan renewed early. Your next billing date is{' '}
-            {formatDate(s.renewsOn)}. Auto top up is on, so we'll do this whenever you run out.
+            We charged {formatPrice(TOP_UP[state.planId].price)} and renewed your plan early. You now have{' '}
+            {formatCount(state.creditsRemaining)} credits and your next billing date is {formatDate(s.renewsOn)}. Auto
+            top up is still on, so we'll charge {formatPrice(TOP_UP[state.planId].price)} and add{' '}
+            {formatCount(TOP_UP[state.planId].credits)} credits again whenever you run out.
           </p>
           <Button data-autofocus block onClick={close}>
             {onReport ? 'Continue with report' : 'View balance'}
@@ -415,7 +417,7 @@ function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; de
 
       <label className="downgrade__ack success__in" style={at(T.list)} htmlFor={ackId}>
         <input id={ackId} type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
-        <span>I understand unused credits from my yearly plan expire on {date}.</span>
+        <span>I understand unused credits from my yearly plan expire on {date}</span>
       </label>
 
       <div className="dialog__pair success__in" style={at(T.list)}>

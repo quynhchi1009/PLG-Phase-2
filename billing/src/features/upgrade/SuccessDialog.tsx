@@ -190,8 +190,7 @@ export function SuccessDialog() {
             Switch to monthly scheduled
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            Your plan changes to Growth monthly on {formatDate(s.renewsOn)}. From then you'll be billed{' '}
-            {formatPrice(PLANS.monthly.price ?? 0)} per month. Until then, nothing changes.
+            Growth monthly starts on {formatDate(s.renewsOn)} at {formatPrice(PLANS.monthly.price ?? 0)} per month.
           </p>
           <Button data-autofocus block onClick={close}>
             Back to my plan

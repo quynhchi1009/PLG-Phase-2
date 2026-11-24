@@ -2274,18 +2274,9 @@
   gap: var(--space-2);
 }
 
-/* Downgrade confirmation: the acknowledgement of unused-credit expiry. */
-.downgrade__ack {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  color: var(--color-content-main);
-  cursor: pointer;
-}
-
-.downgrade__ack input {
-  flex: none;
-  margin-block-start: 3px;
+/* Downgrade confirmation: the actions sit a touch further from the credit rows, as the pay button does in the upgrade. */
+.upc > .dialog__pair {
+  margin-block-start: var(--space-1);
 }
 
 .btn:disabled {
@@ -2303,14 +2294,35 @@
   text-decoration-line: underline;
 }
 
-/* Downgrade: the box lists what is given up, so it takes the warning colour instead of the brand green. */
-.perk-box--loss {
-  border-color: var(--color-border-warning);
+/* Downgrade: the card lists what is given up, so its title and marks take the warning colour
+   instead of the brand green. The card itself stays the upgrade's white card. */
+.upc__card--loss .upc__name {
+  color: var(--color-content-on-warning-elevated);
 }
 
-.perk-box--loss .perk-box__title,
-.perk-box--loss .checklist__mark {
+.upc__tick--loss {
+  background: var(--color-sentiment-warning-elevated);
   color: var(--color-content-on-warning-elevated);
+}
+
+/* "Switch to monthly billing?" as adjusted in Figma: the credit rows sit 20px under the card, and the
+   card's soft green glow becomes a warning amber one. The card's padding is 25px plus its 1px border,
+   26px from the edge to the text. (The 16px title with 4px under it is shared with the upgrade, above.) */
+.upc--downgrade .upc__ledger {
+  margin-block-start: 0;
+}
+
+.upc__card--loss {
+  padding: calc(var(--space-6) + 1px);
+  box-shadow:
+    0 1px 2px rgb(14 15 12 / 0.04),
+    0 4px 12px -6px color-mix(in srgb, var(--color-sentiment-warning) 12%, transparent);
+}
+
+@media (max-width: 760px) {
+  .upc__card--loss {
+    padding: calc(var(--space-5) + 1px);
+  }
 }
 
 /* "Continue to cancel" rests without an underline; it appears on hover and keyboard focus. */

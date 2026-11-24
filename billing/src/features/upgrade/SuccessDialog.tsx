@@ -1,9 +1,9 @@
-import { useId, useState, type CSSProperties } from 'react'
+import { useId, type CSSProperties } from 'react'
 import { Check, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
 import { SuccessMark } from '../../components/ui/SuccessMark'
-import { PLANS, TOP_UP, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
+import { PLANS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
 import { TODAY, earlyRenewalDate, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
@@ -369,12 +369,11 @@ function KeepYearlyConfirm({ headingId, descId, onBack }: { headingId: string; d
   )
 }
 
-/* The one step before a yearly plan is scheduled to move to monthly: what stays until then,
-   what changes, and an acknowledgement that unused credits do not carry over. */
+/* The one step before a yearly plan is scheduled to move to monthly: what changes and the credits
+   the monthly plan starts with. It is built like the Upgrade confirmation (head, one white card,
+   plain rows, actions), so the two read as a pair. */
 function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; descId: string; onKeep: () => void }) {
   const { state, dispatch } = useBilling()
-  const [ack, setAck] = useState(false)
-  const ackId = useId()
   const y = PLANS.yearly
   const date = formatDate(state.cycleEnd)
   const discount = (p: typeof y) => p.badge?.replace(/^Save\s+/i, '') ?? ''
@@ -392,43 +391,54 @@ function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; de
   ]
 
   return (
-    <div className="dialog__body success">
-      <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-        Switch to monthly billing?
-      </h2>
-      <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-        Nothing changes today. Growth monthly starts when your yearly plan renews on <strong>{date}</strong>.
-      </p>
+    <div className="dialog__body upc upc--downgrade">
+      <div className="upc__head">
+        <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+          Switch to monthly billing?
+        </h2>
+        <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+          You're switching your Growth plan from yearly to <strong>monthly billing</strong> on <strong>{date}</strong>
+        </p>
+      </div>
 
-      <section className="perk-box perk-box--firm perk-box--loss success__in" style={at(T.list)} aria-label={`What you lose from ${date}`}>
-        <p className="perk-box__title">What you'll lose from {date}:</p>
-        <ul className="checklist checklist--md">
-          {losses.map((l) => (
-            <li key={l.title}>
-              <Minus className="checklist__mark" size={18} strokeWidth={2.25} aria-hidden />
-              <span>
-                <strong>{l.title}</strong> {l.detail}
-              </span>
-            </li>
-          ))}
-        </ul>
+      <section className="upc__card upc__card--loss success__in" style={at(T.panel)} aria-label={`What you lose from ${date}`}>
+        <div className="upc__plan">
+          <h3 className="upc__name">What you'll lose from {date}</h3>
+          <ul className="upc__perks">
+            {losses.map((l) => (
+              <li key={l.title}>
+                <span className="upc__tick upc__tick--loss" aria-hidden>
+                  <Minus size={12} strokeWidth={3} />
+                </span>
+                <span>
+                  <strong>{l.title}</strong> {l.detail}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
-      <label className="downgrade__ack success__in" style={at(T.list)} htmlFor={ackId}>
-        <input id={ackId} type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
-        <span>I understand unused credits from my yearly plan expire on {date}</span>
-      </label>
+      {/* The Upgrade confirmation's credit sum without its rolled-over line: credits do not carry over
+          when a yearly plan moves to monthly, so the total is the monthly allowance alone. */}
+      <dl className="upc__ledger success__in" style={at(T.list)}>
+        <div className="upc__line">
+          <dt>{m.name}</dt>
+          <dd>
+            {formatAmount(m.price ?? 0)} = {formatCount(m.credits ?? 0)} Credits
+          </dd>
+        </div>
+        <div className="upc__total">
+          <dt>Total credits after switch</dt>
+          <dd>{formatCount(m.credits ?? 0)} Credits</dd>
+        </div>
+      </dl>
 
-      <div className="dialog__pair success__in" style={at(T.list)}>
+      <div className="dialog__pair success__in" style={at(T.list + 60)}>
         <Button data-autofocus block onClick={onKeep}>
           Keep yearly plan
         </Button>
-        <Button
-          block
-          variant="secondary"
-          disabled={!ack}
-          onClick={() => dispatch({ type: 'schedule-downgrade', today: TODAY })}
-        >
+        <Button block variant="secondary" onClick={() => dispatch({ type: 'schedule-downgrade', today: TODAY })}>
           Switch to monthly
         </Button>
       </div>

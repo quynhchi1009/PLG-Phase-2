@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge, Checklist, InfoTip, Notice } from '../../components/ui/primitives'
 import { PLANS, REPORT_RETENTION_DAYS, TOP_UP, formatCount, formatPrice, planBreakdown } from '../../data/plans'
 import { addDays, formatDate } from '../../data/history'
-import { FLEX_RESETS_ON, canTopUp, useBilling, type PaymentFailure } from '../../state/billing'
+import { FLEX_RESETS_ON, canSelectPlan, canTopUp, useBilling, type PaymentFailure } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { HistoryTabs } from './HistoryTabs'
 import { SubscriptionFlow, type FlowStep } from './SubscriptionFlow'
@@ -216,9 +216,13 @@ function SettingsCard({
                 <Button size="sm" onClick={() => dispatch({ type: 'request-reactivate' })}>
                   Reactivate subscription
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => navigate('plans')}>
-                  Choose a plan
-                </Button>
+                {/* Another plan can only be bought once the credits run out, so until then the
+                    button would open a Plans page where every card is locked. */}
+                {canSelectPlan(state) && (
+                  <Button size="sm" variant="secondary" onClick={() => navigate('plans')}>
+                    Choose a plan
+                  </Button>
+                )}
               </div>
             </div>
           </>

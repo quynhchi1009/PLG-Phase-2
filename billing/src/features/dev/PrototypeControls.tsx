@@ -163,7 +163,7 @@ const GROUPS: Group[] = [
       {
         id: 'c-some',
         label: 'Cancelled · credits > 0',
-        steps: 'Click Reactivate subscription. Choosing another plan is locked until the credits run out.',
+        steps: 'Click Reactivate subscription. Choose a plan stays hidden until the credits run out.',
         status: 'cancelling',
         planId: 'monthly',
         creditsLeft: 'some',

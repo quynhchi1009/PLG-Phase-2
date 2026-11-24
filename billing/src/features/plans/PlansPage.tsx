@@ -69,7 +69,7 @@ export function PlansPage() {
           </div>
         ) : lineup === 'yearly' ? (
           // Growth yearly moves up to Business, or down to Growth monthly at renewal.
-          <div className="plans">
+          <div className={`plans${state.pendingDowngrade ? ' plans--scheduled' : ''}`}>
             <PlanCard plan={PLANS.monthly} recommended={recommended === 'monthly'} onChoose={setPending} />
             <div className="plans__featured">
               <PlanCard plan={PLANS.yearly} featured recommended={recommended === 'yearly'} onChoose={setPending} />
@@ -322,23 +322,38 @@ function Estimator({
 
 /* Plan cards ---------------------------------------------------------------- */
 
-function useCta(plan: Plan) {
+type Cta = {
+  kind: 'sales' | 'current' | 'downgrade' | 'reactivate' | 'locked' | 'select'
+  label: string
+  /* The way back from a scheduled switch to monthly, shown under the button. */
+  cancelDowngrade?: boolean
+}
+
+/* Non-breaking spaces keep a date whole if a label has to wrap on a narrow card. */
+const wholeDate = (iso: string) => formatDate(iso).replace(/ /g, ' ')
+
+function useCta(plan: Plan): Cta {
   const { state } = useBilling()
-  if (plan.id === 'business') return { kind: 'sales' as const, label: 'Talk to sales' }
-  // Growth yearly can move down to monthly, at the end of the paid year.
+  if (plan.id === 'business') return { kind: 'sales', label: 'Talk to sales' }
+  // Growth yearly can move down to monthly, at the end of the paid year. Once that is scheduled,
+  // the monthly card's button carries the date it starts and the yearly card's (the plan being
+  // left) the date it ends, so each date sits in its own button.
   if (state.status === 'active' && state.planId === 'yearly' && plan.id === 'monthly')
     return state.pendingDowngrade
-      ? { kind: 'current' as const, label: `Starts ${formatDate(state.cycleEnd)}` }
-      : { kind: 'downgrade' as const, label: 'Switch at renewal' }
+      ? { kind: 'current', label: `Scheduled for ${wholeDate(state.cycleEnd)}`, cancelDowngrade: true }
+      : { kind: 'downgrade', label: 'Switch at renewal' }
   if (state.status === 'active' && state.planId === plan.id)
-    return { kind: 'current' as const, label: 'Your current plan' }
+    return {
+      kind: 'current',
+      label: state.pendingDowngrade ? `Plan ends ${wholeDate(state.cycleEnd)}` : 'Your current plan',
+    }
   if (state.status === 'active' && !isUpgrade(state.planId, plan.id))
-    return { kind: 'current' as const, label: 'Included in your plan' }
+    return { kind: 'current', label: 'Included in your plan' }
   // A cancelled plan that hasn't ended yet can be taken back as it is.
   if (state.status === 'cancelling' && state.planId === plan.id)
-    return { kind: 'reactivate' as const, label: 'Reactivate this plan' }
-  if (!canSelectPlan(state)) return { kind: 'locked' as const, label: 'Available when plan ends or credits run out' }
-  return { kind: 'select' as const, label: 'Select plan' }
+    return { kind: 'reactivate', label: 'Reactivate this plan' }
+  if (!canSelectPlan(state)) return { kind: 'locked', label: 'Available when plan ends or credits run out' }
+  return { kind: 'select', label: 'Select plan' }
 }
 
 function PlanCard({
@@ -439,6 +454,20 @@ function PlanCard({
         >
           {cta.label}
         </Button>
+        {cta.cancelDowngrade && (
+          // Opens the same "Keep your yearly plan?" pop-up as Billing's "Keep yearly plan". Like the other
+          // plan actions on this page it is shown on the Billing page, where the confirmation lives.
+          <button
+            type="button"
+            className="text-btn plan__cta-link"
+            onClick={() => {
+              dispatch({ type: 'request-cancel-downgrade' })
+              navigate('billing')
+            }}
+          >
+            Cancel downgrade
+          </button>
+        )}
       </div>
     </section>
   )

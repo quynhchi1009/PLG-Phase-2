@@ -553,6 +553,13 @@
     min-block-size: 91px;
     align-content: start;
   }
+
+  /* While a switch to monthly is scheduled, the Growth monthly card has a text button under its
+     button. The other two cards keep that room empty so all three buttons start on one line
+     (top padding 8 + button 40 + link 31, rounded up). */
+  .plans--scheduled .plan__cta {
+    min-block-size: 5rem;
+  }
 }
 
 /* The featured Growth card sits raised: it starts above and ends below its
@@ -809,6 +816,24 @@
 .plan__cta {
   margin-block-start: auto;
   padding-block-start: var(--space-2);
+}
+
+/* A disabled button that carries a date ("Scheduled for 28 September 2027", "Plan ends 28
+   September 2027") needs up to 285px: on a narrower card it breaks onto two lines (the date stays
+   whole) instead of spilling out of the button. */
+.plan__cta .btn--current {
+  padding-block: var(--space-2);
+  white-space: normal;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* The way back from a scheduled switch, centred under the full-width button. */
+.plan__cta-link {
+  display: block;
+  margin: var(--space-3) auto 0;
+  font-size: var(--text-sm);
+  text-align: center;
 }
 
 .placeholder-note {

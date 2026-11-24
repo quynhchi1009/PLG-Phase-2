@@ -26,7 +26,7 @@ Registry-sourced corporate data across Asian jurisdictions, priced by credits: o
 
 - Lives inside the AsiaVerify Portal shell: navy top bar and sidebar shared by every product (pKYB, Products & Pricing, My Plan, API Key, MCP, Account Settings).
 - Plans in the current flow: Flex, $249 one-time for 623 credits that never expire (one manual top-up); Growth (billed monthly) $99/month with 535 credits/month; Growth (billed yearly) $999/year ($83.25/month) with 6,094 credits/year; Business (sales-led, volume pricing). Figures match the PRD (`docs/PRD-billing-phase1.md`).
-- Customers can top up credits anytime before a billing cycle ends (My Plan > Top up).
+- Customers can top up credits anytime before a billing cycle ends (My Plan > Top up, or the Billing page).
 - Payments are processed through Stripe; AsiaVerify does not store card details.
 - Cancellation is end-of-cycle: the plan stays active until the current billing cycle ends. Until the cycle ends, a cancelling customer can reactivate: the same plan, credits and Perpetual KYB continue, nothing is charged at that moment, and the plan renews on its original date. Choosing a different plan becomes available when the current plan ends or its credits run out.
 - After a plan ends, historical reports stay accessible for 90 days and are then permanently deleted. Perpetual KYB monitoring stops when the plan ends.

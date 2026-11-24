@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FlaskConical, X } from 'lucide-react'
+import { FlaskConical, Moon, Sun, X } from 'lucide-react'
 import { useBilling, type EndReason, type PaidPlanId, type SubscriptionStatus } from '../../state/billing'
 import { useUi, type Route } from '../../state/ui'
 
@@ -88,7 +88,7 @@ const GROUPS: { title: string; items: Scenario[] }[] = [
 /** Demo-only panel for jumping between account states. Not part of the product UI. */
 export function PrototypeControls() {
   const { dispatch } = useBilling()
-  const { navigate } = useUi()
+  const { navigate, theme, toggleTheme } = useUi()
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState('g-m')
 
@@ -121,9 +121,19 @@ export function PrototypeControls() {
           <FlaskConical size={16} aria-hidden />
           Prototype states
         </p>
-        <button type="button" className="icon-btn icon-btn--chrome" aria-label="Close prototype states" onClick={() => setOpen(false)}>
-          <X size={16} aria-hidden />
-        </button>
+        <span className="proto__head-actions">
+          <button
+            type="button"
+            className="icon-btn icon-btn--chrome"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
+          </button>
+          <button type="button" className="icon-btn icon-btn--chrome" aria-label="Close prototype states" onClick={() => setOpen(false)}>
+            <X size={16} aria-hidden />
+          </button>
+        </span>
       </div>
       {[AUTO_TOP_UP_GROUP, ...GROUPS].map((g) => (
         <div key={g.title} className="proto__group">

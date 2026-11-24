@@ -36,9 +36,22 @@
   --dur-fast: 150ms;
   --dur: 220ms;
 
-  --topbar-h: 56px;
-  --sidebar-w: 236px;
-  --sidebar-w-collapsed: 68px;
+  /* Shell sizes as production sets them: the top bar grows with the viewport. */
+  --topbar-h: 60px;
+  --sidebar-w: 285px;
+  --sidebar-w-collapsed: 112px;
+}
+
+@media (min-width: 1340px) {
+  :root {
+    --topbar-h: 76px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --topbar-h: 84px;
+  }
 }
 
 *,
@@ -199,6 +212,11 @@ input {
   border-radius: var(--radius);
   box-shadow: var(--shadow-pop);
   transform: translateY(-150%);
+}
+
+.skip-link:not(:focus) {
+  /* Parked off-screen: no shadow, so it can't bleed onto the white top bar. */
+  box-shadow: none;
 }
 
 .skip-link:focus {

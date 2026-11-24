@@ -323,14 +323,16 @@
   margin-block-end: var(--space-2);
 }
 
+/* The two filters are compact: 32px tall (the same as the small buttons beside them) at 13px. */
 .history__filters .select {
-  font-size: var(--text-md);
+  min-block-size: 32px;
+  font-size: var(--text-sm);
 }
 
 .date-range {
   position: relative;
-  flex: 0 1 22rem;
-  min-inline-size: 15rem;
+  flex: 0 1 15.5rem;
+  min-inline-size: 13rem;
 }
 
 .date-range .select {
@@ -341,6 +343,8 @@
   position: absolute;
   inset-block-start: 50%;
   inset-inline-end: var(--space-1);
+  inline-size: 24px;
+  block-size: 24px;
   translate: 0 -50%;
 }
 
@@ -370,8 +374,8 @@
 
 .history__channel {
   position: relative;
-  flex: 0 1 12rem;
-  min-inline-size: 10rem;
+  flex: 0 1 8.5rem;
+  min-inline-size: 7.5rem;
 }
 
 .history__channel select {

@@ -969,6 +969,11 @@
   justify-content: space-between;
 }
 
+.proto__head-actions {
+  display: inline-flex;
+  align-items: center;
+}
+
 .proto__head p {
   display: inline-flex;
   align-items: center;

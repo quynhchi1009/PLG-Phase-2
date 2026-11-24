@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "billing/src/styles/shell.css"
+        ],
+        "createdAt": "2026-11-23T09:44:18.719Z",
+        "reason": "Sidebar My Plan sub-list rule copied from production nav (portal2.asiaverify.com, border-l-3 #00C09E); the user asked to port the production header and left nav as designed"
+      }
+    ]
+  }
+}

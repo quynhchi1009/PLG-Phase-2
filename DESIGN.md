@@ -1,6 +1,6 @@
 ---
 name: AsiaVerify Portal (PLG Billing)
-description: A quiet, exact billing ledger inside the navy AsiaVerify Portal shell.
+description: A quiet, exact billing ledger inside the AsiaVerify Portal shell.
 colors:
   interactive-primary: "#00735f"
   interactive-control: "#004d3f"
@@ -153,9 +153,9 @@ components:
     rounded: "{rounded.lg}"
     padding: "8px 8px 8px 16px"
   sidebar-item:
-    rounded: "{rounded.md}"
-    padding: "8px 12px"
-    height: "40px"
+    rounded: "{rounded.sm}"
+    padding: "0 0 0 12px"
+    height: "41px"
 ---
 
 # Design System: AsiaVerify Portal (PLG Billing)
@@ -164,14 +164,14 @@ components:
 
 **Creative North Star: "The Quiet Ledger"**
 
-The AsiaVerify Portal is a navy-framed workspace: a gradient top bar and sidebar that every product shares, and inside it a pale, near-white working floor of hairline-edged cards. Billing extends that world without competing with it. The content area reads like a ledger: exact amounts and dates set in Roboto with tabular numerals, sections divided by single hairline rules, and one green voice reserved for actions, the plan price and confirmation marks.
+The AsiaVerify Portal is a charcoal-framed workspace: a full-height sidebar and a white top bar that every product shares, and inside it a pale, near-white working floor of hairline-edged cards. Billing extends that world without competing with it. The content area reads like a ledger: exact amounts and dates set in Roboto with tabular numerals, sections divided by single hairline rules, and one green voice reserved for actions, the plan price and confirmation marks.
 
 Density is moderate and administrative: 14px Open Sans body, 24px card padding, 20px gutters. Depth is almost absent on the working floor (a barely-there card shadow) and is spent only on things that float: tooltips, toasts and the modal dialog. Good news and the recommended choice are carried by soft green tints, never by saturated fills; cancellation and warnings use the sheet's sentiment tokens in their elevated (tinted) form.
 
-Every colour comes from the AsiaVerify Colour Tokens sheet, in light and dark, and the semantic name in code is the sheet's name (`content.main` is `--color-content-main`). The navy chrome is constant across themes; only the working floor flips.
+Every colour comes from the AsiaVerify Colour Tokens sheet, in light and dark, and the semantic name in code is the sheet's name (`content.main` is `--color-content-main`). The charcoal sidebar is constant across themes; the white top bar follows the working floor and flips with it.
 
 **Key Characteristics:**
-- Navy gradient chrome (navy-700 to navy-950), identical in light and dark.
+- Charcoal sidebar (#292929) with a white top bar, copied from production; the sidebar is identical in light and dark.
 - White cards on an off-white floor, 1px subtle hairlines, near-flat shadow.
 - One interactive green for actions, prices and checks; pale green tints for good news and the featured option.
 - Roboto for every heading, Open Sans for everything else (figures and money included); tabular numerals wherever figures align.
@@ -179,7 +179,7 @@ Every colour comes from the AsiaVerify Colour Tokens sheet, in light and dark, a
 
 ## Colors
 
-A restrained neutral floor with a single deep-teal-green voice, framed by navy chrome; all values are generated from the brand token sheet and flip for dark mode.
+A restrained neutral floor with a single deep-teal-green voice, framed by the portal's charcoal sidebar; all values are generated from the brand token sheet and flip for dark mode.
 
 ### Primary
 - **Registry Green** (interactive-primary): primary buttons, the plan label, checkmarks, switch-on, active tab underline, meter fill, focus outline. In dark mode it lifts to a brighter teal for contrast.
@@ -189,10 +189,11 @@ A restrained neutral floor with a single deep-teal-green voice, framed by navy c
 - **Soft Mint Wash** (interactive-accent / accent-hover): secondary-button hover, input focus halo and text selection.
 
 ### Secondary
-- **Chrome Signal Green** (chrome-accent): only on navy chrome: the "Asia" in the logo, the active-nav edge bar, "New" tags and the notification count. Never on the working floor.
+- **Chrome Signal Green** (chrome-accent): now used only inside the Featured Plan card and the prototype panel. The shell has its own portal green (#00c09e) for the sub-menu rule and the bell's unread dot; neither appears on the working floor.
 
 ### Neutral
-- **Portal Navy** (navy-700, navy-900, navy-950): top bar (90deg) and sidebar (180deg) gradients; navy-900 doubles as background-system for tooltips and toasts.
+- **Portal Navy** (navy-700, navy-900, navy-950): the featured plan card's gradient; navy-900 doubles as background-system for tooltips and toasts. The shell no longer uses it.
+- **Portal Charcoal** (#292929, hover and current row #444444): the sidebar. Measured from production and set as `--shell-*` tokens in `shell.css`, because the colour sheet has no sidebar token; add them to the sheet if it should own them.
 - **Ink** (content-primary): headings, strong values, table emphasis.
 - **Body Graphite** (content-main): running text.
 - **Quiet Graphite** (content-tertiary): hints, meta lines, table sub-lines, inactive tabs, legends.
@@ -209,7 +210,7 @@ A restrained neutral floor with a single deep-teal-green voice, framed by navy c
 ### Named Rules
 **The Sheet Is Law Rule.** Colours enter only through `--color-*` tokens generated from the AsiaVerify Colour Tokens sheet. Never hand-edit a value or introduce a hex that is not on the sheet; regenerate instead.
 
-**The Navy Stays Navy Rule.** Chrome (top bar, sidebar) uses the navy and chrome-* tokens in both themes. Chrome Signal Green belongs to the chrome; Registry Green belongs to the working floor.
+**The Production Shell Rule.** The header and left navigation copy portal2.asiaverify.com (measured 23 Nov 2026): change them only when production changes. The sidebar keeps its charcoal in both themes; the top bar uses `base-light`, `content-primary` and `interactive-primary`, so it flips. Registry Green belongs to the working floor and the top bar's actions; the sidebar's own green (#00c09e) stays inside the sidebar and the bell.
 
 **The Featured Plan Exception.** On the Upgrade page the featured Growth plan card is set in Portal Navy (the chrome gradient) with white text, Chrome Signal Green credit figures and checks, and a warning-tinted savings badge, as the product design specifies (confirmed by the product owner, Oct 2026). This is the only navy surface on the working floor.
 
@@ -249,7 +250,7 @@ A restrained neutral floor with a single deep-teal-green voice, framed by navy c
 
 ## Layout
 
-The shell is a CSS grid: a 56px sticky top bar across, a 236px sticky sidebar (68px collapsed) and a fluid main column. Pages cap at 1240px with 32px/40px/48px padding (top/sides/bottom), dropping to 24px/16px/40px under 760px.
+The shell is a flex row: a 285px full-height sticky sidebar (112px collapsed) that carries the logo, and a fluid column holding a sticky top bar (60px, 76px from 1340px wide, 84px from 1920px) over the main content. Pages cap at 1240px with 32px/40px/48px padding (top/sides/bottom), dropping to 24px/16px/40px under 760px.
 
 Page heads are a title, a one-paragraph lede and a single hairline rule beneath (24px below, 24px after). Content below sits in cards; elsewhere inside a card, sibling sections are separated by a hairline with 20px above and below rather than by nested cards. The two Billing cards (Version A) use no hairlines: groups are separated by 32px of space and rows sit flush on the card's padding edge. The left card holds only fixed facts about the plan (name, price, allowance, what is included); the right card holds everything you can change or act on, in two places: plan-level actions (Cancel plan, Change plan) are right-aligned in the card header, and "Current credit balance" is one block that owns its credit-level actions. Inside that block the intervals set the hierarchy: 12px between label, figure and meter (one cluster), then 16px from the meter to its actions (they hang from it) and 16px between the two action rows (Top up now, and on Growth Auto top up), each with text left and its control on the shared right edge. The actions never get a header of their own, because a header would make them a peer of the balance instead of part of it; the whole block is one labelled group for assistive technology. The action rows are absent whenever top-up is unavailable.
 
@@ -317,7 +318,9 @@ Grid of icon, text and optional dismiss; 6px radius, 1px border, 13px text with 
 Collapsed, tabular-numeral tables with 12px/16px cells, hairline row dividers, 13px 600 headers and Floor Grey row hover; first column is flush left. Secondary lines sit beneath at 12px tertiary.
 
 ### Navigation
-Navy sidebar: 40px rows, 6px radius, chrome-tertiary text turning white on hover; the current page gets a 7% white wash, 600 weight and a 3px Chrome Signal Green bar on the leading edge. Collapses to icons at 68px; becomes a drawer under 900px. Top bar carries the logo ("Asia" in Chrome Signal Green), the product title and 36px chrome icon buttons.
+Charcoal sidebar (#292929, 24px side and 32px top padding), all in Roboto. The logo sits at the top (full wordmark, or the 44px mark when collapsed), then a "Menu" toggle that collapses the rail. Rows are 41px tall with 4px radius and a 25px icon in a 41px box; labels are 16px #fcfcfc, rows are 16px apart, and hover and the current page share a #444444 fill, the current page also at 600 weight. Billing is a top-level row with the gem icon, sitting between View Reports and Onboarding Management as in production; when it is the current page it takes the #444444 fill at 600 weight. "My Plan" is a separate row with a down chevron, collapsed by default; it opens a sub-list (Top up) hung off a 3px #00c09e rule, 48px in, with 16px #d1d5db labels that turn white on hover. "New" tags are a 4px-radius tint pill (#f6ffed, 1px #1a813c, 10px #444444 text). Logout is pinned at the bottom. Collapses to icons at 112px; under 900px it becomes a drawer over a scrim. Production has no drawer (its rail just stays collapsed), so the drawer is the one deliberate departure.
+
+The top bar is white with a 2px 25% grey rule underneath. It carries the page title (20px 700 uppercase Roboto, 30px in from the sidebar), then the notification bell with a green count, the cart with a green dot, and a "Get Help" outlined button (32px tall, 30px side padding, 4px radius). The Upgrade page swaps the bell and cart for a primary "Upgrade now". The dark/light switch is not part of the shell; it lives in the prototype panel.
 
 ### The Reshaping Dialog (signature)
 One native modal carries a whole multi-step flow. Width animates between 440px, 560px and 880px (280ms, ease-out) as steps change, while each step's content re-enters with a 6px rise (260ms). Optional hero band in Pale Ledger Tint with a 56px ringed icon disc; titles 18px 700; actions right-aligned or stacked and centred; wide steps split into a form pane and a Floor Grey aside. Success steps use the Success Mark.
@@ -343,7 +346,7 @@ Navy (background-system) bars, 10px radius, 13px chrome text, Pop shadow, bottom
 
 ### Do:
 - **Do** take every colour from the `--color-*` tokens generated from the AsiaVerify Colour Tokens sheet, and test both themes.
-- **Do** keep the shell's navy gradient (navy-700 to navy-900 at 55% to navy-950) and chrome tokens unchanged in dark mode.
+- **Do** keep the sidebar's charcoal and its `--shell-*` tokens unchanged in dark mode.
 - **Do** set money, credits and date columns in tabular numerals, with prices in Open Sans 700.
 - **Do** separate sections inside a card with a 1px Hairline and 20px spacing before adding another card; the Billing cards separate by space alone.
 - **Do** pair every Pale Ledger Tint surface with a Mint Hairline edge.
@@ -351,7 +354,7 @@ Navy (background-system) bars, 10px radius, 13px chrome text, Pop shadow, bottom
 - **Do** honour `prefers-reduced-motion`: the build collapses all animation and transition to 1ms.
 
 ### Don't:
-- **Don't** use Chrome Signal Green (#2fbf87) on the working floor, or Registry Green on the navy chrome.
+- **Don't** use Chrome Signal Green (#2fbf87) or the shell's #00c09e on the working floor, or Registry Green on the charcoal sidebar.
 - **Don't** fill large surfaces with saturated green; tints are for state and recommendation, solid green is for pressable controls.
 - **Don't** introduce shadows heavier than Card on resting content; Pop and Dialog are for floating layers only.
 - **Don't** set body, UI text or figures in Roboto; it is reserved for headings.

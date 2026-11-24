@@ -1,98 +1,160 @@
-/* The navy AsiaVerify Portal shell: top bar, sidebar, main column.
-   Chrome stays navy in both themes, per the token sheet. */
+/* The AsiaVerify Portal shell, as it runs in production (portal2.asiaverify.com): a full-height
+   charcoal sidebar on the left that carries the logo, and a white top bar over the working floor.
+   Values below are measured from the production page. The sidebar stays charcoal in both themes;
+   the top bar follows the working floor, so it flips with the theme. */
 
 .shell {
+  --shell-side-bg: #292929;
+  --shell-side-ink: #fcfcfc;
+  --shell-side-ink-sub: #d1d5db;
+  --shell-side-hover: #444444;
+  --shell-accent: #00c09e;
+  --shell-new-bg: #f6ffed;
+  --shell-new-line: #1a813c;
+  --shell-new-ink: #444444;
+  --shell-top-bg: var(--color-base-light);
+  --shell-top-ink: var(--color-content-primary);
+  --shell-top-line: rgb(165 165 165 / 0.25);
+  --shell-top-hover: var(--color-background-subtle);
+  --shell-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
   min-height: 100dvh;
-  display: grid;
-  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-  grid-template-rows: var(--topbar-h) auto 1fr;
-  grid-template-areas:
-    'top top'
-    'banner banner'
-    'side main';
-  transition: grid-template-columns var(--dur) var(--ease-out);
+  display: flex;
+  align-items: stretch;
 }
 
-.shell--collapsed {
-  grid-template-columns: var(--sidebar-w-collapsed) minmax(0, 1fr);
+.shell__col {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Top bar ---------------------------------------------------------------- */
 
 .topbar {
-  grid-area: top;
   position: sticky;
   inset-block-start: 0;
   z-index: 30;
+  flex: none;
   display: flex;
   align-items: center;
-  gap: var(--space-6);
-  padding-inline: var(--space-5) var(--space-4);
-  background: linear-gradient(
-    90deg,
-    var(--color-navy-700) 0%,
-    var(--color-navy-900) 55%,
-    var(--color-navy-950) 100%
-  );
-  color: #fff;
-  border-block-end: 1px solid var(--color-chrome-border);
+  justify-content: space-between;
+  block-size: var(--topbar-h);
+  padding-inline: 20px;
+  background: var(--shell-top-bg);
+  color: var(--shell-top-ink);
+  border-block-end: 2px solid var(--shell-top-line);
+  font-family: var(--font-head);
 }
 
-.topbar .topbar__menu {
+.topbar .topbar__menu,
+.topbar .topbar__mark {
   display: none;
 }
 
-.logo {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-.logo img {
-  display: block;
-  block-size: 28px;
-  inline-size: auto;
-}
-
-.logo:focus-visible {
-  outline-color: var(--color-chrome-accent);
-}
-
 .topbar__title {
-  font-family: var(--font-head);
-  font-weight: 500;
-  font-size: var(--text-md);
-  color: var(--color-chrome-content-main);
+  flex: 1;
+  min-inline-size: 0;
+  margin-inline-start: 30px;
+  overflow: hidden;
+  color: var(--shell-top-ink);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .topbar__actions {
-  margin-inline-start: auto;
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 8px;
 }
 
-.topbar__bell {
+.topbar__icon-btn {
   position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: 45px;
+  block-size: 45px;
+  padding: 5px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--shell-top-ink);
+  transition: background-color var(--dur-fast) var(--shell-ease);
+}
+
+.topbar__icon-btn:hover {
+  background: var(--shell-top-hover);
+}
+
+.topbar__icon-btn svg {
+  inline-size: 35px;
+  block-size: 35px;
+}
+
+.topbar__bell svg {
+  inline-size: 30px;
+  block-size: 30px;
+}
+
+/* Unread count on the bell and the dot on the cart: the same green, ringed in the bar's colour. */
+.topbar__count,
+.topbar__dot {
+  position: absolute;
+  background: var(--color-interactive-primary);
+  border: 1px solid var(--color-base-light);
+  color: var(--color-base-light);
 }
 
 .topbar__count {
-  position: absolute;
-  inset-block-start: 3px;
-  inset-inline-end: 2px;
-  min-inline-size: 16px;
-  block-size: 16px;
-  padding-inline: 4px;
-  border-radius: var(--radius-pill);
-  background: var(--color-chrome-accent);
-  color: var(--color-navy-950);
-  font-size: 10px;
-  font-weight: 700;
+  inset-block-start: 1px;
+  inset-inline-end: -3px;
+  min-inline-size: 21px;
+  block-size: 18px;
+  padding-inline: 6px;
+  border-radius: 10px;
+  font-size: 12px;
   line-height: 16px;
   text-align: center;
 }
 
-/* Icon buttons ------------------------------------------------------------ */
+.topbar__dot {
+  inset-block-start: 6px;
+  inset-inline-end: 5px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+}
+
+.topbar__help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 32px;
+  padding-inline: 30px;
+  border: 1px solid var(--color-interactive-primary);
+  border-radius: 4px;
+  background: var(--color-base-light);
+  color: var(--color-interactive-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--shell-ease);
+}
+
+.topbar__help:hover {
+  background: var(--color-background-subtle);
+  text-decoration: none;
+}
+
+/* Icon buttons (also used inside dialogs, tables and the prototype panel) ---- */
 
 .icon-btn {
   display: inline-grid;
@@ -137,123 +199,246 @@
 /* Sidebar ------------------------------------------------------------------ */
 
 .sidebar {
-  grid-area: side;
   position: sticky;
-  inset-block-start: var(--topbar-h);
-  block-size: calc(100dvh - var(--topbar-h));
+  inset-block-start: 0;
+  align-self: flex-start;
+  z-index: 20;
+  flex: none;
+  inline-size: var(--sidebar-w);
+  block-size: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: var(--space-4) var(--space-3);
-  background: linear-gradient(
-    180deg,
-    var(--color-navy-700) 0%,
-    var(--color-navy-900) 55%,
-    var(--color-navy-950) 100%
-  );
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-color: var(--color-navy-600) transparent;
-  z-index: 20;
+  padding: 32px 24px;
+  overflow: hidden;
+  background: var(--shell-side-bg);
+  color: var(--shell-side-ink);
+  font-family: var(--font-head);
+  transition: inline-size 0.15s var(--shell-ease);
 }
 
-.sidebar__list {
-  display: grid;
-  gap: 2px;
-}
-
-.sidebar__list--main {
-  margin-block-start: var(--space-3);
-  padding-block-start: var(--space-3);
-  border-block-start: 1px solid var(--color-chrome-border);
-}
-
-.sidebar__list--foot {
-  margin-block-start: auto;
-  padding-block-start: var(--space-3);
-  border-block-start: 1px solid var(--color-chrome-border);
-}
-
-.sidebar__item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  inline-size: 100%;
-  min-block-size: 40px;
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--color-chrome-content-tertiary);
-  font-size: var(--text-md);
-  text-align: start;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
-}
-
-.sidebar__item:hover {
-  background: var(--color-chrome-hover);
-  color: #fff;
-}
-
-.sidebar__item:focus-visible {
-  outline-color: var(--color-chrome-accent);
+.sidebar :focus-visible {
+  outline-color: var(--shell-accent);
   outline-offset: -2px;
 }
 
-.sidebar__item[aria-current='page'] {
-  background: var(--color-chrome-selected);
-  color: #fff;
-  font-weight: 600;
+.sidebar__logo {
+  position: relative;
+  flex: none;
+  inline-size: 152px;
+  block-size: 40px;
+  margin: 0 0 50px 12px;
+  overflow: hidden;
+  transition: inline-size 0.3s var(--shell-ease);
 }
 
-/* The brand's active-navigation marker: a short green bar on the row edge. */
-.sidebar__item[aria-current='page']::before {
-  content: '';
+.sidebar__logo img {
   position: absolute;
-  inset-block: 9px;
-  inset-inline-start: calc(var(--space-3) * -1);
-  inline-size: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--color-chrome-accent);
+  inset: 0 auto auto 0;
+  display: block;
+  block-size: 40px;
+  inline-size: auto;
+  transition:
+    opacity 0.3s var(--shell-ease),
+    visibility 0.3s var(--shell-ease);
+}
+
+.sidebar__logo-mark {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar__list--head {
+  flex: none;
+  margin-block-end: 16px;
+}
+
+.sidebar__list--main {
+  flex: 1;
+  min-block-size: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.3) transparent;
+}
+
+.sidebar__list--main::-webkit-scrollbar {
+  inline-size: 4px;
+}
+
+.sidebar__list--main::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.3);
+}
+
+.sidebar__list--main::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.5);
+}
+
+.sidebar__list--foot {
+  flex: none;
+  margin-block-start: 16px;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  min-block-size: 41px;
+  padding: 0 0 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--shell-side-ink);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  text-align: start;
+  transition:
+    color 0.3s var(--shell-ease),
+    background-color 0.3s var(--shell-ease);
+}
+
+.sidebar__item:hover,
+.sidebar__item[aria-current='page'],
+.sidebar__item.is-parent-current {
+  background: var(--shell-side-hover);
+}
+
+.sidebar__item[aria-current='page'] .sidebar__label,
+.sidebar__item.is-parent-current .sidebar__label {
+  font-weight: 600;
 }
 
 .sidebar__icon {
   display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: 41px;
+  block-size: 41px;
+  padding: 8px;
+}
+
+.sidebar__icon svg {
+  inline-size: 25px;
+  block-size: 25px;
+}
+
+/* The collapse toggle points left while open and right while collapsed. */
+.sidebar__icon--toggle {
+  transform: rotate(180deg);
+  transition: transform 0.3s var(--shell-ease);
 }
 
 .sidebar__label {
   flex: 1;
-  white-space: nowrap;
+  margin-inline-start: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar__new {
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--color-chrome-accent);
-  color: var(--color-navy-950);
+  flex: none;
+  margin-inline-start: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--shell-new-line);
+  border-radius: 4px;
+  background: var(--shell-new-bg);
+  color: var(--shell-new-ink);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 400;
+  line-height: 12px;
 }
 
-.shell--collapsed .sidebar__label,
-.shell--collapsed .sidebar__new {
-  display: none;
+/* Groups (My Plan) ---------------------------------------------------------- */
+
+.sidebar__chevron {
+  display: inline-grid;
+  flex: none;
+  margin-inline-start: auto;
+  transition: transform 0.3s var(--shell-ease);
 }
 
-.shell--collapsed .sidebar__item {
-  justify-content: center;
-  padding-inline: 0;
+.sidebar__chevron svg {
+  inline-size: 24px;
+  block-size: 24px;
+}
+
+.sidebar__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+/* Sub-items hang off a green rule, 48px in from it. */
+.sidebar__sub {
+  margin-block: 16px -4px;
+  padding-inline-start: 48px;
+  border-inline-start: 3px solid var(--shell-accent);
+}
+
+.sidebar__sub-item {
+  display: block;
+  inline-size: 100%;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--shell-side-ink-sub);
+  font-size: 16px;
+  line-height: 24px;
+  text-align: start;
+  transition: color 0.3s var(--shell-ease);
+}
+
+.sidebar__sub-item:hover,
+.sidebar__sub-item[aria-current='page'] {
+  color: #fff;
+}
+
+.sidebar__sub-item[aria-current='page'] {
+  font-weight: 600;
+}
+
+/* Collapsed rail: icons only, 112px wide. Wide screens only; small screens use the drawer. */
+
+@media (min-width: 901px) {
+  .shell--collapsed .sidebar {
+    inline-size: var(--sidebar-w-collapsed);
+  }
+
+  .shell--collapsed .sidebar__logo {
+    inline-size: 44px;
+  }
+
+  .shell--collapsed .sidebar__logo-full {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .shell--collapsed .sidebar__logo-mark {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .shell--collapsed .sidebar__icon--toggle {
+    transform: none;
+  }
+
+  .shell--collapsed .sidebar__label,
+  .shell--collapsed .sidebar__new,
+  .shell--collapsed .sidebar__chevron {
+    display: none;
+  }
 }
 
 /* Main --------------------------------------------------------------------- */
 
 .main {
-  grid-area: main;
+  flex: 1;
   min-inline-size: 0;
   /* Keeps the floating prototype buttons off the last line of content. */
   padding-block-end: calc(var(--space-12) + var(--space-4));
@@ -267,29 +452,15 @@
 /* Small screens: the sidebar becomes a drawer. ------------------------------ */
 
 @media (max-width: 900px) {
-  .shell,
-  .shell--collapsed {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'top'
-      'banner'
-      'main';
-  }
-
-  .topbar {
-    gap: var(--space-3);
-    padding-inline: var(--space-2) var(--space-2);
-  }
-
-  .topbar .topbar__menu {
-    display: inline-grid;
+  .shell {
+    display: block;
   }
 
   .sidebar {
     position: fixed;
-    inset-block: var(--topbar-h) 0;
+    inset-block: 0;
     inset-inline-start: 0;
-    block-size: auto;
+    z-index: 50;
     inline-size: min(var(--sidebar-w), 82vw);
     transform: translateX(-100%);
     visibility: hidden;
@@ -309,20 +480,34 @@
     display: none;
   }
 
-  .shell--collapsed .sidebar__label,
-  .shell--collapsed .sidebar__new {
-    display: revert;
+  .topbar {
+    padding-inline: 8px 12px;
   }
 
-  .shell--collapsed .sidebar__item {
-    justify-content: flex-start;
-    padding-inline: var(--space-3);
+  .topbar .topbar__menu {
+    display: inline-grid;
+  }
+
+  .topbar .topbar__mark {
+    display: inline-flex;
+    flex: none;
+    margin-inline-start: 4px;
+  }
+
+  .topbar__mark img {
+    display: block;
+    block-size: 32px;
+    inline-size: auto;
+  }
+
+  .topbar__title {
+    margin-inline-start: 12px;
   }
 
   .shell__scrim {
     position: fixed;
-    inset: var(--topbar-h) 0 0;
-    z-index: 15;
+    inset: 0;
+    z-index: 45;
     display: block;
     background: var(--color-background-scrim);
     opacity: 0;
@@ -337,73 +522,23 @@
 }
 
 @media (max-width: 520px) {
+  .topbar .topbar__mark {
+    display: none;
+  }
+
   .topbar__title {
-    display: none;
+    margin-inline-start: 4px;
+    font-size: 16px;
   }
 
-  .topbar__actions {
-    gap: 0;
-  }
-}
-
-/* Sidebar groups ------------------------------------------------------------ */
-
-.sidebar__chevron {
-  color: var(--color-chrome-content-tertiary);
-  transition: transform var(--dur-fast) var(--ease-out);
-}
-
-.sidebar__chevron.is-open {
-  transform: rotate(180deg);
-}
-
-.shell--collapsed .sidebar__chevron {
-  display: none;
-}
-
-.sidebar__sub {
-  display: grid;
-  gap: 2px;
-  margin-block: 2px var(--space-1);
-}
-
-.sidebar__item--sub {
-  min-block-size: 36px;
-  padding-inline-start: calc(var(--space-3) + 18px + var(--space-3));
-}
-
-.sidebar__item.is-parent-current {
-  color: #fff;
-  font-weight: 600;
-}
-
-/* Upgrade page top-bar controls ------------------------------------------- */
-
-.topbar__help {
-  padding: 0 var(--space-3);
-  color: var(--color-chrome-accent);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.topbar__help:hover {
-  text-decoration: underline;
-}
-
-.topbar__upgrade {
-  margin-inline-start: var(--space-2);
-}
-
-@media (max-width: 760px) {
   .topbar__help {
-    display: none;
+    padding-inline: 14px;
   }
 }
 
 /* Account-wide nudge for Flex customers who are out of credits or top-ups. */
 .flex-banner {
-  grid-area: banner;
+  flex: none;
   padding: var(--space-2) var(--space-5);
   border-block-end: 1px solid var(--color-border-accent);
   background: var(--color-interactive-selected);

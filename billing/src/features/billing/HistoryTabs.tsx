@@ -113,7 +113,7 @@ export function HistoryTabs() {
                 <option value="API">API</option>
                 <option value="Portal">Portal</option>
               </select>
-              <ChevronDown className="select__chevron" size={16} aria-hidden />
+              <ChevronDown className="select__chevron" size={14} aria-hidden />
             </span>
           </div>
         )}
@@ -299,7 +299,7 @@ function DateRange({ from, to, onChange }: { from: string; to: string; onChange:
         aria-label={summary ? `Date generated: ${summary}` : 'Filter by date generated'}
         onClick={() => setOpen((o) => !o)}
       >
-        <CalendarDays className="select__chevron" size={16} aria-hidden />
+        <CalendarDays className="select__chevron" size={14} aria-hidden />
         {summary ? (
           <span className="select__value">{summary}</span>
         ) : (
@@ -308,7 +308,7 @@ function DateRange({ from, to, onChange }: { from: string; to: string; onChange:
       </button>
       {summary && (
         <button type="button" className="icon-btn date-range__clear" aria-label="Clear dates" onClick={() => onChange('', '')}>
-          <X size={14} aria-hidden />
+          <X size={12} aria-hidden />
         </button>
       )}
       {open && (

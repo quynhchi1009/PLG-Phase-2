@@ -1,27 +1,21 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import {
-  Bell,
-  ChevronDown,
-  CircleArrowLeft,
-  Gem,
-  KeyRound,
-  List,
-  LogOut,
-  Menu,
-  Moon,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Plug,
-  Radar,
-  Search,
-  Settings,
-  ShoppingCart,
-  Sun,
-  Tag,
-  UsersRound,
-} from 'lucide-react'
+import { CircleArrowLeft, KeyRound, Menu, Radar } from 'lucide-react'
 import { useBilling } from '../../state/billing'
 import { useUi, type Route } from '../../state/ui'
+import {
+  AccountSettingsIcon,
+  BellIcon,
+  CartIcon,
+  ChevronDownIcon,
+  LogoutIcon,
+  McpIcon,
+  MenuToggleIcon,
+  MyPlanIcon,
+  OnboardingIcon,
+  ProductsPricingIcon,
+  SearchIcon,
+  ViewReportsIcon,
+} from './ShellIcons'
 
 interface NavChild {
   label: string
@@ -38,21 +32,19 @@ interface NavItem {
   lapsed?: boolean
 }
 
+/* Icons without a production glyph (pKYB, API Key, Previous Page) use Lucide at the same 25px. */
 const NAV: NavItem[] = [
-  { label: 'Search', icon: <Search size={18} />, route: 'report' },
-  { label: 'View Reports', icon: <List size={18} />, lapsed: true },
-  { label: 'Onboarding Management', icon: <UsersRound size={18} /> },
-  { label: 'pKYB', icon: <Radar size={18} />, isNew: true },
-  {
-    label: 'My Plan',
-    icon: <Gem size={18} />,
-    lapsed: true,
-    children: [{ label: 'Billing', route: 'billing' }, { label: 'Top up' }],
-  },
-  { label: 'Products & Pricing', icon: <Tag size={18} />, route: 'plans', lapsed: true },
-  { label: 'API Key', icon: <KeyRound size={18} />, isNew: true },
-  { label: 'MCP', icon: <Plug size={18} />, isNew: true },
-  { label: 'Account Settings', icon: <Settings size={18} />, lapsed: true },
+  { label: 'Search', icon: <SearchIcon />, route: 'report' },
+  { label: 'View Reports', icon: <ViewReportsIcon />, lapsed: true },
+  /* Billing is a top-level row, as in production (between the report items and Onboarding Management). */
+  { label: 'Billing', icon: <MyPlanIcon />, route: 'billing', lapsed: true },
+  { label: 'Onboarding Management', icon: <OnboardingIcon /> },
+  { label: 'pKYB', icon: <Radar size={25} strokeWidth={2.2} />, isNew: true },
+  { label: 'My Plan', icon: <MyPlanIcon />, lapsed: true, children: [{ label: 'Top up' }] },
+  { label: 'Products & Pricing', icon: <ProductsPricingIcon />, route: 'plans', lapsed: true },
+  { label: 'API Key', icon: <KeyRound size={25} strokeWidth={2.2} />, isNew: true },
+  { label: 'MCP', icon: <McpIcon />, isNew: true },
+  { label: 'Account Settings', icon: <AccountSettingsIcon />, lapsed: true },
 ]
 
 const TITLES: Record<Route, string> = {
@@ -63,10 +55,10 @@ const TITLES: Record<Route, string> = {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { route, navigate, theme, toggleTheme, toast } = useUi()
+  const { route, navigate, toast } = useUi()
   const [collapsed, setCollapsed] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ 'My Plan': true })
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
   const { state } = useBilling()
   const nav = state.status === 'none' ? NAV.filter((i) => i.lapsed) : NAV
 
@@ -87,84 +79,45 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      <header className="topbar">
-        <button
-          type="button"
-          className="icon-btn icon-btn--chrome topbar__menu"
-          aria-label="Open navigation"
-          aria-expanded={drawerOpen}
-          aria-controls="sidebar"
-          onClick={() => setDrawerOpen(true)}
-        >
-          <Menu size={20} aria-hidden />
-        </button>
-        <a className="logo" href="#/billing">
-          <img src="/asiaverify-logo.png" alt="AsiaVerify" width={106} height={28} />
-        </a>
-        <span className="topbar__title">{TITLES[route]}</span>
-        <div className="topbar__actions">
-          <button
-            type="button"
-            className="icon-btn icon-btn--chrome"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? <Sun size={19} aria-hidden /> : <Moon size={19} aria-hidden />}
-          </button>
-          {route === 'plans' ? (
-            <>
-              <a className="topbar__help" href="mailto:support@asiaverify.com">
-                Get help
-              </a>
-              <button
-                type="button"
-                className="btn btn--primary btn--sm topbar__upgrade"
-                onClick={() => document.getElementById('choose-title')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Upgrade now
-              </button>
-            </>
-          ) : (
-            <>
-              <button type="button" className="icon-btn icon-btn--chrome topbar__bell" aria-label="Notifications, 2 unread" onClick={() => notInPrototype('Notifications')}>
-                <Bell size={19} aria-hidden />
-                <span className="topbar__count" aria-hidden>
-                  2
-                </span>
-              </button>
-              <button type="button" className="icon-btn icon-btn--chrome" aria-label="Cart" onClick={() => notInPrototype('Cart')}>
-                <ShoppingCart size={19} aria-hidden />
-              </button>
-            </>
-          )}
-        </div>
-      </header>
-
-      <FlexBanner />
-
       <div className="shell__scrim" aria-hidden onClick={() => setDrawerOpen(false)} />
 
       <nav id="sidebar" className="sidebar" aria-label="Portal">
-        <ul className="sidebar__list">
-          <li>
-            <button type="button" className="sidebar__item" onClick={() => window.history.back()}>
-              <CircleArrowLeft size={18} aria-hidden />
-              <span className="sidebar__label">Previous Page</span>
-            </button>
-          </li>
+        <a className="sidebar__logo" href="#/billing" aria-label="AsiaVerify">
+          <img className="sidebar__logo-full" src="/asiaverify-logo-full.png" alt="" width={151} height={40} />
+          <img className="sidebar__logo-mark" src="/asiaverify-mark.png" alt="" width={44} height={40} />
+        </a>
+
+        <ul className="sidebar__list sidebar__list--head">
           <li className="sidebar__collapse">
             <button
               type="button"
               className="sidebar__item"
-              aria-pressed={collapsed}
+              aria-expanded={!collapsed}
+              aria-controls="sidebar-main"
               onClick={() => setCollapsed((c) => !c)}
             >
-              {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
-              <span className="sidebar__label">{collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}</span>
+              <span aria-hidden className="sidebar__icon sidebar__icon--toggle">
+                <MenuToggleIcon />
+              </span>
+              <span className="sidebar__label">Menu</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className="sidebar__item"
+              title={collapsed ? 'Previous Page' : undefined}
+              onClick={() => window.history.back()}
+            >
+              <span aria-hidden className="sidebar__icon">
+                <CircleArrowLeft size={25} strokeWidth={2.2} />
+              </span>
+              <span className="sidebar__label">Previous Page</span>
             </button>
           </li>
         </ul>
-        <ul className="sidebar__list sidebar__list--main">
+
+        <ul id="sidebar-main" className="sidebar__list sidebar__list--main">
           {nav.map((item) => {
             if (item.children) {
               const open = !!openGroups[item.label] && !collapsed
@@ -189,7 +142,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                       {item.icon}
                     </span>
                     <span className="sidebar__label">{item.label}</span>
-                    <ChevronDown size={16} aria-hidden className={`sidebar__chevron ${open ? 'is-open' : ''}`} />
+                    <span aria-hidden className={`sidebar__chevron ${open ? 'is-open' : ''}`}>
+                      <ChevronDownIcon />
+                    </span>
                   </button>
                   {open && (
                     <ul id={groupId} className="sidebar__sub">
@@ -197,7 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <li key={child.label}>
                           <button
                             type="button"
-                            className="sidebar__item sidebar__item--sub"
+                            className="sidebar__sub-item"
                             aria-current={child.route === route ? 'page' : undefined}
                             onClick={() => {
                               if (child.route) return navigate(child.route)
@@ -213,7 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                               notInPrototype(child.label)
                             }}
                           >
-                            <span className="sidebar__label">{child.label}</span>
+                            {child.label}
                           </button>
                         </li>
                       ))}
@@ -242,19 +197,86 @@ export function AppShell({ children }: { children: ReactNode }) {
             )
           })}
         </ul>
+
         <ul className="sidebar__list sidebar__list--foot">
           <li>
-            <button type="button" className="sidebar__item" onClick={() => notInPrototype('Log out')}>
-              <LogOut size={18} aria-hidden />
+            <button
+              type="button"
+              className="sidebar__item"
+              title={collapsed ? 'Logout' : undefined}
+              onClick={() => notInPrototype('Log out')}
+            >
+              <span aria-hidden className="sidebar__icon">
+                <LogoutIcon />
+              </span>
               <span className="sidebar__label">Logout</span>
             </button>
           </li>
         </ul>
       </nav>
 
-      <main id="main" className="main" tabIndex={-1}>
-        {children}
-      </main>
+      <div className="shell__col">
+        <header className="topbar">
+          <button
+            type="button"
+            className="topbar__icon-btn topbar__menu"
+            aria-label="Open navigation"
+            aria-expanded={drawerOpen}
+            aria-controls="sidebar"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu size={26} aria-hidden />
+          </button>
+          <a className="topbar__mark" href="#/billing" aria-label="AsiaVerify">
+            <img src="/asiaverify-mark.png" alt="" width={44} height={40} />
+          </a>
+          <span className="topbar__title">{TITLES[route]}</span>
+          <div className="topbar__actions">
+            {route !== 'plans' && (
+              <>
+                <button
+                  type="button"
+                  className="topbar__icon-btn topbar__bell"
+                  aria-label="Notifications, 2 unread"
+                  onClick={() => notInPrototype('Notifications')}
+                >
+                  <BellIcon />
+                  <span className="topbar__count" aria-hidden>
+                    2
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="topbar__icon-btn topbar__cart"
+                  aria-label="Cart"
+                  onClick={() => notInPrototype('Cart')}
+                >
+                  <CartIcon />
+                  <span className="topbar__dot" aria-hidden />
+                </button>
+              </>
+            )}
+            <a className="topbar__help" href="mailto:support@asiaverify.com">
+              Get Help
+            </a>
+            {route === 'plans' && (
+              <button
+                type="button"
+                className="btn btn--primary btn--sm topbar__upgrade"
+                onClick={() => document.getElementById('choose-title')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Upgrade now
+              </button>
+            )}
+          </div>
+        </header>
+
+        <FlexBanner />
+
+        <main id="main" className="main" tabIndex={-1}>
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

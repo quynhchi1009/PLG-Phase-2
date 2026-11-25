@@ -4,7 +4,6 @@ import {
   useBilling,
   type EndReason,
   type PaidPlanId,
-  type PaymentFailure,
   type SubscriptionStatus,
 } from '../../state/billing'
 import { usePaymentSim, type PaymentSpeed } from '../../state/paymentSim'
@@ -24,9 +23,6 @@ interface Scenario {
   autoTopUp?: boolean
   /** Growth yearly with the switch to monthly already scheduled. */
   pendingDowngrade?: boolean
-  /** Inside the grace period after a failed renewal payment, with its popup open. The value is how the
-   *  first attempt to save a card ends: 'ok' saves, anything else is the error shown. */
-  paymentIssue?: 'ok' | PaymentFailure
   route?: Route
 }
 
@@ -190,55 +186,9 @@ const GROUPS: Group[] = [
     title: 'Failed payment',
     items: [
       {
-        id: 'p-grace',
-        label: 'Grace period · Update payment method',
-        steps:
-          'Opens Search with the popup. Update payment method opens Stripe (simulated) and the card saves. Close the popup and a sticky banner follows you on every page; Generate report brings the popup back and generates nothing. My Plan shows the red warning above Auto top up.',
-        status: 'active',
-        planId: 'monthly',
-        paymentIssue: 'ok',
-        route: 'report',
-      },
-      {
-        id: 'p-unavailable',
-        label: 'Grace period · Stripe won’t open',
-        steps: 'Click Update payment method to see the error. Close the popup and My Plan keeps it in the red warning; Try again saves the card.',
-        status: 'active',
-        planId: 'monthly',
-        paymentIssue: 'stripe-unavailable',
-        route: 'report',
-      },
-      {
-        id: 'p-declined',
-        label: 'Grace period · Card declined',
-        steps: 'Click Update payment method to see the error. Close the popup and My Plan keeps it in the red warning; Try again saves the card.',
-        status: 'active',
-        planId: 'monthly',
-        paymentIssue: 'card-declined',
-        route: 'report',
-      },
-      {
-        id: 'p-expired',
-        label: 'Grace period · Card expired',
-        steps: 'Click Update payment method to see the error. Close the popup and My Plan keeps it in the red warning; Try again saves the card.',
-        status: 'active',
-        planId: 'monthly',
-        paymentIssue: 'card-expired',
-        route: 'report',
-      },
-      {
-        id: 'p-verify',
-        label: 'Grace period · Bank verification fails',
-        steps: 'Click Update payment method to see the error. Close the popup and My Plan keeps it in the red warning; Try again saves the card.',
-        status: 'active',
-        planId: 'monthly',
-        paymentIssue: 'authentication-failed',
-        route: 'report',
-      },
-      {
         id: 'failed',
-        label: 'Day 7 · Auto-cancelled',
-        steps: 'The renewal payment failed and the grace period ended. Click Choose a plan to subscribe again.',
+        label: 'Renewal failed · Auto-cancelled',
+        steps: 'The renewal payment failed, so the plan is cancelled and inactive straight away. Click Choose a plan to subscribe again.',
         status: 'none',
         planId: 'monthly',
         endReason: 'payment-failed',
@@ -280,7 +230,6 @@ export function PrototypeControls() {
       endReason: s.endReason,
       autoTopUp: s.autoTopUp,
       pendingDowngrade: s.pendingDowngrade,
-      paymentIssue: s.paymentIssue,
     })
     navigate(s.route ?? 'billing')
   }

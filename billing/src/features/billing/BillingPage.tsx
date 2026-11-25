@@ -4,11 +4,10 @@ import { Button } from '../../components/ui/Button'
 import { Badge, Checklist, InfoTip, Notice } from '../../components/ui/primitives'
 import { PLANS, REPORT_RETENTION_DAYS, TOP_UP, formatCount, formatPrice, planBreakdown } from '../../data/plans'
 import { addDays, formatDate } from '../../data/history'
-import { FLEX_RESETS_ON, canSelectPlan, canTopUp, useBilling, type PaymentFailure } from '../../state/billing'
+import { FLEX_RESETS_ON, canSelectPlan, canTopUp, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { HistoryTabs } from './HistoryTabs'
 import { SubscriptionFlow, type FlowStep } from './SubscriptionFlow'
-import { PAYMENT_FAILURE } from '../upgrade/paymentFailure'
 import { UpgradePrompt } from '../upgrade/UpgradePrompt'
 import { useCheckout } from '../upgrade/checkout'
 
@@ -88,10 +87,6 @@ function SubscriptionCard() {
             // The date lives in the settings card ("Next billing date" and the switch notice), so the
             // tag only names the state and stays short enough for the 388px card.
             <Badge tone="warning">Downgrade scheduled</Badge>
-          ) : state.paymentIssue ? (
-            // Grace period after a failed renewal: the plan is still running, but the one thing to do
-            // is update the card. The red warning in the settings card carries the date and the button.
-            <Badge tone="warning">Update method</Badge>
           ) : (
             <Badge>Active</Badge>
           )}
@@ -311,9 +306,6 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
       {(flexTopUp || growthActive) && (
         <div className="balance-actions">
           {flexTopUp && <TopUpRow onFlexTopUp={onFlexTopUp} />}
-          {state.paymentIssue && (
-            <PaymentWarning dueOn={state.paymentIssue.graceEndsOn} failure={state.paymentIssue.lastFailure} />
-          )}
           {growthActive && <AutoTopUp />}
         </div>
       )}
@@ -333,37 +325,6 @@ function TopUpRow({ onFlexTopUp }: { onFlexTopUp: () => void }) {
         Top up now
       </Button>
     </div>
-  )
-}
-
-/* Grace period after a failed renewal payment (PRD, Payment Failed: "My Plan page: red payment update
-   warning with due date", with the Update payment method CTA). It stays for the whole grace period,
-   whether or not the popup or the sticky banner is showing, and sits right above Auto top up (Growth has
-   no Top up now): Auto top up is charged to the same card. The button goes straight to Stripe (simulated
-   in the popup).
-   Two states, one sentence of news each:
-   - nothing tried yet: the renewal failed, the deadline, and what is on hold meanwhile;
-   - an attempt to save a card failed: what failed and how to recover, in the words the popup used
-     (the popup is closed by then), and the button becomes "Try again".
-   The card is entered and checked on Stripe's page, so there is no form here and nothing to validate. */
-function PaymentWarning({ dueOn, failure }: { dueOn: string; failure: PaymentFailure | null }) {
-  const { dispatch } = useBilling()
-  const due = formatDate(dueOn)
-  return (
-    <Notice
-      tone="negative"
-      icon={<CircleAlert size={18} />}
-      title={failure ? PAYMENT_FAILURE[failure].title : 'Your renewal payment didn’t go through'}
-      action={
-        <Button size="sm" variant="secondary" onClick={() => dispatch({ type: 'open-payment-prompt', reason: 'cta' })}>
-          {failure ? 'Try again' : 'Update payment method'}
-        </Button>
-      }
-    >
-      {failure
-        ? `${PAYMENT_FAILURE[failure].text} You can try again until ${due}. After that, your subscription is cancelled automatically.`
-        : `Update your payment method by ${due} or your subscription will be cancelled automatically. Reports are on hold until you do.`}
-    </Notice>
   )
 }
 

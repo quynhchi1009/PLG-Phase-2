@@ -10,13 +10,8 @@ import { addDays } from '../data/history'
 export type SubscriptionStatus = 'active' | 'cancelling' | 'none'
 export type PaidPlanId = 'flex' | 'monthly' | 'yearly'
 export type BillingNotice = 'plan-started' | null
-/** Why a lapsed plan ended: the customer cancelled, or a renewal payment failed (auto-cancelled). */
+/** Why a lapsed plan ended: the customer cancelled, or a renewal payment failed (cancelled and inactive straight away, no grace period). */
 export type EndReason = 'cancelled' | 'payment-failed'
-/** Why Stripe could not save a new payment method. The card details themselves are entered and validated on Stripe's page. */
-export type PaymentFailure = 'stripe-unavailable' | 'card-declined' | 'card-expired' | 'authentication-failed'
-/** What brought up the "Update your payment method" popup: landing on Search, a Generate report click, or an
- *  "Update payment method" button (the sticky banner, the My Plan warning), which goes straight to Stripe. */
-export type PaymentPromptReason = 'landing' | 'generate' | 'cta'
 
 /** What the billing page celebrates after a (simulated) Stripe checkout. */
 export type Success =
@@ -86,19 +81,6 @@ export interface BillingState {
   pendingDowngrade: boolean
   /** Counts jumps from the prototype panel, so a page drops dialogs left open from the previous state. */
   demoRun: number
-  /** A renewal payment failed and the plan is still active: the customer has until `graceEndsOn` to update the payment method.
-   *  `minimized`: the popup was closed, so a sticky banner stands in for it on every page. */
-  paymentIssue: {
-    graceEndsOn: string
-    minimized: boolean
-    /** Which popup is open, if any. */
-    prompt: PaymentPromptReason | null
-    /** Prototype only: how the first attempt to save a card ends. null = it saves. Later attempts save. */
-    firstAttempt: PaymentFailure | null
-    /** How the latest attempt to save a card failed, until a card is saved. The popup shows it while the customer
-     *  tries; the My Plan warning keeps it once the popup is closed. After one failure, the next attempt saves. */
-    lastFailure: PaymentFailure | null
-  } | null
   notice: BillingNotice
   success: Success
   events: LedgerEvent[]
@@ -126,13 +108,6 @@ type Action =
   | { type: 'dismiss-notice' }
   | { type: 'dismiss-success' }
   | { type: 'request-cancel-downgrade' }
-  /** The "Update your payment method" popup was closed: from now on a sticky banner carries the reminder. */
-  | { type: 'minimize-payment-issue' }
-  | { type: 'open-payment-prompt'; reason: PaymentPromptReason }
-  /** Stripe sent back an error instead of a saved card. */
-  | { type: 'payment-method-failed'; failure: PaymentFailure }
-  /** A new payment method was saved: the popup and the banner go away. */
-  | { type: 'resolve-payment-issue' }
   | {
       type: 'demo'
       status: SubscriptionStatus
@@ -144,9 +119,6 @@ type Action =
       autoTopUp?: boolean
       /** Growth yearly only: start with the switch to monthly already scheduled. */
       pendingDowngrade?: boolean
-      /** Start inside the grace period after a failed renewal payment, with the popup open.
-       *  The value is how the first attempt to save a card ends: 'ok' saves, or the failure shown. */
-      paymentIssue?: 'ok' | PaymentFailure
     }
 
 const CYCLE_END: Record<PaidPlanId, string> = {
@@ -156,9 +128,6 @@ const CYCLE_END: Record<PaidPlanId, string> = {
 }
 
 export const TODAY = '2026-10-14'
-
-/** Days after a failed renewal payment before the plan is cancelled automatically (PRD: cancelled on day 7). */
-export const PAYMENT_GRACE_DAYS = 7
 
 /** Flex has no billing cycle; per product direction (15 Oct 2026) its balance resets one day out. */
 export const FLEX_RESETS_ON = addDays(TODAY, 1)
@@ -176,7 +145,6 @@ export const INITIAL_STATE: BillingState = {
   autoTopUp: true,
   pendingDowngrade: false,
   demoRun: 0,
-  paymentIssue: null,
   notice: null,
   success: null,
   events: [],
@@ -252,21 +220,6 @@ function reducer(state: BillingState, action: Action): BillingState {
       if (!state.pendingDowngrade || state.status !== 'active') return state
       return { ...state, success: { kind: 'keep-yearly-confirm' } }
 
-    case 'minimize-payment-issue':
-      if (!state.paymentIssue) return state
-      return { ...state, paymentIssue: { ...state.paymentIssue, minimized: true, prompt: null } }
-
-    case 'open-payment-prompt':
-      if (!state.paymentIssue) return state
-      return { ...state, paymentIssue: { ...state.paymentIssue, prompt: action.reason } }
-
-    case 'payment-method-failed':
-      if (!state.paymentIssue) return state
-      return { ...state, paymentIssue: { ...state.paymentIssue, lastFailure: action.failure } }
-
-    case 'resolve-payment-issue':
-      return { ...state, paymentIssue: null }
-
     case 'cancel-downgrade':
       if (!state.pendingDowngrade) return state
       return {
@@ -282,7 +235,7 @@ function reducer(state: BillingState, action: Action): BillingState {
 
     case 'cancel':
       // Cancelling switches Auto top up off: no automatic charges after the plan ends.
-      return { ...state, status: 'cancelling', autoTopUp: false, pendingDowngrade: false, paymentIssue: null, notice: null }
+      return { ...state, status: 'cancelling', autoTopUp: false, pendingDowngrade: false, notice: null }
 
     // Opens the "Don't miss out on your plan benefits" confirmation; nothing changes yet.
     case 'request-reactivate':
@@ -410,16 +363,6 @@ function reducer(state: BillingState, action: Action): BillingState {
         topUpUsedOn: action.topUpUsed ? '2026-09-30' : '',
         endReason: action.endReason ?? 'cancelled',
         demoRun: state.demoRun + 1,
-        paymentIssue:
-          action.paymentIssue && action.status === 'active'
-            ? {
-                graceEndsOn: addDays(TODAY, PAYMENT_GRACE_DAYS),
-                minimized: false,
-                prompt: 'landing',
-                firstAttempt: action.paymentIssue === 'ok' ? null : action.paymentIssue,
-                lastFailure: null,
-              }
-            : null,
         ...(scheduled && {
           pendingDowngrade: true,
           events: [event('Downgrade to Growth monthly scheduled', TODAY, null), ...INITIAL_STATE.events],

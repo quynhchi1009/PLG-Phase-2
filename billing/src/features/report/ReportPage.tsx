@@ -46,10 +46,6 @@ export function ReportPage() {
 
   const generate = () => {
     if (inactive) return toast('Choose a plan to generate new reports.')
-    // During the grace period after a failed payment, generating a report brings the popup back
-    // instead of running (PRD, Payment Failed). It comes before the credit check, and closing it
-    // does not generate anything: the customer clicks again, or updates the card first.
-    if (state.paymentIssue) return dispatch({ type: 'open-payment-prompt', reason: 'generate' })
     if (!enough) return setPrompt(true)
     dispatch({ type: 'generate', report: chosen.name, business: ENTITY.name, credits: total, today: TODAY })
     toast(`${chosen.name} report requested for ${ENTITY.name}. ${total} credits used.`)

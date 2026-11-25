@@ -46,6 +46,16 @@
   margin-block-end: var(--space-5);
 }
 
+/* A banner across the page, above the two cards (the failed Auto top up payment). It sits level with the cards,
+   so it takes their corner radius rather than the smaller one of a notice nested inside a card. */
+.billing-alert {
+  margin-block-end: var(--space-5);
+}
+
+.billing-alert .notice {
+  border-radius: var(--radius-lg);
+}
+
 .plan-card {
   display: flex;
   flex-direction: column;

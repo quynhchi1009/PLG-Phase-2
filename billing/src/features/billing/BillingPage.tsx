@@ -10,6 +10,7 @@ import { HistoryTabs } from './HistoryTabs'
 import { SubscriptionFlow, type FlowStep } from './SubscriptionFlow'
 import { UpgradePrompt } from '../upgrade/UpgradePrompt'
 import { useCheckout } from '../upgrade/checkout'
+import { usePayOnStripe } from '../upgrade/usePayOnStripe'
 
 export function BillingPage() {
   const { state } = useBilling()
@@ -38,6 +39,10 @@ export function BillingPage() {
         </p>
       </header>
 
+      {/* PRD 3.2 #5: while the last Auto top up charge is unpaid, a banner with "Pay on Stripe" runs across the
+          page above the cards. It goes once the payment is made on Stripe (the failed state is cleared). */}
+      {state.status === 'active' && state.planId !== 'flex' && state.paymentFailed && <PaymentFailedBanner />}
+
       {state.status === 'none' ? (
         <Resubscribe />
       ) : (
@@ -50,6 +55,29 @@ export function BillingPage() {
       <HistoryTabs key={state.status} />
 
       <SubscriptionFlow step={step} onStep={setStep} onClose={closeFlow} />
+    </div>
+  )
+}
+
+/* Growth, after a declined Auto top up charge (PRD 3.2): the plan is not cancelled and the credits are
+   untouched, so the banner says what happened and offers the one way on, paying on Stripe. While it shows,
+   "Pay on Stripe" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
+function PaymentFailedBanner() {
+  const payOnStripe = usePayOnStripe()
+  return (
+    <div className="billing-alert">
+      <Notice
+        tone="negative"
+        icon={<CircleAlert size={18} />}
+        title="Auto top up payment failed"
+        action={
+          <Button size="sm" onClick={payOnStripe}>
+            Pay on Stripe
+          </Button>
+        }
+      >
+        We couldn&apos;t charge your card. Your plan is still active and your credits are unchanged.
+      </Notice>
     </div>
   )
 }
@@ -130,6 +158,8 @@ function SettingsCard({
   const oneTime = !state.cycleEnd
   const headingId = useId()
   const cycleEnd = oneTime ? '' : formatDate(state.cycleEnd)
+  // The "Payment failed" banner above the cards owns the page's one primary button while the charge is unpaid.
+  const payFailed = !flex && state.status === 'active' && state.paymentFailed
 
   return (
     <>
@@ -162,6 +192,7 @@ function SettingsCard({
               {!state.pendingDowngrade && (
                 <Button
                   size="sm"
+                  variant={payFailed ? 'secondary' : 'primary'}
                   onClick={() => (flex && canTopUp(state) ? setPrompt(true) : navigate('plans'))}
                 >
                   Change plan
@@ -346,8 +377,16 @@ function AutoTopUp() {
         <p className="autotopup__label" id={labelId}>
           Auto top up
         </p>
+        {/* PRD 2.2: the message is the default text, or after an Auto top up the date of the last one (it
+            changes with every new charge). The scheduled-downgrade and cancelled states have their own rows
+            above (settings__changed, the cancelled notice), and a lapsed account has no box at all. */}
         <p className="settings__hint" id={hintId}>
           {state.autoTopUp ? 'On. ' : ''}
+          {state.autoTopUp && state.lastAutoTopUpOn && (
+            <>
+              Last auto top up on <strong>{formatDate(state.lastAutoTopUpOn)}</strong>.{' '}
+            </>
+          )}
           Adds {formatCount(pack.credits)} credits when your credits run out.
         </p>
       </div>

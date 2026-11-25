@@ -6,15 +6,13 @@ import {
   type PaidPlanId,
   type SubscriptionStatus,
 } from '../../state/billing'
-import { usePaymentSim, type PaymentSpeed } from '../../state/paymentSim'
+import { usePaymentSim, type PaymentOutcome, type PaymentSpeed } from '../../state/paymentSim'
 import { useUi, type Route } from '../../state/ui'
 
 /** One row of the panel: a flow, opened on the screen where that flow starts. */
 interface Scenario {
   id: string
   label: string
-  /** What to click next. Shown under the row once it is picked, so the flow can be found without knowing the UI. */
-  steps: string
   status: SubscriptionStatus
   planId: PaidPlanId
   creditsLeft?: number | 'some' | 'none'
@@ -23,6 +21,12 @@ interface Scenario {
   autoTopUp?: boolean
   /** Growth yearly with the switch to monthly already scheduled. */
   pendingDowngrade?: boolean
+  /** The Auto top up charge in this flow is declined (PRD 3.2). Every other row leaves charges succeeding. */
+  failPayment?: boolean
+  /** Growth with a failed Auto top up charge not yet paid on Stripe: no new charge, the pop-up just shows. */
+  paymentFailed?: boolean
+  /** Growth, Auto top up on, charged a few days ago: My Plan names the date of that last charge (PRD 2.2 #2). */
+  afterAutoTopUp?: boolean
   route?: Route
 }
 
@@ -31,12 +35,10 @@ interface Group {
   items: Scenario[]
 }
 
-const REPORT_STEPS = 'Opens the report page. Generate a report to hit the limit.'
-
 /* The panel is organised the way the Figma file is: one group per journey, one row per lane, named
    with the lane's own title ("Downgrade (Yearly → Monthly)"). A row is a flow, not a bare account
    state: several rows start from the same account (Growth yearly, active) and differ in what you do
-   next, which is why each one says so.
+   next.
 
    Auto top up renews the plan early: it charges the pack, adds the credits and moves the billing
    date to one cycle from today.
@@ -53,38 +55,33 @@ const GROUPS: Group[] = [
       {
         id: 'g-up-year',
         label: 'Upgrade · Monthly → Yearly',
-        steps: 'Click Change plan, then Select plan on the Growth yearly card.',
         status: 'active',
         planId: 'monthly',
       },
       {
         id: 'g-up-biz',
         label: 'Upgrade · Yearly → Business',
-        steps: 'Click Change plan, then Talk to sales on the Business card.',
         status: 'active',
         planId: 'yearly',
       },
       {
         id: 'g-down',
         label: 'Downgrade · Yearly → Monthly',
-        steps: 'Click Change plan, then Switch at renewal on the Growth monthly card.',
         status: 'active',
         planId: 'yearly',
       },
       {
         id: 'g-down-keep',
         label: 'Downgrade scheduled · Keep yearly plan',
-        steps: 'The downgrade to monthly is already scheduled. Click Keep yearly plan to undo it, or open Products & Pricing and click Cancel downgrade under the Growth monthly card.',
         status: 'active',
         planId: 'yearly',
         pendingDowngrade: true,
       },
-      { id: 'g-m-low', label: 'Low credits · Monthly', steps: REPORT_STEPS, status: 'active', planId: 'monthly', creditsLeft: 6, route: 'report' },
-      { id: 'g-y-low', label: 'Low credits · Yearly', steps: REPORT_STEPS, status: 'active', planId: 'yearly', creditsLeft: 6, route: 'report' },
+      { id: 'g-m-low', label: 'Low credits · Monthly', status: 'active', planId: 'monthly', creditsLeft: 6, route: 'report' },
+      { id: 'g-y-low', label: 'Low credits · Yearly', status: 'active', planId: 'yearly', creditsLeft: 6, route: 'report' },
       {
         id: 'g-y-zero',
         label: 'Turn on at 0 credits · Yearly',
-        steps: 'Switch Auto top up on in the credit balance card. With 0 credits it charges $999 at once.',
         status: 'active',
         planId: 'yearly',
         creditsLeft: 0,
@@ -93,7 +90,6 @@ const GROUPS: Group[] = [
       {
         id: 'g-y-zero-down',
         label: 'Turn on at 0 credits · Yearly, downgrade scheduled',
-        steps: 'Switch Auto top up on in the credit balance card. It charges $999 at once, and the success message names the new date of the switch to monthly.',
         status: 'active',
         planId: 'yearly',
         creditsLeft: 0,
@@ -108,7 +104,6 @@ const GROUPS: Group[] = [
       {
         id: 'a-off',
         label: '1 · Turn off',
-        steps: 'Switch Auto top up off in the credit balance card.',
         status: 'active',
         planId: 'monthly',
         autoTopUp: true,
@@ -116,7 +111,6 @@ const GROUPS: Group[] = [
       {
         id: 'a-on',
         label: '2 · Turn back on at 0 credits, renew early',
-        steps: 'Switch Auto top up on. With 0 credits it pays the pack and renews the plan at once.',
         status: 'active',
         planId: 'monthly',
         creditsLeft: 0,
@@ -125,7 +119,6 @@ const GROUPS: Group[] = [
       {
         id: 'a-gate',
         label: '3 · Out of credits at report, off',
-        steps: `${REPORT_STEPS} The prompt offers to turn Auto top up on.`,
         status: 'active',
         planId: 'monthly',
         creditsLeft: 6,
@@ -135,7 +128,6 @@ const GROUPS: Group[] = [
       {
         id: 'a-auto',
         label: '4 · Out of credits at report, on',
-        steps: `${REPORT_STEPS} Auto top up renews the plan by itself.`,
         status: 'active',
         planId: 'monthly',
         creditsLeft: 6,
@@ -145,13 +137,22 @@ const GROUPS: Group[] = [
       {
         id: 'a-down',
         label: '5 · Out of credits at report, downgrade scheduled',
-        steps: `${REPORT_STEPS} Auto top up charges $999 and moves the billing date. The switch to monthly stays scheduled for the new date: check it on My Plan and Products & Pricing.`,
         status: 'active',
         planId: 'yearly',
         creditsLeft: 6,
         autoTopUp: true,
         pendingDowngrade: true,
         route: 'report',
+      },
+      // PRD 2.2 #2: after an Auto top up the box on My Plan names the date of the last one. Flows 2, 4 and 5
+      // end the same way once the charge goes through; this row opens it directly.
+      {
+        id: 'a-after',
+        label: 'My Plan after an auto top-up · last date',
+        status: 'active',
+        planId: 'monthly',
+        autoTopUp: true,
+        afterAutoTopUp: true,
       },
     ],
   },
@@ -161,7 +162,6 @@ const GROUPS: Group[] = [
       {
         id: 'f-zero',
         label: '1 · 0 credits',
-        steps: 'Click Top up now or Change plan to see Upgrade or top up your plan.',
         status: 'active',
         planId: 'flex',
         creditsLeft: 0,
@@ -169,14 +169,13 @@ const GROUPS: Group[] = [
       {
         id: 'f-used',
         label: '2 · Credits left, top-up used',
-        steps: 'Click Change plan to upgrade. The one-time top-up is already used.',
         status: 'active',
         planId: 'flex',
         creditsLeft: 124,
         topUpUsed: true,
       },
-      { id: 'f-low', label: '3 · Low credits, top-up available', steps: REPORT_STEPS, status: 'active', planId: 'flex', creditsLeft: 6, route: 'report' },
-      { id: 'f-low-used', label: '4 · Low credits, top-up used', steps: REPORT_STEPS, status: 'active', planId: 'flex', creditsLeft: 6, topUpUsed: true, route: 'report' },
+      { id: 'f-low', label: '3 · Low credits, top-up available', status: 'active', planId: 'flex', creditsLeft: 6, route: 'report' },
+      { id: 'f-low-used', label: '4 · Low credits, top-up used', status: 'active', planId: 'flex', creditsLeft: 6, topUpUsed: true, route: 'report' },
     ],
   },
   {
@@ -185,14 +184,12 @@ const GROUPS: Group[] = [
       {
         id: 'c-flow',
         label: 'Cancel plan · Growth monthly',
-        steps: 'Click Cancel plan, then walk the three steps.',
         status: 'active',
         planId: 'monthly',
       },
       {
         id: 'c-some',
         label: 'Cancelled · credits > 0',
-        steps: 'Click Reactivate subscription. Choose a plan stays hidden until the credits run out.',
         status: 'cancelling',
         planId: 'monthly',
         creditsLeft: 'some',
@@ -200,7 +197,6 @@ const GROUPS: Group[] = [
       {
         id: 'c-none',
         label: 'Cancelled · credits = 0',
-        steps: 'Click Reactivate subscription, or Choose a plan: any plan is open at 0 credits.',
         status: 'cancelling',
         planId: 'monthly',
         creditsLeft: 'none',
@@ -208,7 +204,6 @@ const GROUPS: Group[] = [
       {
         id: 'c-low',
         label: 'Cancelled · low credits at report',
-        steps: `${REPORT_STEPS} Auto top up does not run while the plan is cancelled, so the "Don't miss out on your plan benefits" pop-up (the same one as on My Plan) asks to reactivate, with no upgrade offer. After reactivating, Generate report again: Auto top up renews the plan.`,
         status: 'cancelling',
         planId: 'monthly',
         creditsLeft: 6,
@@ -218,7 +213,6 @@ const GROUPS: Group[] = [
       {
         id: 'inactive',
         label: 'Inactive',
-        steps: 'The plan has ended. Click Choose a plan to subscribe again.',
         status: 'none',
         planId: 'monthly',
       },
@@ -227,10 +221,52 @@ const GROUPS: Group[] = [
   {
     title: 'Failed payment',
     items: [
+      /* PRD 3.2: a declined Auto top up charge does not cancel the plan. The report is not generated, the
+         credits and the billing date stay, and the "Payment failed" pop-up shows. The balance is 15 so KYB
+         LITE (10) still fits while KYB BASIC (20, the one selected) does not. */
+      {
+        id: 'p-on',
+        label: 'Auto top up charge fails · on',
+        status: 'active',
+        planId: 'monthly',
+        creditsLeft: 15,
+        autoTopUp: true,
+        failPayment: true,
+        route: 'report',
+      },
+      {
+        id: 'p-off',
+        label: 'Enable and pay fails · off',
+        status: 'active',
+        planId: 'monthly',
+        creditsLeft: 15,
+        autoTopUp: false,
+        failPayment: true,
+        route: 'report',
+      },
+      {
+        id: 'p-again',
+        label: 'Later report above the balance',
+        status: 'active',
+        planId: 'monthly',
+        creditsLeft: 15,
+        autoTopUp: true,
+        paymentFailed: true,
+        route: 'report',
+      },
+      // PRD 3.2 #5: My Plan carries a banner with Pay on Stripe while the charge is unpaid.
+      {
+        id: 'p-banner',
+        label: 'My Plan banner · charge failed',
+        status: 'active',
+        planId: 'monthly',
+        creditsLeft: 15,
+        autoTopUp: true,
+        paymentFailed: true,
+      },
       {
         id: 'failed',
         label: 'Renewal failed · Auto-cancelled',
-        steps: 'The renewal payment failed, so the plan is cancelled and inactive straight away. Click Choose a plan to subscribe again.',
         status: 'none',
         planId: 'monthly',
         endReason: 'payment-failed',
@@ -245,11 +281,16 @@ const PAYMENT_SPEEDS: { id: PaymentSpeed; label: string; hint: string }[] = [
   { id: 'hold', label: 'Hold', hint: 'Loading stays until you press “Prototype: finish payment” under it.' },
 ]
 
+const PAYMENT_OUTCOMES: { id: PaymentOutcome; label: string; hint: string }[] = [
+  { id: 'success', label: 'Succeeds', hint: 'The charge goes through.' },
+  { id: 'fail', label: 'Fails', hint: 'The charge is declined: the Payment failed pop-up shows and nothing is added.' },
+]
+
 /** Demo-only panel for jumping between account states. Not part of the product UI. */
 export function PrototypeControls() {
   const { dispatch } = useBilling()
   const { navigate, theme, toggleTheme } = useUi()
-  const { speed, setSpeed } = usePaymentSim()
+  const { speed, setSpeed, outcome, setOutcome } = usePaymentSim()
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState<string | null>(null)
 
@@ -263,6 +304,8 @@ export function PrototypeControls() {
 
   const set = (s: Scenario) => {
     setCurrent(s.id)
+    // Only the failed-payment rows decline the Auto top up charge; picking any other row puts it back.
+    setOutcome(s.failPayment ? 'fail' : 'success')
     dispatch({
       type: 'demo',
       status: s.status,
@@ -272,6 +315,8 @@ export function PrototypeControls() {
       endReason: s.endReason,
       autoTopUp: s.autoTopUp,
       pendingDowngrade: s.pendingDowngrade,
+      paymentFailed: s.paymentFailed,
+      afterAutoTopUp: s.afterAutoTopUp,
     })
     navigate(s.route ?? 'billing')
   }
@@ -297,7 +342,7 @@ export function PrototypeControls() {
           </button>
         </span>
       </div>
-      <p className="proto__hint">Pick a flow to open it where it starts. The next click appears under it.</p>
+      <p className="proto__hint">Pick a flow to open it where it starts.</p>
       {/* Every payment (Stripe checkout, a charge to the card on file, saving a new card) shows a loading
           state while it goes through. Normal flashes by in about a second; these keep it on screen. */}
       <div className="proto__group">
@@ -311,20 +356,27 @@ export function PrototypeControls() {
         </div>
         <p className="proto__hint">{PAYMENT_SPEEDS.find((p) => p.id === speed)?.hint}</p>
       </div>
+      {/* An Auto top up charge can be declined (PRD 3.2). The Failed payment rows switch this on by themselves. */}
+      <div className="proto__group">
+        <p className="proto__label">Auto top up charge</p>
+        <div className="proto__seg" role="group" aria-label="How the Auto top up charge ends">
+          {PAYMENT_OUTCOMES.map((o) => (
+            <button key={o.id} type="button" aria-pressed={outcome === o.id} onClick={() => setOutcome(o.id)}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+        <p className="proto__hint">{PAYMENT_OUTCOMES.find((o) => o.id === outcome)?.hint}</p>
+      </div>
       {GROUPS.map((g) => (
         <div key={g.title} className="proto__group">
           <p className="proto__label">{g.title}</p>
           <div className="proto__seg proto__seg--stack">
             {g.items.map((s) => (
               <div key={s.id} className="proto__item">
-                <button type="button" aria-pressed={current === s.id} aria-describedby={current === s.id ? `${s.id}-steps` : undefined} onClick={() => set(s)}>
+                <button type="button" aria-pressed={current === s.id} onClick={() => set(s)}>
                   {s.label}
                 </button>
-                {current === s.id && (
-                  <p id={`${s.id}-steps`} className="proto__steps">
-                    {s.steps}
-                  </p>
-                )}
               </div>
             ))}
           </div>

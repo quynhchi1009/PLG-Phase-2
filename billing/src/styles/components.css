@@ -349,9 +349,15 @@
   color: var(--color-content-on-negative-elevated);
 }
 
+/* Only the icon and the title carry the red ink. The sentence under it reads in Body Graphite, so the tint
+   says "problem" once and the text stays easy on the eye. */
 .notice--negative .notice__title,
 .notice--negative .notice__icon {
   color: var(--color-content-on-negative-elevated);
+}
+
+.notice--negative .notice__text {
+  color: var(--color-content-main);
 }
 
 .notice--warning {
@@ -1355,14 +1361,6 @@
   text-align: start;
 }
 
-/* The next click for the picked flow, right under its row. */
-.proto__steps {
-  padding: var(--space-2) var(--space-3) var(--space-3);
-  color: var(--color-chrome-content-main);
-  font-size: var(--text-xs);
-  line-height: 1.45;
-}
-
 /* Multi-select: groups, nested block, footer ------------------------------- */
 
 .select__menu {
@@ -2004,6 +2002,29 @@
   animation: success-draw 360ms var(--ease-out) 300ms forwards;
 }
 
+/* Failure mark (the "Payment failed" pop-up): the same circle in the negative colour with an exclamation point. */
+.failed-mark {
+  flex: none;
+  animation: success-pop 420ms var(--ease-out) 60ms both;
+}
+
+.failed-mark__shape {
+  fill: var(--color-base-light);
+  stroke: var(--color-sentiment-negative);
+  stroke-width: 3;
+}
+
+.failed-mark__bang {
+  fill: none;
+  stroke: var(--color-sentiment-negative);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.failed-mark__dot {
+  fill: var(--color-sentiment-negative);
+}
+
 @media (max-width: 760px) {
   .topped {
     padding: var(--space-6) var(--space-5) var(--space-5);
@@ -2012,7 +2033,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .success-mark,
-  .success-mark__tick {
+  .success-mark__tick,
+  .failed-mark {
     animation-delay: 0ms !important;
   }
 }

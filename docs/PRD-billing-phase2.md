@@ -1,6 +1,14 @@
 # PRD: PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)
 
-Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)-251126-022824.pdf` (17 pages, exported 25 Nov 2026; the file name is ddmmyy-hhmmss, as with Phase 1). Text transcribed from the PDF and re-checked against the full extracted text on 25 Nov 2026 (second read, same file: it is the only copy in Downloads and was downloaded before this transcription). Only 10 of its "Design" screenshots are embedded images (pages 3 and 8-11); the Design cells on pages 4-5 are empty in the PDF itself and pages 12-13 say "Refer to Figma" / "N/A", so there is nothing more to read there. See "What the embedded design images show" at the end. Figma is the source for layout.
+Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)-251126-100439.pdf` (**20 pages, exported 25 Nov 2026 at 10:04:39**; the file name is ddmmyy-hhmmss, as with Phase 1). This is the **third export and replaces** the 17-page `-251126-022824.pdf` (02:28:24) that this file was first transcribed from. Text re-transcribed from the full extracted text of the new PDF on 25 Nov 2026. Only 10 of its "Design" screenshots are embedded images (pages 3 and 8-11, identical to the earlier export); the Design cells on pages 4-6 (sections 1.3 to 1.5) are empty in the PDF itself and pages 12-13 say "Refer to Figma" / "N/A", so there is nothing more to read there. See "What the embedded design images show" at the end. Figma is the source for layout.
+
+## What changed from the 17-page export (022824) to this 20-page export (100439)
+1. **1.4 Downgrade scheduled state on My Plan was redesigned.** Before: an orange "Downgrade scheduled" box with a CTA, plus a "Cancel downgrade" button beside "Change plan". Now: a "Downgrade scheduled" **label on the Growth card** with explanatory text and the date; the **"Change plan" button is hidden** (same as when a cancellation is scheduled); there is **no separate "Cancel downgrade" button**; the card shows **"Keep yearly plan" as the only primary button with "Cancel plan" beside it**; "Keep yearly plan" opens the cancel-downgrade pop-up; "Cancel plan" starts the Phase 1 section 2.6 cancellation flow; to upgrade to Business the user goes to Products & Pricing in the left nav.
+2. **1.5 Cancel downgrade entry points** are now: "Keep yearly plan" on My Plan, "Cancel downgrade" on Products & Pricing, and "Cancel downgrade" in pop-up 3 (the orange-box CTA and the My Plan "Cancel downgrade" button are gone).
+3. **1.4 old item 5** (My Plan Auto top-up text box shows the scheduled-downgrade text) is no longer in 1.4 but is still in 2.2 #3 and 1.5 #3, so it still applies.
+4. **Section 4 Emails** now carries 7 full templates (copy ignored). "Downgrade scheduled" and "Downgrade cancelled" emails are now listed, which answers the earlier open question (**needed**).
+5. **Section 5.2** now carries the email and banner/pop-up copy (copy ignored; timing and logic unchanged).
+6. 2.1 #7 adds "Auto top-up lets Growth users keep generating reports until they turn it off." Everything else in sections 1.1-1.3, 1.6, 2, 3 and 5.1 is the same logic.
 
 - Figma: https://www.figma.com/design/ot8NEpgFxGsI3f6XiY7pfr/PLG?node-id=13223-242997 (only frames labelled "Phase 2")
 - Confluence: Phase 2 page 2020474893, Phase 1 page 1854308368 (Phase 1 PRD sections 2.2, 2.5, 2.6, 2.7 are referenced)
@@ -40,22 +48,22 @@ Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed
 ### 1.4 Downgrade scheduled state
 1. "Select plan" under Growth (Monthly) → **pop-up 1**. CTAs: "Keep current plan" (close, no change), "Proceed to downgrade" (open pop-up 2). On "Proceed to downgrade" the backend schedules the downgrade for the end of the current billing period.
 2. **Pop-up 2** shows the confirmation and the downgrade date (dynamic). CTA: "Back to my plan" (closes pop-up 2). Billing page reflects the scheduled downgrade messaging and date (dynamic).
-3. **My Plan:** orange "Downgrade scheduled" box with explanatory text and the downgrade date; the CTA in the box opens the cancel-downgrade pop-up (1.5).
-4. **My Plan:** a "Cancel downgrade" button **beside "Change plan"**, opens the same pop-up.
-5. **My Plan:** the Auto top-up text box shows the scheduled-downgrade text (see 2.2).
+3. **My Plan (100439 export):** a "Downgrade scheduled" **label on the Growth card**, with explanatory text and the downgrade date (dynamic). Not an orange box any more.
+4. **My Plan:** the **"Change plan" button is hidden** while a downgrade is scheduled, the same as when a cancellation is scheduled. **There is no separate "Cancel downgrade" button.** The card shows **"Keep yearly plan" as the only primary button, with "Cancel plan" beside it**. "Keep yearly plan" opens the cancel-downgrade pop-up (1.5). "Cancel plan" starts the cancellation flow (Phase 1 section 2.6). To upgrade to Business the user goes to Products & Pricing in the left nav.
+5. **My Plan:** the Auto top-up text box shows the scheduled-downgrade text (2.2 #3 and 1.5 #3; no longer listed in 1.4 but still stated there).
 6. **Products & Pricing, Growth (Monthly) card:** button disabled, scheduled downgrade date shown below.
 7. **Products & Pricing, Growth (Yearly) card:** button disabled, "Your current plan" and an "Ends [date]" label.
 8. **Products & Pricing:** a "Cancel downgrade" button **below the Growth (Monthly) CTA**, opens the cancel-downgrade pop-up.
 
 ### 1.5 Cancel downgrade
-- Entry points (all open the same pop-up): the orange box CTA on My Plan; the "Cancel downgrade" button on My Plan; the "Cancel downgrade" button on Products & Pricing; the "Cancel downgrade" CTA in pop-up 3.
+- Entry points (all open the same pop-up): **"Keep yearly plan" on My Plan**; the "Cancel downgrade" button on Products & Pricing; the "Cancel downgrade" CTA in pop-up 3. (The 022824 export also listed the orange box CTA and a My Plan "Cancel downgrade" button; both were removed.)
 - CTAs: "Close" → downgrade stays scheduled. "Cancel downgrade" → backend removes the scheduled downgrade; **a pop-up shows successful downgrade** (PRD wording; read as "successful cancellation of the downgrade", confirm in Figma).
 - After cancelling: remove all scheduled-downgrade indicators on My Plan and Products & Pricing. User stays on Growth (Yearly), not charged, Auto top-up text box returns to default text.
 
 ### 1.6 Edge cases
 | # | Case | Logic |
 |---|---|---|
-| 1 | User cancels the subscription while a downgrade is scheduled | Scheduled downgrade is removed; the "Downgrade scheduled" box and button disappear. Follow Phase 1 section 2.6 for cancellation. If the user reverses the cancellation before the billing period ends, the user stays on Growth (Yearly) with **no downgrade scheduled**. |
+| 1 | User cancels the subscription while a downgrade is scheduled | Scheduled downgrade is removed; the "Downgrade scheduled" box and button disappear (PRD wording; 1.4 now calls it a label and "Keep yearly plan"). Follow Phase 1 section 2.6 for cancellation. If the user reverses the cancellation before the billing period ends, the user stays on Growth (Yearly) with **no downgrade scheduled**. |
 | 2 | Auto top-up triggers while a downgrade is scheduled | Auto top-up works as normal: full Growth (Yearly) price charged, billing date resets. Downgrade stays scheduled, its effective date **moves to the end of the new billing period**. Update the date on My Plan, Products & Pricing and the downgrade emails. The auto top-up success message shows the new downgrade date. Same when the user pays on Stripe after a failed auto top-up (3.2). |
 | 3 | First monthly charge fails on the effective date | Follow 3.3 (cancelled and inactive straight away). |
 
@@ -129,7 +137,7 @@ BE/FE checklist: (1) subscription status → cancelled and inactive immediately;
 Same as Phase 1: Stage 2: 10 days before the 90-day deletion deadline, send the reminder email. Stage 3a: no plan purchased within 90 days → Phase 1 section 2.6 (historical reports permanently deleted, user can no longer view reports). Stage 3b: a plan purchased within 90 days → historical reports restored, user gets access again.
 
 ## 4. Emails (copy ignored)
-Needs: Plan downgraded (sent when the effective date is reached); Auto top-up payment confirmation (after a successful auto top-up charge); Auto top-up failed, subscription cancelled; Downgrade scheduled and downgrade cancelled confirmations (**[need input: needed or not?]**). Emails are not part of the prototype.
+The 100439 export lists 7 emails with full templates (wording not transcribed): (1) Plan downgraded, sent when the effective date is reached; (2) Plan downgrade scheduled, sent when the user confirms the downgrade; (3) Downgrade cancelled, sent when the user cancels a scheduled downgrade; (4) Auto top-up payment confirmation, sent after a successful auto top-up charge (started by a report request or "Enable auto top-up") **or after a successful "Pay on Stripe" payment**, with an extra line only when a downgrade is scheduled (its new date); (5) Auto top-up payment failed, sent when an auto top-up charge fails and the subscription stays active, with a "Pay on Stripe" button; (6) Plan cancelled after a failed charge on the billing date (90 days left), sent at Stage 1; (7) the same with 10 days left, sent at Stage 2. The earlier "[need input: downgrade scheduled / cancelled emails needed or not?]" is answered: both are needed. Emails are not part of the prototype.
 
 ## 5. Pre and post-rollout (23 March 2027)
 
@@ -141,7 +149,7 @@ Needs: Plan downgraded (sent when the effective date is reached); Auto top-up pa
 | After rollout | Growth users follow sections 1 to 3. Flex unchanged. |
 | Users who activate between T-30 and rollout day | Phase 1 pre-rollout PRD section 4: T-30 catch-up email, then only the scheduled emails not yet sent, the in-app banner on first login, and the checkout disclosure. |
 
-### 5.2 Communication timeline (copy ignored; timing kept)
+### 5.2 Communication timeline (copy ignored; timing kept; the 100439 export now prints the email A/B/C and banner/pop-up A/B copy in 5.2.1 and 5.2.2, still ignored)
 | Stage | Method |
 |---|---|
 | T-30 (22 Feb 2027) | Announcement email + persistent in-app banner and pop-up A |
@@ -155,13 +163,16 @@ Needs: Plan downgraded (sent when the effective date is reached); Auto top-up pa
 Notes: plan name, price and billing period in emails and in-app messages must be dynamic. **[need input]** T-30 is Sunday 21 Feb 2027 (send Sunday or Monday 22 Feb?). PRD-internal inconsistency: heading says T-30 = 21 Feb, table says 22 Feb.
 
 ## PRD-internal contradictions and gaps (open questions for the PM; found on the second read, 25 Nov 2026)
-- **Does a failed auto top-up cancel the account?** The Overview notes (pages 1-2) say: "A failed auto top-up charge is handled the same way as a failed auto-renewal in Phase 1 (section 2.7): the account goes straight to cancelled and inactive." Sections 2.1 #8, 2.5 #3, 3.1 and 3.2 say the opposite: **not cancelled**, billing date unchanged, "Payment failed" pop-up, pay on Stripe. Email A and pop-up A (section 5.2) also tell customers "If the charge fails, your subscription will be cancelled straight away." Working baseline in this file, the prototype and the audit: sections 2.1, 3.1 and 3.2 (the detailed, newest logic). Not yet confirmed by the PM.
+- **Does a failed auto top-up cancel the account?** The Overview notes (pages 1-2) say: "A failed auto top-up charge is handled the same way as a failed auto-renewal in Phase 1 (section 2.7): the account goes straight to cancelled and inactive." Sections 2.1 #8, 2.5 #3, 3.1 and 3.2 say the opposite: **not cancelled**, billing date unchanged, "Payment failed" pop-up, pay on Stripe. Email A and pop-up A (section 5.2) also tell customers "If the charge fails, your subscription will be cancelled straight away." Working baseline in this file, the prototype and the audit: sections 2.1, 3.1 and 3.2 (the detailed, newest logic). Not yet confirmed by the PM. The 100439 export tips it further toward "not cancelled": its new email 5 is "Auto top-up payment failed, sent when an auto top-up charge fails and the subscription stays active", and email 4 is also sent after a successful "Pay on Stripe" payment. The overview note, Email A and pop-up A still say it cancels.
 - **"Pop-up 3" is not defined.** Section 1.5 #1 lists "the Cancel downgrade CTA in pop-up 3" as an entry point, but 1.3 only defines pop-up 1 (Keep current plan / Proceed to downgrade) and pop-up 2 (Back to my plan). No pop-up 3 exists anywhere in the text.
 - **Scope of the failed-charge rule leaves a hole.** 2.1 #8 and 3.1 #1 say the "not cancelled" handling applies ONLY to a charge started by a report request or by "Enable auto top-up" in 2.5. A charge started by turning Auto top up ON at 0 credits on My Plan (decided to charge on 25 Nov, see below) is neither, so its failure is not specified.
 - **Auto top-up toggle after reactivation, or after a Monthly to Yearly upgrade, is not specified.** 2.1 #2 only says ON by default for new subscribers, re-subscribers and existing users at rollout.
 
+- **1.6 case 1 still says "box and button" (100439 export).** 1.4 no longer has an orange box or a "Cancel downgrade" button on My Plan; it has a label and "Keep yearly plan". Read as: when the user cancels the subscription, the label and "Keep yearly plan" go and the cancelled-but-active card shows. Not confirmed.
+- **Where does "Cancel downgrade" live on My Plan now?** 1.4 says "no separate Cancel downgrade button" and 1.5 names "Keep yearly plan" as the My Plan entry, but 1.5 #2 still labels the pop-up's confirm CTA "Cancel downgrade" and Products & Pricing keeps a "Cancel downgrade" button. Two names for one action across the two pages (this is the concept in LAB-09).
+
 ## PRD-internal notes (not conflicts with the prototype)
-- Page 2 says emails are "see section 6"; the emails are in section 4. Section 3.3 is used for both "Stage 1" and "Stage 2 and 3".
+- Page 2 says emails are "see section 6"; the emails are in section 4. Section 3.3 is used for both "Stage 1" and "Stage 2 and 3". Email 7 says "Stage 2 (3.4)"; there is no 3.4.
 - 1.5 says "a pop-up shows successful downgrade" after cancelling the downgrade, which reads like a wording slip.
 - 1.1 says Phase 1 section 2.5 hid the Monthly card for Yearly users; Phase 1 Part 2 in the old PRD (docs/PRD-billing-phase1.md) said Yearly → Monthly is "Not available".
 

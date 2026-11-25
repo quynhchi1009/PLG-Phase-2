@@ -87,6 +87,7 @@
 
   /* Dates and counts inside a sentence are ink, not bold. */
   .settings__meta strong,
+  .settings .settings__hint strong,
   .checklist strong,
   .settings .notice .notice__text strong {
     font-weight: 400;

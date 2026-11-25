@@ -32,11 +32,14 @@ function autoTopUpFacts(planId: PaidPlanId) {
 export function AutoTopUpGate({
   open,
   onClose,
+  onFailed,
   needed,
   request,
 }: {
   open: boolean
   onClose: () => void
+  /** The charge was declined (PRD 3.2): the report page shows the "Payment failed" pop-up. Auto top up stays off. */
+  onFailed: () => void
   /** Credits the chosen report costs. */
   needed: number
   /** The report being generated: "Continue with report" in the success dialog generates it. */
@@ -46,11 +49,17 @@ export function AutoTopUpGate({
   const descId = useId()
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
-  const { paying, longer, pay } = useAutoTopUpPayment(() => {
-    // The success dialog takes over from here, and it also opens on this page.
-    onClose()
-    dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
-  })
+  const { paying, longer, pay } = useAutoTopUpPayment(
+    () => {
+      // The success dialog takes over from here, and it also opens on this page.
+      onClose()
+      dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
+    },
+    () => {
+      onClose()
+      onFailed()
+    },
+  )
 
   return (
     <Dialog
@@ -95,11 +104,14 @@ export function AutoTopUpGate({
 export function AutoTopUpRenewal({
   open,
   onClose,
+  onFailed,
   needed,
   request,
 }: {
   open: boolean
   onClose: () => void
+  /** The charge was declined (PRD 3.2): the report page shows the "Payment failed" pop-up. */
+  onFailed: () => void
   /** Credits the chosen report costs. */
   needed: number
   /** The report being generated: "Continue with report" in the success dialog generates it. */
@@ -110,7 +122,16 @@ export function AutoTopUpRenewal({
   return (
     // Not dismissible: closing mid-charge would leave the customer unsure what happened.
     <Dialog open={open} onClose={() => {}} labelledBy={headingId} describedBy={descId} size="sm" hideClose>
-      {open && <Renewing headingId={headingId} descId={descId} onDone={onClose} needed={needed} request={request} />}
+      {open && (
+        <Renewing
+          headingId={headingId}
+          descId={descId}
+          onDone={onClose}
+          onFailed={onFailed}
+          needed={needed}
+          request={request}
+        />
+      )}
     </Dialog>
   )
 }
@@ -119,20 +140,28 @@ function Renewing({
   headingId,
   descId,
   onDone,
+  onFailed,
   needed,
   request,
 }: {
   headingId: string
   descId: string
   onDone: () => void
+  onFailed: () => void
   needed: number
   request?: ReportRequest
 }) {
   const { state, dispatch } = useBilling()
-  const { longer, pay } = useAutoTopUpPayment(() => {
-    onDone()
-    dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
-  })
+  const { longer, pay } = useAutoTopUpPayment(
+    () => {
+      onDone()
+      dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
+    },
+    () => {
+      onDone()
+      onFailed()
+    },
+  )
   // The charge starts as soon as the dialog opens.
   useEffect(() => {
     pay()

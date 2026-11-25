@@ -6,6 +6,7 @@ import { formatCount } from '../../data/plans'
 import { TODAY, reportRequestedMessage, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { AutoTopUpGate, AutoTopUpRenewal } from '../upgrade/AutoTopUpGate'
+import { PaymentFailedDialog } from '../upgrade/PaymentFailedDialog'
 import { UpgradePrompt } from '../upgrade/UpgradePrompt'
 
 // A sample entity for the prototype. Fictional company and registration number.
@@ -32,6 +33,9 @@ export function ReportPage() {
   const [report, setReport] = useState('basic')
   const [aml, setAml] = useState(false)
   const [prompt, setPrompt] = useState(false)
+  // The "Payment failed" pop-up (PRD 3.2): after a declined Auto top up charge, and on every later report that
+  // costs more than the balance, with no new charge.
+  const [failedOpen, setFailedOpen] = useState(false)
   const groupId = useId()
 
   const chosen = REPORTS.find((r) => r.id === report)!
@@ -56,9 +60,17 @@ export function ReportPage() {
     // Cancelled but still active: the "Don't miss out on your plan benefits" pop-up (the same one as on My
     // Plan) asks to reactivate. It is a success-dialog kind, so it renders from SuccessDialog, not from here.
     if (!enough && cancelled) return dispatch({ type: 'request-reactivate', needed: total })
+    // A charge that already failed is not tried again: the pop-up comes back until the user pays on Stripe.
+    if (!enough && growthA && state.paymentFailed) return setFailedOpen(true)
     if (!enough) return setPrompt(true)
     dispatch({ type: 'generate', ...request, today: TODAY })
     toast(reportRequestedMessage(request))
+  }
+
+  // The charge was declined: remember it (nothing else changes) and say so.
+  const chargeFailed = () => {
+    dispatch({ type: 'fail-auto-top-up' })
+    setFailedOpen(true)
   }
 
   return (
@@ -149,8 +161,21 @@ export function ReportPage() {
       </div>
 
       <UpgradePrompt open={prompt && !growthA && !cancelled} onClose={() => setPrompt(false)} reason="insufficient" />
-      <AutoTopUpGate open={prompt && autoTopUpGate} onClose={() => setPrompt(false)} needed={total} request={request} />
-      <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} needed={total} request={request} />
+      <AutoTopUpGate
+        open={prompt && autoTopUpGate}
+        onClose={() => setPrompt(false)}
+        onFailed={chargeFailed}
+        needed={total}
+        request={request}
+      />
+      <AutoTopUpRenewal
+        open={prompt && autoTopUpRenewal}
+        onClose={() => setPrompt(false)}
+        onFailed={chargeFailed}
+        needed={total}
+        request={request}
+      />
+      <PaymentFailedDialog open={failedOpen} onClose={() => setFailedOpen(false)} needed={total} />
     </div>
   )
 }

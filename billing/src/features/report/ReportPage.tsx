@@ -3,7 +3,7 @@ import { Check, Coins } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Badge, Tabs } from '../../components/ui/primitives'
 import { formatCount } from '../../data/plans'
-import { TODAY, useBilling } from '../../state/billing'
+import { TODAY, reportRequestedMessage, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { AutoTopUpGate, AutoTopUpRenewal } from '../upgrade/AutoTopUpGate'
 import { UpgradePrompt } from '../upgrade/UpgradePrompt'
@@ -44,11 +44,14 @@ export function ReportPage() {
   const autoTopUpGate = growthA && !state.autoTopUp
   const autoTopUpRenewal = growthA && state.autoTopUp
 
+  // What "Continue with report" generates once Auto top up has paid for the credits.
+  const request = { report: chosen.name, business: ENTITY.name, credits: total }
+
   const generate = () => {
     if (inactive) return toast('Choose a plan to generate new reports.')
     if (!enough) return setPrompt(true)
-    dispatch({ type: 'generate', report: chosen.name, business: ENTITY.name, credits: total, today: TODAY })
-    toast(`${chosen.name} report requested for ${ENTITY.name}. ${total} credits used.`)
+    dispatch({ type: 'generate', ...request, today: TODAY })
+    toast(reportRequestedMessage(request))
   }
 
   return (
@@ -139,8 +142,8 @@ export function ReportPage() {
       </div>
 
       <UpgradePrompt open={prompt && !growthA} onClose={() => setPrompt(false)} reason="insufficient" />
-      <AutoTopUpGate open={prompt && autoTopUpGate} onClose={() => setPrompt(false)} needed={total} />
-      <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} needed={total} />
+      <AutoTopUpGate open={prompt && autoTopUpGate} onClose={() => setPrompt(false)} needed={total} request={request} />
+      <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} needed={total} request={request} />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useReducer, type ReactNode } from 'react'
-import { PLANS, TOP_UP } from '../data/plans'
+import { PLANS, TOP_UP, formatCount } from '../data/plans'
 import { addDays } from '../data/history'
 
 /**
@@ -33,7 +33,7 @@ export type Success =
   /** Version A: asked to turn Auto top up on with 0 credits left, so turning it on also pays now. */
   | { kind: 'auto-top-up-pay-confirm' }
   /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved. */
-  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string }
+  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; report?: ReportRequest }
   /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
   | { kind: 'downgrade-confirm' }
   /** The switch to monthly is scheduled for the end of the yearly cycle. */
@@ -49,6 +49,18 @@ export interface LedgerEvent {
   type: string
   date: string
   amount: number | null
+}
+
+/** The report a customer asked for on the Choose report page, held while Auto top up pays for it. */
+export interface ReportRequest {
+  report: string
+  business: string
+  credits: number
+}
+
+/** The toast shown when a report is requested, from the Generate button or from "Continue with report". */
+export function reportRequestedMessage(r: ReportRequest) {
+  return `${r.report} report requested for ${r.business}. ${r.credits} credits used.`
 }
 
 export interface GeneratedReport {
@@ -97,7 +109,7 @@ type Action =
   | { type: 'request-enable-auto-top-up'; payNow?: boolean }
   | { type: 'enable-auto-top-up' }
   /** Auto top up renews the plan early with the payment method on file: pays the pack, adds the credits, moves the billing date, turns Auto top up on. */
-  | { type: 'charge-auto-top-up'; today: string }
+  | { type: 'charge-auto-top-up'; today: string; report?: ReportRequest }
   | { type: 'request-disable-auto-top-up' }
   | { type: 'disable-auto-top-up' }
   | { type: 'reactivate'; today: string }
@@ -135,8 +147,8 @@ export const FLEX_RESETS_ON = addDays(TODAY, 1)
 export const INITIAL_STATE: BillingState = {
   status: 'active',
   planId: 'monthly',
-  creditsRemaining: 423,
-  creditsTotal: 535,
+  creditsRemaining: 211,
+  creditsTotal: 267,
   cycleEnd: CYCLE_END.monthly,
   endedOn: '2026-09-12',
   endReason: 'cancelled',
@@ -189,8 +201,8 @@ function reducer(state: BillingState, action: Action): BillingState {
         creditsRemaining: credits,
         creditsTotal: credits,
         cycleEnd: renewsOn,
-        success: { kind: 'auto-top-up-charged', credits: pack.credits, renewsOn },
-        events: [event(`Auto top up · plan renewed early (${pack.credits} credits)`, action.today, pack.price), ...state.events],
+        success: { kind: 'auto-top-up-charged', credits: pack.credits, renewsOn, report: action.report },
+        events: [event(`Auto top up · plan renewed early (${formatCount(pack.credits)} credits)`, action.today, pack.price), ...state.events],
       }
     }
 

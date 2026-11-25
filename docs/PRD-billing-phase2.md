@@ -166,3 +166,10 @@ Read on 25 Nov 2026. All use a Growth (Monthly) account, $99 / 535 credits, bill
 - p9: **"Turn on Auto top up?" at 0 credits with "Enable and pay $99" / "Stay disabled"**, i.e. turning it on from My Plan with 0 credits charges the pack and renews early. This disagrees with the PRD text in 2.4 and 2.1 #8, where toggling ON only sets ON and a charge starts only from a report request or from "Enable auto top-up" in 2.5.
 - p10: "535 credits added" confirmation on My Plan after that charge; My Plan with the toggle ON; the report-page "Not enough credits" pop-up with only "Enable Auto top up and pay $99" and "Not now".
 - p11: report-page success pop-up "535 credits added" with "Continue with report".
+
+## Decisions made after the export (product owner, 25 Nov 2026)
+These settle gaps and conflicts in the text above; the prototype and Figma follow them.
+- **Toggling auto top-up ON with 0 credits charges at once** (2.4, and the p9 image): $99 on Growth Monthly, $999 on Growth Yearly, the plan's pack is added and the plan renews early. Every payment goes through Stripe, which is why the PRD does not write it down.
+- **"Continue with report" generates the report** (2.1 and 2.5, and the p11 image): after Auto top up has paid for the credits, the button requests the report the user chose, for the same company. It does not just close the pop-up.
+- **Plan credits:** Growth Monthly $99 = 267 credits; Growth Yearly $999 = 3,047 credits (no 535 or 6,094 anywhere). An auto top-up adds the plan's own credits: 267 on Monthly, 3,047 on Yearly.
+- **No grace period and no "Update payment method" flow** (3.3), as already stated above.

@@ -480,8 +480,8 @@ function PlanCard({
 type Cell = string | boolean
 const COLUMNS: { id: PlanId; name: string; price: string; credits: string; popular?: boolean }[] = [
   { id: 'flex', name: 'Flex', price: '$249 one-time', credits: '623 credits' },
-  { id: 'monthly', name: 'Growth Monthly', price: '$99 per month', credits: '535 credits' },
-  { id: 'yearly', name: 'Growth Yearly', price: '$83.25 per month', credits: '6,094 credits', popular: true },
+  { id: 'monthly', name: 'Growth Monthly', price: '$99 per month', credits: '267 credits' },
+  { id: 'yearly', name: 'Growth Yearly', price: '$83.25 per month', credits: '3,047 credits', popular: true },
   { id: 'business', name: 'Business', price: 'Save up to 64%', credits: 'Volume-based credits' },
 ]
 

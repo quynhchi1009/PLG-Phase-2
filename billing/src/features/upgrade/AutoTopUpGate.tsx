@@ -4,7 +4,7 @@ import { Dialog } from '../../components/ui/Dialog'
 import { PaymentNote, PaymentStatus } from '../../components/ui/PaymentProgress'
 import { TOP_UP, formatCount, formatPrice } from '../../data/plans'
 import { formatDate } from '../../data/history'
-import { TODAY, earlyRenewalDate, useBilling } from '../../state/billing'
+import { TODAY, earlyRenewalDate, useBilling, type ReportRequest } from '../../state/billing'
 import { useAutoTopUpPayment } from './useAutoTopUpPayment'
 
 /* Auto top up renews the subscription early and adds credits immediately: the pack is
@@ -23,11 +23,14 @@ export function AutoTopUpGate({
   open,
   onClose,
   needed,
+  request,
 }: {
   open: boolean
   onClose: () => void
   /** Credits the chosen report costs. */
   needed: number
+  /** The report being generated: "Continue with report" in the success dialog generates it. */
+  request?: ReportRequest
 }) {
   const headingId = useId()
   const descId = useId()
@@ -36,7 +39,7 @@ export function AutoTopUpGate({
   const { paying, longer, pay } = useAutoTopUpPayment(() => {
     // The success dialog takes over from here, and it also opens on this page.
     onClose()
-    dispatch({ type: 'charge-auto-top-up', today: TODAY })
+    dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
   })
 
   return (
@@ -84,18 +87,21 @@ export function AutoTopUpRenewal({
   open,
   onClose,
   needed,
+  request,
 }: {
   open: boolean
   onClose: () => void
   /** Credits the chosen report costs. */
   needed: number
+  /** The report being generated: "Continue with report" in the success dialog generates it. */
+  request?: ReportRequest
 }) {
   const headingId = useId()
   const descId = useId()
   return (
     // Not dismissible: closing mid-charge would leave the customer unsure what happened.
     <Dialog open={open} onClose={() => {}} labelledBy={headingId} describedBy={descId} size="sm" hideClose>
-      {open && <Renewing headingId={headingId} descId={descId} onDone={onClose} needed={needed} />}
+      {open && <Renewing headingId={headingId} descId={descId} onDone={onClose} needed={needed} request={request} />}
     </Dialog>
   )
 }
@@ -105,17 +111,19 @@ function Renewing({
   descId,
   onDone,
   needed,
+  request,
 }: {
   headingId: string
   descId: string
   onDone: () => void
   needed: number
+  request?: ReportRequest
 }) {
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
   const { longer, pay } = useAutoTopUpPayment(() => {
     onDone()
-    dispatch({ type: 'charge-auto-top-up', today: TODAY })
+    dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
   })
   // The charge starts as soon as the dialog opens.
   useEffect(() => {

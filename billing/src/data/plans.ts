@@ -53,7 +53,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Growth (billed monthly)',
     summary: 'For organisations running frequent KYB, AML & UBO checks for ongoing compliance',
     price: 99,
-    credits: 535,
+    credits: 267,
     cycle: 'month',
     badge: 'Save 8%',
     features: [
@@ -72,7 +72,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: 'Growth (billed yearly)',
     summary: 'For organisations running frequent KYB, AML & UBO checks for ongoing compliance',
     price: 999,
-    credits: 6094,
+    credits: 3047,
     cycle: 'year',
     badge: 'Save 22%',
     features: [
@@ -116,11 +116,13 @@ export function isUpgrade(from: PlanId, to: PlanId) {
 /**
  * Credit packs bought on top of a plan. Flex allows one manual top-up. Growth has no manual top-up
  * (Phase 2): its pack is only ever bought by Auto top up, so `once` is irrelevant for Growth.
+ * Auto top up charges the plan's full price and adds the plan's own credits: Growth monthly $99 for 267
+ * credits, Growth yearly $999 for 3,047 credits (plan credits set by the product owner on 25 Nov 2026).
  */
 export const TOP_UP: Record<'flex' | 'monthly' | 'yearly', { credits: number; price: number; once: boolean }> = {
   flex: { credits: 623, price: 249, once: true },
-  monthly: { credits: 535, price: 99, once: false },
-  yearly: { credits: 535, price: 99, once: false },
+  monthly: { credits: 267, price: 99, once: false },
+  yearly: { credits: 3047, price: 999, once: false },
 }
 
 /** What a customer gains by moving to a plan, shown in upgrade dialogs. */

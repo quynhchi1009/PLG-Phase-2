@@ -79,6 +79,15 @@ const GROUPS: Group[] = [
       },
       { id: 'g-m-low', label: 'Low credits · Monthly', steps: REPORT_STEPS, status: 'active', planId: 'monthly', creditsLeft: 6, route: 'report' },
       { id: 'g-y-low', label: 'Low credits · Yearly', steps: REPORT_STEPS, status: 'active', planId: 'yearly', creditsLeft: 6, route: 'report' },
+      {
+        id: 'g-y-zero',
+        label: 'Turn on at 0 credits · Yearly',
+        steps: 'Switch Auto top up on in the credit balance card. With 0 credits it charges $999 at once.',
+        status: 'active',
+        planId: 'yearly',
+        creditsLeft: 0,
+        autoTopUp: false,
+      },
     ],
   },
   {

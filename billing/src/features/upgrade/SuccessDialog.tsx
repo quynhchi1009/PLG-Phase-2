@@ -6,7 +6,7 @@ import { PaymentNote } from '../../components/ui/PaymentProgress'
 import { SuccessMark } from '../../components/ui/SuccessMark'
 import { PLANS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
-import { TODAY, earlyRenewalDate, useBilling } from '../../state/billing'
+import { TODAY, earlyRenewalDate, reportRequestedMessage, useBilling, type ReportRequest } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { flagUpdated } from './flagUpdated'
 import { useAutoTopUpPayment } from './useAutoTopUpPayment'
@@ -29,7 +29,7 @@ const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
  */
 export function SuccessDialog() {
   const { state, dispatch } = useBilling()
-  const { route } = useUi()
+  const { route, toast } = useUi()
   const headingId = useId()
   const descId = useId()
   const s = state.success
@@ -71,6 +71,13 @@ export function SuccessDialog() {
     if (s?.kind === 'downgrade-cancelled') {
       requestAnimationFrame(() => document.querySelector<HTMLElement>('.settings__title')?.focus())
     }
+  }
+
+  // "Continue with report": the credits are paid for, so the report the customer asked for goes through now.
+  const continueWithReport = (r: ReportRequest) => {
+    dispatch({ type: 'dismiss-success' })
+    dispatch({ type: 'generate', ...r, today: TODAY })
+    toast(reportRequestedMessage(r))
   }
 
   return (
@@ -236,7 +243,7 @@ export function SuccessDialog() {
             We charged {formatPrice(TOP_UP[state.planId].price)} and moved your next billing date to{' '}
             {keepTogether(formatDate(s.renewsOn))}.
           </p>
-          <Button data-autofocus block onClick={close}>
+          <Button data-autofocus block onClick={onReport && s.report ? () => continueWithReport(s.report!) : close}>
             {onReport ? 'Continue with report' : 'View balance'}
           </Button>
         </div>

@@ -90,6 +90,16 @@ const GROUPS: Group[] = [
         creditsLeft: 0,
         autoTopUp: false,
       },
+      {
+        id: 'g-y-zero-down',
+        label: 'Turn on at 0 credits · Yearly, downgrade scheduled',
+        steps: 'Switch Auto top up on in the credit balance card. It charges $999 at once, and the success message names the new date of the switch to monthly.',
+        status: 'active',
+        planId: 'yearly',
+        creditsLeft: 0,
+        autoTopUp: false,
+        pendingDowngrade: true,
+      },
     ],
   },
   {

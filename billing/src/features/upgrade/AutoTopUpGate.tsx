@@ -1,14 +1,24 @@
 import { useEffect, useId } from 'react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
-import { PaymentNote, PaymentStatus } from '../../components/ui/PaymentProgress'
+import { PaymentFacts, PaymentNote, PaymentStatus } from '../../components/ui/PaymentProgress'
 import { TOP_UP, formatCount, formatPrice } from '../../data/plans'
 import { formatDate } from '../../data/history'
-import { TODAY, earlyRenewalDate, useBilling, type ReportRequest } from '../../state/billing'
+import { TODAY, earlyRenewalDate, useBilling, type PaidPlanId, type ReportRequest } from '../../state/billing'
 import { useAutoTopUpPayment } from './useAutoTopUpPayment'
 
 /* Auto top up renews the subscription early and adds credits immediately: the pack is
    paid for now, the new billing period starts today and the next billing date moves. */
+
+/** The three figures of an Auto top up charge, shown in the prompt and again while the charge goes through. */
+function autoTopUpFacts(planId: PaidPlanId) {
+  const pack = TOP_UP[planId]
+  return [
+    { label: 'Charged to your card', value: formatPrice(pack.price) },
+    { label: 'Credits added', value: formatCount(pack.credits) },
+    { label: 'Next billing date', value: formatDate(earlyRenewalDate(planId, TODAY)) },
+  ]
+}
 
 /**
  * Version A, Growth with Auto top up off: shown when a report needs more credits than
@@ -58,10 +68,9 @@ export function AutoTopUpGate({
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left">
             This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Turn on
-            Auto top up and we'll charge {formatPrice(pack.price)}, add {formatCount(pack.credits)} credits and move your
-            next billing date to {formatDate(earlyRenewalDate(state.planId, TODAY))}. Or wait until{' '}
-            {formatDate(state.cycleEnd)} for your credits to reset.
+            Auto top up to add more.
           </p>
+          <PaymentFacts facts={autoTopUpFacts(state.planId)} />
           <div className="dialog__actions dialog__actions--stack">
             <Button data-autofocus block loading={paying} onClick={pay}>
               {paying ? 'Processing…' : `Enable and pay ${formatPrice(pack.price)}`}
@@ -120,7 +129,6 @@ function Renewing({
   request?: ReportRequest
 }) {
   const { state, dispatch } = useBilling()
-  const pack = TOP_UP[state.planId]
   const { longer, pay } = useAutoTopUpPayment(() => {
     onDone()
     dispatch({ type: 'charge-auto-top-up', today: TODAY, report: request })
@@ -137,11 +145,7 @@ function Renewing({
       headingId={headingId}
       descId={descId}
       longer={longer}
-      facts={[
-        { label: 'Charged to your card', value: formatPrice(pack.price) },
-        { label: 'Credits added', value: formatCount(pack.credits) },
-        { label: 'Next billing date', value: formatDate(earlyRenewalDate(state.planId, TODAY)) },
-      ]}
+      facts={autoTopUpFacts(state.planId)}
     >
       This report needs {formatCount(needed)} credits and you have {formatCount(state.creditsRemaining)}. Auto top up is
       adding more.

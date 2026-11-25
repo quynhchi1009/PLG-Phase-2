@@ -83,17 +83,26 @@ export function PaymentStatus({
       <p id={descId} className="pay-status__text">
         {children}
       </p>
-      {facts && (
-        <dl className="pay-status__facts">
-          {facts.map((f) => (
-            <div key={f.label}>
-              <dt>{f.label}</dt>
-              <dd>{f.value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      {facts && <PaymentFacts facts={facts} />}
       <PaymentNote busy={!mark} longer={longer} busyText={busyText} />
     </div>
+  )
+}
+
+/**
+ * What a payment is for, as label and value rows (Charged to your card, Credits added, Next billing
+ * date). The same rows sit in the status dialog while an Auto top up goes through and in the prompt that
+ * asks for it, so the figures read the same before and during the charge.
+ */
+export function PaymentFacts({ facts }: { facts: { label: string; value: string }[] }) {
+  return (
+    <dl className="pay-status__facts">
+      {facts.map((f) => (
+        <div key={f.label}>
+          <dt>{f.label}</dt>
+          <dd>{f.value}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }

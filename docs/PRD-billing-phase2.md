@@ -1,6 +1,6 @@
 # PRD: PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)
 
-Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)-251126-022824.pdf` (17 pages, exported 25 Nov 2026; the file name is ddmmyy-hhmmss, as with Phase 1). Text transcribed from the PDF. Only 10 of its "Design" screenshots are embedded images (pages 3 and 8-11); the rest are vector drawings that could not be extracted. See "What the embedded design images show" at the end. Figma is the source for layout.
+Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)-251126-022824.pdf` (17 pages, exported 25 Nov 2026; the file name is ddmmyy-hhmmss, as with Phase 1). Text transcribed from the PDF and re-checked against the full extracted text on 25 Nov 2026 (second read, same file: it is the only copy in Downloads and was downloaded before this transcription). Only 10 of its "Design" screenshots are embedded images (pages 3 and 8-11); the Design cells on pages 4-5 are empty in the PDF itself and pages 12-13 say "Refer to Figma" / "N/A", so there is nothing more to read there. See "What the embedded design images show" at the end. Figma is the source for layout.
 
 - Figma: https://www.figma.com/design/ot8NEpgFxGsI3f6XiY7pfr/PLG?node-id=13223-242997 (only frames labelled "Phase 2")
 - Confluence: Phase 2 page 2020474893, Phase 1 page 1854308368 (Phase 1 PRD sections 2.2, 2.5, 2.6, 2.7 are referenced)
@@ -153,6 +153,12 @@ Needs: Plan downgraded (sent when the effective date is reached); Auto top-up pa
 | Checkout, from T-30 until rollout | Purchase and upgrade pages show a checkout disclosure |
 
 Notes: plan name, price and billing period in emails and in-app messages must be dynamic. **[need input]** T-30 is Sunday 21 Feb 2027 (send Sunday or Monday 22 Feb?). PRD-internal inconsistency: heading says T-30 = 21 Feb, table says 22 Feb.
+
+## PRD-internal contradictions and gaps (open questions for the PM; found on the second read, 25 Nov 2026)
+- **Does a failed auto top-up cancel the account?** The Overview notes (pages 1-2) say: "A failed auto top-up charge is handled the same way as a failed auto-renewal in Phase 1 (section 2.7): the account goes straight to cancelled and inactive." Sections 2.1 #8, 2.5 #3, 3.1 and 3.2 say the opposite: **not cancelled**, billing date unchanged, "Payment failed" pop-up, pay on Stripe. Email A and pop-up A (section 5.2) also tell customers "If the charge fails, your subscription will be cancelled straight away." Working baseline in this file, the prototype and the audit: sections 2.1, 3.1 and 3.2 (the detailed, newest logic). Not yet confirmed by the PM.
+- **"Pop-up 3" is not defined.** Section 1.5 #1 lists "the Cancel downgrade CTA in pop-up 3" as an entry point, but 1.3 only defines pop-up 1 (Keep current plan / Proceed to downgrade) and pop-up 2 (Back to my plan). No pop-up 3 exists anywhere in the text.
+- **Scope of the failed-charge rule leaves a hole.** 2.1 #8 and 3.1 #1 say the "not cancelled" handling applies ONLY to a charge started by a report request or by "Enable auto top-up" in 2.5. A charge started by turning Auto top up ON at 0 credits on My Plan (decided to charge on 25 Nov, see below) is neither, so its failure is not specified.
+- **Auto top-up toggle after reactivation, or after a Monthly to Yearly upgrade, is not specified.** 2.1 #2 only says ON by default for new subscribers, re-subscribers and existing users at rollout.
 
 ## PRD-internal notes (not conflicts with the prototype)
 - Page 2 says emails are "see section 6"; the emails are in section 4. Section 3.3 is used for both "Stage 1" and "Stage 2 and 3".

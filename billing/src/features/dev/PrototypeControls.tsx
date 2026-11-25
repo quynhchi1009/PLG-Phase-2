@@ -206,6 +206,16 @@ const GROUPS: Group[] = [
         creditsLeft: 'none',
       },
       {
+        id: 'c-low',
+        label: 'Cancelled · low credits at report',
+        steps: `${REPORT_STEPS} Auto top up does not run while the plan is cancelled, so the "Don't miss out on your plan benefits" pop-up (the same one as on My Plan) asks to reactivate, with no upgrade offer. After reactivating, Generate report again: Auto top up renews the plan.`,
+        status: 'cancelling',
+        planId: 'monthly',
+        creditsLeft: 6,
+        autoTopUp: false,
+        route: 'report',
+      },
+      {
         id: 'inactive',
         label: 'Inactive',
         steps: 'The plan has ended. Click Choose a plan to subscribe again.',

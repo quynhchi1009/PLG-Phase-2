@@ -44,7 +44,11 @@ export function SuccessDialog() {
   // The downgrade pop-ups open on the page where they were asked for (PRD 1.3 to 1.5): the Growth monthly
   // card's "Switch at renewal" and "Cancel downgrade" on Products & Pricing, the buttons on My Plan there.
   const onPlans = route === 'plans' && !!s && DOWNGRADE_KINDS.has(s.kind)
-  const open = !!s && (route === 'billing' || onReport || onPlans)
+  // A cancelled plan whose credits ran short at the report page (PRD 2.1 #9) asks to reactivate there:
+  // the same "Don't miss out on your plan benefits" pop-up as on My Plan, and the same confirmation after it.
+  const reactivatedOnReport = route === 'report' && s?.kind === 'reactivated'
+  const reactivateAskedOnReport = route === 'report' && s?.kind === 'reactivate-confirm'
+  const open = !!s && (route === 'billing' || onReport || onPlans || reactivatedOnReport || reactivateAskedOnReport)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
   const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged'
 
@@ -145,11 +149,15 @@ export function SuccessDialog() {
 
       {open && s?.kind === 'reactivate-confirm' && (
         <div className="dialog__body success">
+          {/* From "Generate report" with too few credits (`needed` is set) the heading names what just happened,
+              not the plan benefits: the customer asked for a report and was stopped. */}
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-            Don't miss out on your plan benefits
+            {s.needed === undefined ? "Don't miss out on your plan benefits" : 'Not enough credits for this report'}
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            Reactivate your subscription to continue enjoying your current plan benefits.
+            {s.needed === undefined
+              ? 'Reactivate your subscription to continue enjoying your current plan benefits.'
+              : `This report needs ${formatCount(s.needed)} credits and you have ${formatCount(state.creditsRemaining)}. Your plan is set to cancel, so Auto top up can't add more. Reactivate your subscription, then generate the report again.`}
           </p>
           <section className="perk-box perk-box--firm success__in" style={at(T.panel)} aria-label="What you keep">
             <p className="perk-box__title">Stay on current plan to continue enjoying:</p>
@@ -181,7 +189,7 @@ export function SuccessDialog() {
             {formatPrice(PLANS[s.planId].price ?? 0)}. Your credits and Perpetual KYB stay as they are.
           </p>
           <Button data-autofocus block onClick={close}>
-            Go to my plan
+            {reactivatedOnReport ? 'Back to report' : 'Go to my plan'}
           </Button>
         </div>
       )}

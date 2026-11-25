@@ -43,12 +43,19 @@ export function ReportPage() {
   const growthA = state.status === 'active' && state.planId !== 'flex'
   const autoTopUpGate = growthA && !state.autoTopUp
   const autoTopUpRenewal = growthA && state.autoTopUp
+  // A cancelled plan that is still active (PRD 2.1 #9): Auto top up does not run, and an upgrade is not
+  // offered here either. With too few credits the one way on is to reactivate the subscription.
+  // (`generate` below hands it to the reactivate pop-up.)
+  const cancelled = state.status === 'cancelling'
 
   // What "Continue with report" generates once Auto top up has paid for the credits.
   const request = { report: chosen.name, business: ENTITY.name, credits: total }
 
   const generate = () => {
     if (inactive) return toast('Choose a plan to generate new reports.')
+    // Cancelled but still active: the "Don't miss out on your plan benefits" pop-up (the same one as on My
+    // Plan) asks to reactivate. It is a success-dialog kind, so it renders from SuccessDialog, not from here.
+    if (!enough && cancelled) return dispatch({ type: 'request-reactivate', needed: total })
     if (!enough) return setPrompt(true)
     dispatch({ type: 'generate', ...request, today: TODAY })
     toast(reportRequestedMessage(request))
@@ -141,7 +148,7 @@ export function ReportPage() {
         </aside>
       </div>
 
-      <UpgradePrompt open={prompt && !growthA} onClose={() => setPrompt(false)} reason="insufficient" />
+      <UpgradePrompt open={prompt && !growthA && !cancelled} onClose={() => setPrompt(false)} reason="insufficient" />
       <AutoTopUpGate open={prompt && autoTopUpGate} onClose={() => setPrompt(false)} needed={total} request={request} />
       <AutoTopUpRenewal open={prompt && autoTopUpRenewal} onClose={() => setPrompt(false)} needed={total} request={request} />
     </div>

@@ -18,8 +18,9 @@ export type Success =
   /** A plan was bought: `via` says whether it moved up from an active plan or started fresh. */
   | { kind: 'upgraded'; planId: PaidPlanId; via: 'upgrade' | 'subscribe' }
   | { kind: 'topped-up'; credits: number }
-  /** Asked to reactivate: shows what the customer keeps before they confirm. */
-  | { kind: 'reactivate-confirm'; planId: PaidPlanId }
+  /** Asked to reactivate: shows what the customer keeps before they confirm. `needed` is set when it opened
+   *  from "Generate report" with too few credits: the credits that report costs, so the pop-up can say so. */
+  | { kind: 'reactivate-confirm'; planId: PaidPlanId; needed?: number }
   /** A scheduled cancellation was withdrawn: same plan, same credits, billing resumes. */
   | { kind: 'reactivated'; planId: PaidPlanId; renewsOn: string }
   /** Asked to turn Auto top up off: confirm before anything changes. */
@@ -104,7 +105,7 @@ type Action =
   | { type: 'request-downgrade' }
   | { type: 'schedule-downgrade'; today: string }
   | { type: 'cancel-downgrade'; today: string }
-  | { type: 'request-reactivate' }
+  | { type: 'request-reactivate'; needed?: number }
   /** `payNow` (Version A, 0 credits left): turning it on also buys the first pack right away. */
   | { type: 'request-enable-auto-top-up'; payNow?: boolean }
   | { type: 'enable-auto-top-up' }
@@ -260,7 +261,7 @@ function reducer(state: BillingState, action: Action): BillingState {
     // Opens the "Don't miss out on your plan benefits" confirmation; nothing changes yet.
     case 'request-reactivate':
       if (state.status !== 'cancelling') return state
-      return { ...state, success: { kind: 'reactivate-confirm', planId: state.planId } }
+      return { ...state, success: { kind: 'reactivate-confirm', planId: state.planId, needed: action.needed } }
 
     // Undoes a scheduled cancellation before the cycle ends. Nothing is charged
     // now; the plan simply renews on the date it would have ended.

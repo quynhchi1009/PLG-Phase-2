@@ -55,7 +55,7 @@ export function PlansPage() {
       <Estimator onChoose={setPending} onShow={showPlan} onReset={() => setRecommended(null)} />
 
       <section className="choose" ref={plansRef} aria-labelledby="choose-title">
-        <h2 id="choose-title" className="choose__title">
+        <h2 id="choose-title" tabIndex={-1} className="choose__title">
           Choose your plan
         </h2>
         {lineup === 'monthly' ? (
@@ -445,10 +445,10 @@ function PlanCard({
             else if (cta.kind === 'locked')
               toast('You can choose a new plan when your current plan ends or your credits run out.')
             else if (cta.kind === 'select') onChoose(plan.id as PaidPlanId)
-            else if (cta.kind === 'downgrade') {
+            else if (cta.kind === 'downgrade')
+              // The switch-to-monthly pop-ups open here, on Products & Pricing (PRD 1.3).
               dispatch({ type: 'request-downgrade' })
-              navigate('billing')
-            } else if (cta.kind === 'reactivate') {
+            else if (cta.kind === 'reactivate') {
               dispatch({ type: 'request-reactivate' })
               navigate('billing')
             }
@@ -457,16 +457,9 @@ function PlanCard({
           {cta.label}
         </Button>
         {cta.cancelDowngrade && (
-          // Opens the same "Keep your yearly plan?" pop-up as Billing's "Keep yearly plan". Like the other
-          // plan actions on this page it is shown on the Billing page, where the confirmation lives.
-          <button
-            type="button"
-            className="text-btn plan__cta-link"
-            onClick={() => {
-              dispatch({ type: 'request-cancel-downgrade' })
-              navigate('billing')
-            }}
-          >
+          // Opens the same "Keep your yearly plan?" pop-up as My Plan's "Keep yearly plan", here on
+          // Products & Pricing (PRD 1.5).
+          <button type="button" className="text-btn plan__cta-link" onClick={() => dispatch({ type: 'request-cancel-downgrade' })}>
             Cancel downgrade
           </button>
         )}

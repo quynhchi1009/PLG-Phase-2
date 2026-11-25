@@ -23,6 +23,9 @@ const AUTO_TOP_UP_PERK = {
 
 const at = (ms: number) => ({ '--at': `${ms}ms` }) as CSSProperties
 
+/* The pop-ups of the Yearly to Monthly switch: asked for, scheduled, cancel asked for, cancelled. */
+const DOWNGRADE_KINDS = new Set<string>(['downgrade-confirm', 'downgrade-scheduled', 'keep-yearly-confirm', 'downgrade-cancelled'])
+
 /**
  * Confirms what just changed on the Billing page: a (simulated) Stripe checkout,
  * or a reactivation (asked to confirm first, then confirmed).
@@ -38,7 +41,10 @@ export function SuccessDialog() {
   // An Auto top up that was paid for on the report page confirms there, so the customer
   // can carry on with the report they were generating.
   const onReport = route === 'report' && s?.kind === 'auto-top-up-charged'
-  const open = !!s && (route === 'billing' || onReport)
+  // The downgrade pop-ups open on the page where they were asked for (PRD 1.3 to 1.5): the Growth monthly
+  // card's "Switch at renewal" and "Cancel downgrade" on Products & Pricing, the buttons on My Plan there.
+  const onPlans = route === 'plans' && !!s && DOWNGRADE_KINDS.has(s.kind)
+  const open = !!s && (route === 'billing' || onReport || onPlans)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
   const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged'
 
@@ -63,13 +69,16 @@ export function SuccessDialog() {
     if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
     const settingsOnly =
       s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || s?.kind === 'topped-up'
-    const changed = settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
+    const changed = onPlans ? ['.plans'] : settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
     // "Keep yearly plan" left the page when the switch was cancelled, so there is nothing to
-    // hand focus back to: land on the settings card instead of <body>.
-    if (s?.kind === 'downgrade-cancelled') {
-      requestAnimationFrame(() => document.querySelector<HTMLElement>('.settings__title')?.focus())
+    // hand focus back to: land on the settings card (or the plan cards' heading) instead of <body>.
+    // Scheduling the switch from Products & Pricing re-labels the card button that opened the pop-up,
+    // so focus lands on the same heading there.
+    if (s?.kind === 'downgrade-cancelled' || (onPlans && s?.kind === 'downgrade-scheduled')) {
+      const heading = onPlans ? '#choose-title' : '.settings__title'
+      requestAnimationFrame(() => document.querySelector<HTMLElement>(heading)?.focus())
     }
   }
 

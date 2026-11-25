@@ -19,7 +19,8 @@ interface Toast {
 
 interface UiContextValue {
   route: Route
-  navigate: (route: Route) => void
+  /** Opens a page. With `anchor` (an element id) it also scrolls that element to the top once the page is shown. */
+  navigate: (route: Route, anchor?: string) => void
   theme: Theme
   toggleTheme: () => void
   toasts: Toast[]
@@ -49,22 +50,41 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(initialTheme)
   const [toasts, setToasts] = useState<Toast[]>([])
   const nextId = useRef(1)
+  // A page change scrolls to the top. When the caller named a section, this holds it until the new
+  // page has rendered, then the effect below scrolls to it. `jump` re-runs that effect when the
+  // page does not change (already on it, so no hashchange fires).
+  const anchor = useRef<{ id: string; smooth: boolean } | null>(null)
+  const [jump, setJump] = useState(0)
 
   useEffect(() => {
     const onHash = () => {
       setRoute(readRoute())
-      window.scrollTo({ top: 0 })
+      // Instant: the page's CSS makes scrolling smooth, and a smooth run to the top would still be
+      // going when the jump to a section below starts.
+      window.scrollTo({ top: 0, behavior: 'instant' })
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
   useEffect(() => {
+    const target = anchor.current
+    if (!target) return
+    anchor.current = null
+    document.getElementById(target.id)?.scrollIntoView({ behavior: target.smooth ? 'smooth' : 'instant', block: 'start' })
+  }, [route, jump])
+
+  useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
-  const navigate = useCallback((next: Route) => {
+  const navigate = useCallback((next: Route, to?: string) => {
+    // Products & Pricing always opens on the "Choose your plan" cards (the estimator stays one scroll up).
+    const target = to ?? (next === 'plans' ? 'choose-title' : undefined)
+    const here = window.location.hash === `#/${next}`
+    if (target) anchor.current = { id: target, smooth: here }
     window.location.hash = `/${next}`
+    if (target && here) setJump((n) => n + 1)
   }, [])
 
   const toggleTheme = useCallback(() => {

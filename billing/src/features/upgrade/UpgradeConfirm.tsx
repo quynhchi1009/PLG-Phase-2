@@ -6,6 +6,7 @@ import { Checklist, InfoTip } from '../../components/ui/primitives'
 import { GROWTH_PERKS, PLANS, UPGRADE_PERKS, formatAmount, formatCount, formatPrice, isUpgrade } from '../../data/plans'
 import { formatDate } from '../../data/history'
 import { TODAY, nextBillingDate, useBilling, type PaidPlanId } from '../../state/billing'
+import { CheckoutDisclosure } from '../rollout/CheckoutDisclosure'
 import { useCheckout } from './checkout'
 
 /**
@@ -169,6 +170,9 @@ function UpgradeBody({
         </div>
       </dl>
 
+      {/* Before rollout (PRD 5.2) the plan being bought comes with a note on what changes on the day. */}
+      <CheckoutDisclosure planId={target} />
+
       {/* Focus lands on the title (Dialog's fallback), so the pay button isn't pre-selected. */}
       <Button
         block
@@ -222,6 +226,7 @@ function PurchaseBody({
         </div>
         <Checklist items={plan.features} size="sm" />
       </section>
+      <CheckoutDisclosure planId={planId} />
       <div className="confirm-terms">
         <label className="check">
           <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} data-autofocus />

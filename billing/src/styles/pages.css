@@ -271,8 +271,10 @@
 }
 
 /* Three equal outlined boxes: white, one Registry Green hairline, centred
-   text. No fills or warning tints; the bold date carries the deadline. */
-.resub__tiles {
+   text. No fills or warning tints; the bold date carries the deadline.
+   The rollout pop-ups' three boxes (.rollout-pop__*) share this look, with left-aligned text. */
+.resub__tiles,
+.rollout-pop__tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
@@ -280,7 +282,8 @@
   margin-block: var(--space-2) var(--space-1);
 }
 
-.resub__tile {
+.resub__tile,
+.rollout-pop__tile {
   display: grid;
   align-content: start;
   gap: var(--space-2);
@@ -292,12 +295,14 @@
   line-height: 1.45;
 }
 
-.resub__tile-title {
+.resub__tile-title,
+.rollout-pop__tile-title {
   color: var(--color-content-primary);
   font-weight: 600;
 }
 
-.resub__tile strong {
+.resub__tile strong,
+.rollout-pop__tile strong {
   color: var(--color-content-primary);
   font-weight: 600;
 }

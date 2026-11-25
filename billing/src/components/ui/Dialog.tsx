@@ -7,7 +7,7 @@ interface DialogProps {
   /** Accessible name; should match the visible heading. */
   labelledBy: string
   describedBy?: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'wide' | 'lg'
   /** Changes when the flow moves to another step, so the content re-enters. */
   stepKey?: string
   /** Drops the X when the primary button already closes the dialog, so there is one obvious way out.

@@ -6,7 +6,16 @@ import {
   type PaidPlanId,
   type SubscriptionStatus,
 } from '../../state/billing'
+import { formatDate } from '../../data/history'
 import { usePaymentSim, type PaymentOutcome, type PaymentSpeed } from '../../state/paymentSim'
+import {
+  POST_ROLLOUT_UNTIL,
+  PRE_ROLLOUT_FROM,
+  RETURNING_FROM,
+  ROLLOUT_ON,
+  useRollout,
+  type RolloutPhase,
+} from '../../state/rollout'
 import { useUi, type Route } from '../../state/ui'
 
 /** One row of the panel: a flow, opened on the screen where that flow starts. */
@@ -286,11 +295,33 @@ const PAYMENT_OUTCOMES: { id: PaymentOutcome; label: string; hint: string }[] = 
   { id: 'fail', label: 'Fails', hint: 'The charge is declined: the Payment failed pop-up shows and nothing is added.' },
 ]
 
+/* PRD 5.2: the in-app messaging around the 23 Mar 2027 rollout. Picking one starts that stage as a first login
+   would: its pop-up opens. It works on any account; only an active Growth plan sees it. */
+const ROLLOUT_STAGES: { id: RolloutPhase; label: string; hint: string }[] = [
+  { id: 'off', label: 'Off', hint: `Nothing shows: before ${formatDate(PRE_ROLLOUT_FROM)} and after ${formatDate(POST_ROLLOUT_UNTIL)}.` },
+  {
+    id: 'pre',
+    label: `Before rollout · from ${formatDate(PRE_ROLLOUT_FROM)}`,
+    hint: 'Pop-up A opens, then the banner stays. Buying or upgrading to Growth shows the disclosure on its confirmation step.',
+  },
+  {
+    id: 'post',
+    label: `Rollout · from ${formatDate(ROLLOUT_ON)}`,
+    hint: `Pop-up B opens, then the banner stays until ${formatDate(POST_ROLLOUT_UNTIL)}.`,
+  },
+  {
+    id: 'returning',
+    label: 'Returning after a break',
+    hint: `Did not log in between ${formatDate(RETURNING_FROM)} and ${formatDate(POST_ROLLOUT_UNTIL)}: pop-up B only, no banner.`,
+  },
+]
+
 /** Demo-only panel for jumping between account states. Not part of the product UI. */
 export function PrototypeControls() {
   const { dispatch } = useBilling()
   const { navigate, theme, toggleTheme } = useUi()
   const { speed, setSpeed, outcome, setOutcome } = usePaymentSim()
+  const { phase: rolloutPhase, setPhase: setRolloutPhase } = useRollout()
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState<string | null>(null)
 
@@ -367,6 +398,20 @@ export function PrototypeControls() {
           ))}
         </div>
         <p className="proto__hint">{PAYMENT_OUTCOMES.find((o) => o.id === outcome)?.hint}</p>
+      </div>
+      {/* The rollout stage is its own control, so any account row below can be looked at in any stage. */}
+      <div className="proto__group">
+        <p className="proto__label">Rollout messaging</p>
+        <div className="proto__seg proto__seg--stack" role="group" aria-label="Which rollout stage the messaging is in">
+          {ROLLOUT_STAGES.map((r) => (
+            <div key={r.id} className="proto__item">
+              <button type="button" aria-pressed={rolloutPhase === r.id} onClick={() => setRolloutPhase(r.id)}>
+                {r.label}
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="proto__hint">{ROLLOUT_STAGES.find((r) => r.id === rolloutPhase)?.hint}</p>
       </div>
       {GROUPS.map((g) => (
         <div key={g.title} className="proto__group">

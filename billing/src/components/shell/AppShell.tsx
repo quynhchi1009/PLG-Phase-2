@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CircleArrowLeft, KeyRound, Menu, Radar } from 'lucide-react'
+import { RolloutBanner } from '../../features/rollout/RolloutBanner'
 import { useBilling } from '../../state/billing'
 import { useUi, type Route } from '../../state/ui'
 import {
@@ -280,6 +281,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <FlexBanner />
+        <RolloutBanner />
 
         <main id="main" className="main" tabIndex={-1}>
           {children}

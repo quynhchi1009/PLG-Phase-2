@@ -399,6 +399,72 @@
   }
 }
 
+/* Checkout disclosure: what changes on rollout day, on the confirmation step before payment (PRD 5.2).
+   Quiet by design: an icon and a sentence, no box, so the one primary button stays the loudest thing. */
+.rollout-note {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  font-size: var(--text-sm);
+  color: var(--color-content-main);
+}
+
+.rollout-note svg {
+  flex: none;
+  margin-block-start: 2px;
+  color: var(--color-content-tertiary);
+}
+
+/* Rollout pop-ups (PRD 5.2), laid out like the other products' pre- and post-rollout pop-ups: a centred head,
+   three boxes (styled with the lapsed plan card's, in pages.css), then a hairline with the note on the left and
+   the one button on the right. */
+.rollout-pop {
+  gap: var(--space-4);
+  padding: var(--space-10) var(--space-8) var(--space-8);
+}
+
+.rollout-pop__head {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.rollout-pop__tiles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: start;
+}
+
+.rollout-pop__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-border-subtle);
+  color: var(--color-content-tertiary);
+}
+
+@media (max-width: 760px) {
+  .rollout-pop {
+    padding: var(--space-8) var(--space-5) var(--space-5);
+  }
+
+  /* Same specificity trap as any shared rule: pages.css loads later, so the override names its parent. */
+  .rollout-pop .rollout-pop__tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Button on top, note under it. */
+  .rollout-pop__foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
 /* Inputs ------------------------------------------------------------------- */
 
 .input {
@@ -685,6 +751,11 @@
 
 .dialog--md {
   --dw: 560px;
+}
+
+/* The rollout pop-ups: three boxes side by side, as in the other products' pre- and post-rollout pop-ups. */
+.dialog--wide {
+  --dw: 800px;
 }
 
 .dialog--lg {

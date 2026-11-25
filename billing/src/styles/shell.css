@@ -536,8 +536,10 @@
   }
 }
 
-/* Account-wide nudge for Flex customers who are out of credits or top-ups. */
-.flex-banner {
+/* Account-wide nudge for Flex customers who are out of credits or top-ups. The rollout banner (Auto top up
+   replaces manual top-ups, PRD 5.2) is the same strip for Growth customers: an account is never both. */
+.flex-banner,
+.rollout-banner {
   flex: none;
   padding: var(--space-2) var(--space-5);
   border-block-end: 1px solid var(--color-border-accent);
@@ -547,6 +549,15 @@
   text-align: center;
 }
 
-.flex-banner .text-btn {
+.flex-banner .text-btn,
+.rollout-banner .text-btn {
   font-size: inherit;
+}
+
+/* Like the other products' pre- and post-rollout banners: the key facts and the closing "here" are set in 600,
+   in ink; the link keeps its underline. */
+.rollout-banner strong,
+.rollout-banner .text-btn {
+  color: var(--color-content-primary);
+  font-weight: 600;
 }

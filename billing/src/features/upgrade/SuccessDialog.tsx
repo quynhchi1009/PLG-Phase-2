@@ -3,6 +3,7 @@ import { Check, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
 import { PaymentNote } from '../../components/ui/PaymentProgress'
+import { FailedMark } from '../../components/ui/FailedMark'
 import { SuccessMark } from '../../components/ui/SuccessMark'
 import { PLANS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
@@ -10,6 +11,7 @@ import { TODAY, earlyRenewalDate, reportRequestedMessage, useBilling, type Repor
 import { useUi } from '../../state/ui'
 import { flagUpdated } from './flagUpdated'
 import { useAutoTopUpPayment } from './useAutoTopUpPayment'
+import { usePayOnStripe } from './usePayOnStripe'
 
 /* Choreography (ms after the dialog opens). Each step lands before the next
    starts: the badge, the title, then what the customer now has. */
@@ -33,6 +35,7 @@ const DOWNGRADE_KINDS = new Set<string>(['downgrade-confirm', 'downgrade-schedul
 export function SuccessDialog() {
   const { state, dispatch } = useBilling()
   const { route, toast } = useUi()
+  const payOnStripe = usePayOnStripe()
   const headingId = useId()
   const descId = useId()
   const s = state.success
@@ -50,7 +53,7 @@ export function SuccessDialog() {
   const reactivateAskedOnReport = route === 'report' && s?.kind === 'reactivate-confirm'
   const open = !!s && (route === 'billing' || onReport || onPlans || reactivatedOnReport || reactivateAskedOnReport)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
-  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged'
+  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'auto-top-up-failed'
 
   // When the primary button already just closes the dialog (every result dialog, and the
   // confirmations whose primary is "stay as you are"), the X is a second way to do the same thing,
@@ -69,8 +72,8 @@ export function SuccessDialog() {
     s?.kind === 'downgrade-confirm'
 
   const close = () => {
-    // Backing out of the reactivation confirmation changes nothing on the page.
-    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
+    // Backing out of the reactivation confirmation (or leaving the Payment failed pop-up) changes nothing on the page.
+    if (s?.kind === 'auto-top-up-failed' || s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
     const settingsOnly =
       s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || s?.kind === 'topped-up'
     const changed = onPlans ? ['.plans'] : settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
@@ -272,6 +275,31 @@ export function SuccessDialog() {
         </div>
       )}
 
+      {/* The charge from turning Auto top up on at 0 credits was declined: the same pop-up as on the report page
+          (PRD 3.2), without a report to name. Auto top up stays off and nothing is added. */}
+      {open && s?.kind === 'auto-top-up-failed' && (
+        <div className="dialog__body success topped">
+          <FailedMark />
+          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
+            Auto top up payment failed
+          </h2>
+          <p id={descId} className="dialog__lede dialog__lede--left">
+            We couldn&apos;t charge your card, so Auto top up was not turned on and no credits were added. Your plan is
+            still active. Pay on Stripe to add more credits.
+          </p>
+          <Button
+            data-autofocus
+            block
+            onClick={() => {
+              close()
+              payOnStripe()
+            }}
+          >
+            Pay on Stripe
+          </Button>
+        </div>
+      )}
+
       {open && s?.kind === 'auto-top-up-on' && (
         <div className="dialog__body success topped">
           <SuccessMark />
@@ -444,7 +472,11 @@ function AutoTopUpPayConfirm({
 }) {
   const { state, dispatch } = useBilling()
   const pack = TOP_UP[state.planId]
-  const { paying, longer, pay } = useAutoTopUpPayment(() => dispatch({ type: 'charge-auto-top-up', today: TODAY }))
+  // A declined card (PRD 3.2): the Payment failed pop-up takes this dialog's place and Auto top up stays off.
+  const { paying, longer, pay } = useAutoTopUpPayment(
+    () => dispatch({ type: 'charge-auto-top-up', today: TODAY }),
+    () => dispatch({ type: 'fail-auto-top-up', showResult: true }),
+  )
   useEffect(() => {
     onPaying(paying)
     return () => onPaying(false)

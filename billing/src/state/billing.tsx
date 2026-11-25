@@ -35,6 +35,8 @@ export type Success =
   | { kind: 'auto-top-up-pay-confirm' }
   /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved. */
   | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; downgradeOn?: string; report?: ReportRequest }
+  /** Version A: the charge from turning Auto top up on at 0 credits was declined (PRD 3.2). Auto top up stays off. */
+  | { kind: 'auto-top-up-failed' }
   /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
   | { kind: 'downgrade-confirm' }
   /** The switch to monthly is scheduled for the end of the yearly cycle. */
@@ -120,7 +122,8 @@ type Action =
   /** Auto top up renews the plan early with the payment method on file: pays the pack, adds the credits, moves the billing date, turns Auto top up on. */
   | { type: 'charge-auto-top-up'; today: string; report?: ReportRequest }
   /** The Auto top up charge was declined (PRD 3.2). Only remembers it: no credits, no new billing date, the plan is not cancelled and Auto top up keeps its setting. */
-  | { type: 'fail-auto-top-up' }
+  /** `showResult`: the charge came from My Plan, so the Payment failed pop-up takes the confirmation's place there. */
+  | { type: 'fail-auto-top-up'; showResult?: boolean }
   | { type: 'request-disable-auto-top-up' }
   | { type: 'disable-auto-top-up' }
   | { type: 'reactivate'; today: string }
@@ -193,6 +196,9 @@ function reducer(state: BillingState, action: Action): BillingState {
     // Growth only. Turning it on or off asks first, then confirms.
     case 'request-enable-auto-top-up':
       if (state.planId === 'flex' || state.status !== 'active' || state.autoTopUp) return state
+      // PRD 3.1 #6: after a failed charge the card is not charged again until the customer pays on Stripe,
+      // so turning it on at 0 credits shows the Payment failed pop-up instead of a new charge.
+      if (action.payNow && state.paymentFailed) return { ...state, success: { kind: 'auto-top-up-failed' } }
       return {
         ...state,
         success: { kind: action.payNow ? 'auto-top-up-pay-confirm' : 'auto-top-up-enable-confirm' },
@@ -238,7 +244,11 @@ function reducer(state: BillingState, action: Action): BillingState {
     // Auto top up setting stay as they were; the report page shows the "Payment failed" pop-up.
     case 'fail-auto-top-up':
       if (state.planId === 'flex' || state.status !== 'active') return state
-      return { ...state, paymentFailed: true }
+      return {
+        ...state,
+        paymentFailed: true,
+        ...(action.showResult ? { success: { kind: 'auto-top-up-failed' as const } } : {}),
+      }
 
     case 'request-disable-auto-top-up':
       if (!state.autoTopUp) return state

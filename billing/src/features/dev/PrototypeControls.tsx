@@ -292,7 +292,11 @@ const PAYMENT_SPEEDS: { id: PaymentSpeed; label: string; hint: string }[] = [
 
 const PAYMENT_OUTCOMES: { id: PaymentOutcome; label: string; hint: string }[] = [
   { id: 'success', label: 'Succeeds', hint: 'The charge goes through.' },
-  { id: 'fail', label: 'Fails', hint: 'The charge is declined: the Payment failed pop-up shows and nothing is added.' },
+  {
+    id: 'fail',
+    label: 'Fails',
+    hint: 'The charge is declined: the Payment failed pop-up shows and nothing is added. It covers the report page and turning Auto top up on from My Plan at 0 credits.',
+  },
 ]
 
 /* PRD 5.2: the in-app messaging around the 23 Mar 2027 rollout. Picking one starts that stage as a first login

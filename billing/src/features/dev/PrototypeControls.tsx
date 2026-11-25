@@ -43,7 +43,9 @@ const REPORT_STEPS = 'Opens the report page. Generate a report to hit the limit.
    1 turn it off (billing page, credits left)
    2 turn it back on after running out (billing page, 0 credits): on renews early right away
    3 out of credits at the report page with it off: the prompt offers to turn it on
-   4 out of credits at the report page with it on: it renews early by itself */
+   4 out of credits at the report page with it on: it renews early by itself
+   5 the same as 4 on Growth yearly with the switch to monthly scheduled: the switch stays and moves
+     to the new billing date, and the success message names it */
 const GROUPS: Group[] = [
   {
     title: 'Growth',
@@ -128,6 +130,17 @@ const GROUPS: Group[] = [
         planId: 'monthly',
         creditsLeft: 6,
         autoTopUp: true,
+        route: 'report',
+      },
+      {
+        id: 'a-down',
+        label: '5 · Out of credits at report, downgrade scheduled',
+        steps: `${REPORT_STEPS} Auto top up charges $999 and moves the billing date. The switch to monthly stays scheduled for the new date: check it on My Plan and Products & Pricing.`,
+        status: 'active',
+        planId: 'yearly',
+        creditsLeft: 6,
+        autoTopUp: true,
+        pendingDowngrade: true,
         route: 'report',
       },
     ],

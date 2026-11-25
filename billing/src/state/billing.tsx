@@ -33,7 +33,7 @@ export type Success =
   /** Version A: asked to turn Auto top up on with 0 credits left, so turning it on also pays now. */
   | { kind: 'auto-top-up-pay-confirm' }
   /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved. */
-  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; report?: ReportRequest }
+  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; downgradeOn?: string; report?: ReportRequest }
   /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
   | { kind: 'downgrade-confirm' }
   /** The switch to monthly is scheduled for the end of the yearly cycle. */
@@ -190,6 +190,8 @@ function reducer(state: BillingState, action: Action): BillingState {
     // (billing page, or the report page's "not enough credits" prompt). The pack is paid
     // for now, the new billing period starts today, so the next billing date moves to one
     // cycle from today. The card on file is charged, so there is no checkout page.
+    // A scheduled downgrade to monthly stays scheduled: it takes effect on the billing date, so it
+    // moves with it (My Plan and Products & Pricing read cycleEnd) and the success message names it.
     case 'charge-auto-top-up': {
       if (state.planId === 'flex' || state.status !== 'active') return state
       const pack = TOP_UP[state.planId]
@@ -201,7 +203,13 @@ function reducer(state: BillingState, action: Action): BillingState {
         creditsRemaining: credits,
         creditsTotal: credits,
         cycleEnd: renewsOn,
-        success: { kind: 'auto-top-up-charged', credits: pack.credits, renewsOn, report: action.report },
+        success: {
+          kind: 'auto-top-up-charged',
+          credits: pack.credits,
+          renewsOn,
+          downgradeOn: state.pendingDowngrade ? renewsOn : undefined,
+          report: action.report,
+        },
         events: [event(`Auto top up · plan renewed early (${formatCount(pack.credits)} credits)`, action.today, pack.price), ...state.events],
       }
     }

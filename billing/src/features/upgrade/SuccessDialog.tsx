@@ -251,6 +251,12 @@ export function SuccessDialog() {
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
             We charged {formatPrice(TOP_UP[state.planId].price)} and moved your next billing date to{' '}
             {keepTogether(formatDate(s.renewsOn))}.
+            {s.downgradeOn && (
+              <>
+                {' '}
+                Your switch to Growth monthly is still scheduled, now for {keepTogether(formatDate(s.downgradeOn))}.
+              </>
+            )}
           </p>
           <Button data-autofocus block onClick={onReport && s.report ? () => continueWithReport(s.report!) : close}>
             {onReport ? 'Continue with report' : 'View balance'}

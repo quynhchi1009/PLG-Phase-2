@@ -52,7 +52,7 @@ export function ReportPage() {
   // (`generate` below hands it to the reactivate pop-up.)
   const cancelled = state.status === 'cancelling'
 
-  // What "Continue with report" generates once Auto top up has paid for the credits.
+  // What "Continue with your report" generates once Auto top up has paid for the credits.
   const request = { report: chosen.name, business: ENTITY.name, credits: total }
 
   const generate = () => {

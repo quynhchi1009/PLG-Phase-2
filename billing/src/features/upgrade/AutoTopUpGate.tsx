@@ -42,7 +42,7 @@ export function AutoTopUpGate({
   onFailed: () => void
   /** Credits the chosen report costs. */
   needed: number
-  /** The report being generated: "Continue with report" in the success dialog generates it. */
+  /** The report being generated: "Continue with your report" in the success dialog generates it. */
   request?: ReportRequest
 }) {
   const headingId = useId()
@@ -114,7 +114,7 @@ export function AutoTopUpRenewal({
   onFailed: () => void
   /** Credits the chosen report costs. */
   needed: number
-  /** The report being generated: "Continue with report" in the success dialog generates it. */
+  /** The report being generated: "Continue with your report" in the success dialog generates it. */
   request?: ReportRequest
 }) {
   const headingId = useId()

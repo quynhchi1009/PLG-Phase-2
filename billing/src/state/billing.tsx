@@ -61,7 +61,7 @@ export interface ReportRequest {
   credits: number
 }
 
-/** The toast shown when a report is requested, from the Generate button or from "Continue with report". */
+/** The toast shown when a report is requested, from the Generate button or from "Continue with your report". */
 export function reportRequestedMessage(r: ReportRequest) {
   return `${r.report} report requested for ${r.business}. ${r.credits} credits used.`
 }

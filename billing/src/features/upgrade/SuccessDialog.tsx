@@ -89,7 +89,7 @@ export function SuccessDialog() {
     }
   }
 
-  // "Continue with report": the credits are paid for, so the report the customer asked for goes through now.
+  // "Continue with your report": the credits are paid for, so the report the customer asked for goes through now.
   const continueWithReport = (r: ReportRequest) => {
     dispatch({ type: 'dismiss-success' })
     dispatch({ type: 'generate', ...r, today: TODAY })
@@ -270,7 +270,7 @@ export function SuccessDialog() {
             )}
           </p>
           <Button data-autofocus block onClick={onReport && s.report ? () => continueWithReport(s.report!) : close}>
-            {onReport ? 'Continue with report' : 'View balance'}
+            {onReport ? 'Continue with your report' : 'View balance'}
           </Button>
         </div>
       )}

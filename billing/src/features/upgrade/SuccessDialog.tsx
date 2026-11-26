@@ -285,7 +285,7 @@ export function SuccessDialog() {
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left">
             We couldn&apos;t charge your card, so Auto top up was not turned on and no credits were added. Your plan is
-            still active. Pay on Stripe to add more credits.
+            still active. Update your payment details on Stripe to add more credits.
           </p>
           <Button
             data-autofocus
@@ -295,7 +295,7 @@ export function SuccessDialog() {
               payOnStripe()
             }}
           >
-            Pay on Stripe
+            Update your payment details
           </Button>
         </div>
       )}

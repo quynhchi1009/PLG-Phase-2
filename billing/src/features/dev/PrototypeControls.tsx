@@ -263,7 +263,7 @@ const GROUPS: Group[] = [
         paymentFailed: true,
         route: 'report',
       },
-      // PRD 3.2 #5: My Plan carries a banner with Pay on Stripe while the charge is unpaid.
+      // PRD 3.2 #5: My Plan carries a banner with Update your payment details while the charge is unpaid.
       {
         id: 'p-banner',
         label: 'My Plan banner · charge failed',

@@ -14,8 +14,8 @@ import { usePayOnStripe } from './usePayOnStripe'
  * The plan is not cancelled, the billing date and the credits stay as they were, and reports that fit in
  * the balance still generate.
  *
- * Two exits: "Pay on Stripe" (the full plan price, then the user carries on) and closing, which changes
- * nothing. Stripe is not connected in the prototype, so "Pay on Stripe" only says so (PRD 3.2 #3 is built
+ * Two exits: "Update your payment details" (the full plan price, then the user carries on) and closing, which changes
+ * nothing. Stripe is not connected in the prototype, so "Update your payment details" only says so (PRD 3.2 #3 is built
  * later).
  */
 export function PaymentFailedDialog({
@@ -44,7 +44,7 @@ export function PaymentFailedDialog({
           <p id={descId} className="dialog__lede dialog__lede--left">
             We couldn&apos;t charge your card, so this report ({formatCount(needed)} credits) was not generated. Your{' '}
             {formatCount(state.creditsRemaining)} credits are still yours, and reports that cost less than that still
-            work. Pay on Stripe to add more credits.
+            work. Update your payment details on Stripe to add more credits.
           </p>
           <Button
             data-autofocus
@@ -54,7 +54,7 @@ export function PaymentFailedDialog({
               payOnStripe()
             }}
           >
-            Pay on Stripe
+            Update your payment details
           </Button>
         </div>
       )}

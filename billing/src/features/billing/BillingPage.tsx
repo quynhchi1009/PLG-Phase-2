@@ -39,7 +39,7 @@ export function BillingPage() {
         </p>
       </header>
 
-      {/* PRD 3.2 #5: while the last Auto top up charge is unpaid, a banner with "Pay on Stripe" runs across the
+      {/* PRD 3.2 #5: while the last Auto top up charge is unpaid, a banner with "Update your payment details" runs across the
           page above the cards. It goes once the payment is made on Stripe (the failed state is cleared). */}
       {state.status === 'active' && state.planId !== 'flex' && state.paymentFailed && <PaymentFailedBanner />}
 
@@ -61,7 +61,7 @@ export function BillingPage() {
 
 /* Growth, after a declined Auto top up charge (PRD 3.2): the plan is not cancelled and the credits are
    untouched, so the banner says what happened and offers the one way on, paying on Stripe. While it shows,
-   "Pay on Stripe" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
+   "Update your payment details" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
 function PaymentFailedBanner() {
   const payOnStripe = usePayOnStripe()
   return (
@@ -72,7 +72,7 @@ function PaymentFailedBanner() {
         title="Auto top up payment failed"
         action={
           <Button size="sm" onClick={payOnStripe}>
-            Pay on Stripe
+            Update your payment details
           </Button>
         }
       >

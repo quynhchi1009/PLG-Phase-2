@@ -3,7 +3,7 @@ import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
 import { FailedMark } from '../../components/ui/FailedMark'
 import { PaymentFacts } from '../../components/ui/PaymentProgress'
-import { PLANS, formatCount, formatPrice } from '../../data/plans'
+import { PLANS, TOP_UP, formatCount, formatPrice } from '../../data/plans'
 import { formatDate } from '../../data/history'
 import { useBilling } from '../../state/billing'
 import { usePayOnStripe } from './usePayOnStripe'
@@ -34,7 +34,11 @@ export function PaymentFailedDialog({
   const payOnStripe = usePayOnStripe()
   // With a switch to monthly scheduled Auto top up is off, so the declined charge was "Renew current plan".
   const renewal = state.pendingDowngrade
+  // Otherwise, with Auto top up off the declined charge was "Enable Auto top up" at the report gate (Scenario 3):
+  // it stays off (PRD 2.5 #3), so the pop-up says so. With it on, Auto top up charged by itself (Scenario 7).
+  const enableAttempt = !renewal && !state.autoTopUp
   const plan = PLANS[state.planId]
+  const pack = TOP_UP[state.planId]
 
   return (
     <Dialog open={open} onClose={onClose} labelledBy={headingId} describedBy={descId} size="sm">
@@ -48,19 +52,24 @@ export function PaymentFailedDialog({
             {renewal ? 'Renewal payment failed' : 'Auto top up payment failed'}
           </h2>
           {/* A declined Auto top up never cancels the plan (PRD 3.2): it stays active with its credits until the
-              next billing date. Updating the payment details renews the current plan at its full price. */}
+              next billing date. All the customer needs is the credits, so updating the payment details tops them
+              up. Only the renewal variant (a switch to monthly scheduled, "Renew current plan") renews the plan. */}
           <p id={descId} className="dialog__lede dialog__lede--left">
-            We couldn&apos;t process your payment, so {renewal && "your plan wasn't renewed and "}this report wasn&apos;t
-            generated. Your plan remains active, and you can continue using your remaining credits. Update your payment
-            details to renew your current plan.
+            We couldn&apos;t process your payment, so {renewal && "your plan wasn't renewed and "}
+            {enableAttempt && "Auto top up wasn't turned on and "}this report wasn&apos;t generated. Your plan remains active, and you can continue using your remaining credits.{' '}
+            {renewal
+              ? 'Update your payment details to renew your current plan.'
+              : 'Update your payment details to top up your credits.'}
           </p>
-          {/* The deadline (the next billing date, PRD 3.3) and what renewing costs once the payment details are
-              updated (PRD 3.2 #3), with the balance that still works until then. */}
+          {/* The balance that still works, the next billing date, and what updating the payment details buys:
+              the top-up pack, or for the renewal variant the plan at its full price. */}
           <PaymentFacts
             facts={[
               { label: 'Credits remaining', value: formatCount(state.creditsRemaining) },
               { label: 'Next billing date', value: formatDate(state.cycleEnd) },
-              { label: 'Current plan renews for', value: formatPrice(plan.price ?? 0) },
+              renewal
+                ? { label: 'Current plan renews for', value: formatPrice(plan.price ?? 0) }
+                : { label: 'Top up', value: `${formatCount(pack.credits)} credits for ${formatPrice(pack.price)}` },
             ]}
           />
           <div className="dialog__actions dialog__actions--stack">

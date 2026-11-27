@@ -59,28 +59,38 @@ export function BillingPage() {
   )
 }
 
-/* Growth, after a declined Auto top up charge (PRD 3.1-3.2): the plan stays active until the next billing date,
-   but the renewal on that date uses the same saved card, and a failed renewal cancels the plan straight away (PRD 3.3).
-   So the banner leads with the action and names the date it must happen by (non-breaking spaces keep that date on
-   one line). While it shows, "Update your payment
+/* Growth, after a declined Auto top up charge (PRD 3.1-3.2). A failed Auto top up never cancels the plan, so the
+   banner says the same as the report-page Payment failed pop-up: what failed, that the plan stays active with its
+   credits, and what updating the payment details does (tops up the credits; only the renewal case renews the plan).
+   No deadline or cancellation line. Three cases: Auto top up charged by itself (on), "Enable Auto top up" at the report gate (off,
+   it stays off), and "Renew current plan" while a switch to monthly is scheduled. While it shows, "Update payment
    details" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
 function PaymentFailedBanner() {
   const { state } = useBilling()
   const payOnStripe = usePayOnStripe()
+  const renewal = state.pendingDowngrade
+  // The title already says the payment failed, so the body is what happened, that the plan stays active, and the fix.
+  const outcome = renewal
+    ? "Your plan wasn't renewed but remains active."
+    : state.autoTopUp
+      ? 'No credits were added. Your plan remains active.'
+      : "Auto top up wasn't turned on. Your plan remains active."
   return (
     <div className="billing-alert">
       <Notice
         tone="negative"
         icon={<CircleAlert size={18} />}
-        title="Update your payment details to keep accessing our services"
+        title={renewal ? 'Renewal payment failed' : 'Auto top up payment failed'}
         action={
           <Button size="sm" onClick={payOnStripe}>
             Update payment details
           </Button>
         }
       >
-        Your card was declined, so no credits were added. Update it before{' '}
-        {formatDate(state.cycleEnd).replace(/ /g, ' ')}, or your subscription will be cancelled.
+        {outcome}{' '}
+        {renewal
+          ? `Update your payment details to renew it for ${formatPrice(PLANS[state.planId].price ?? 0)}.`
+          : `Update your payment details to top up ${formatCount(TOP_UP[state.planId].credits)} credits for ${formatPrice(TOP_UP[state.planId].price)}.`}
       </Notice>
     </div>
   )

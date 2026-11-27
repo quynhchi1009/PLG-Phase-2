@@ -1,192 +1,191 @@
 # PRD: PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)
 
-Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)-251126-100439.pdf` (**20 pages, exported 25 Nov 2026 at 10:04:39**; the file name is ddmmyy-hhmmss, as with Phase 1). This is the **third export and replaces** the 17-page `-251126-022824.pdf` (02:28:24) that this file was first transcribed from. Text re-transcribed from the full extracted text of the new PDF on 25 Nov 2026. Only 10 of its "Design" screenshots are embedded images (pages 3 and 8-11, identical to the earlier export); the Design cells on pages 4-6 (sections 1.3 to 1.5) are empty in the PDF itself and pages 12-13 say "Refer to Figma" / "N/A", so there is nothing more to read there. See "What the embedded design images show" at the end. Figma is the source for layout.
-
-## What changed from the 17-page export (022824) to this 20-page export (100439)
-1. **1.4 Downgrade scheduled state on My Plan was redesigned.** Before: an orange "Downgrade scheduled" box with a CTA, plus a "Cancel downgrade" button beside "Change plan". Now: a "Downgrade scheduled" **label on the Growth card** with explanatory text and the date; the **"Change plan" button is hidden** (same as when a cancellation is scheduled); there is **no separate "Cancel downgrade" button**; the card shows **"Keep yearly plan" as the only primary button with "Cancel plan" beside it**; "Keep yearly plan" opens the cancel-downgrade pop-up; "Cancel plan" starts the Phase 1 section 2.6 cancellation flow; to upgrade to Business the user goes to Products & Pricing in the left nav.
-2. **1.5 Cancel downgrade entry points** are now: "Keep yearly plan" on My Plan, "Cancel downgrade" on Products & Pricing, and "Cancel downgrade" in pop-up 3 (the orange-box CTA and the My Plan "Cancel downgrade" button are gone).
-3. **1.4 old item 5** (My Plan Auto top-up text box shows the scheduled-downgrade text) is no longer in 1.4 but is still in 2.2 #3 and 1.5 #3, so it still applies.
-4. **Section 4 Emails** now carries 7 full templates (copy ignored). "Downgrade scheduled" and "Downgrade cancelled" emails are now listed, which answers the earlier open question (**needed**).
-5. **Section 5.2** now carries the email and banner/pop-up copy (copy ignored; timing and logic unchanged).
-6. 2.1 #7 adds "Auto top-up lets Growth users keep generating reports until they turn it off." Everything else in sections 1.1-1.3, 1.6, 2, 3 and 5.1 is the same logic.
+Source: `AVProduct-PLG Automated Billing Phase 2 (Downgrade, Auto Top-up, Failed Payment on Auto Top-up)-271126-093628.pdf` (**26 pages, exported 27 Nov 2026 at 09:36:28**; file name is ddmmyy-hhmmss). Transcribed on 27 Nov 2026. **This replaces every earlier PRD file in `docs/`** (the 25 Nov Phase 2 exports and the 15 Oct Phase 1 transcription). The PDF still links the Phase 1 PRD and the old Full PRD on Confluence "for ref"; their sections are cited below by number only.
 
 - Figma: https://www.figma.com/design/ot8NEpgFxGsI3f6XiY7pfr/PLG?node-id=13223-242997 (only frames labelled "Phase 2")
-- Confluence: Phase 2 page 2020474893, Phase 1 page 1854308368 (Phase 1 PRD sections 2.2, 2.5, 2.6, 2.7 are referenced)
 - Rollout: **23 March 2027**, all Growth users
 
-## How to use this file (decision from 25 Nov 2026)
-- **Text copies in the PRD are ignored.** The PM reviews copy in Figma and tech takes it from there. Wording below is kept only where it carries logic (e.g. "must state the charge"). Email bodies, banner and pop-up copy (PRD sections 4 and 5.2) are listed but their wording is not transcribed and must not be used in conflict checks.
-- PRD says: Figma is the source of truth for final layout and copy; all text sentence-cased; all subscription text dynamic (plan name, price, date), never a static placeholder.
+## How to use this file
+- **Text copy in the PRD is ignored** (decision of 25 Nov 2026). The PM reviews copy in Figma and tech takes it from there. Wording is kept below only where it carries logic. Email bodies (section 4) and banner/pop-up copy (5.2) are listed, not transcribed, and are not used in conflict checks.
+- PRD says: Figma is the source of truth for final layout and copy; sentence case everywhere; all subscription text (plan name, price, dates) is dynamic.
+- The PRD now calls the page **"Billing"** (left nav "Billing", CTA "Back to Billing"). Earlier exports said "My Plan".
 
-## Scope
-- Applies to **Growth (Monthly)** and **Growth (Yearly)** only. Flex keeps its one-time top-up. Business is out of scope.
-- Three features: downgrade (Yearly → Monthly), auto top-up, failed-payment handling on auto top-up.
-- A failed auto top-up charge is the **only** failed charge that does not cancel the subscription. A failed auto-renewal (billing date) or a failed first monthly charge on a downgrade date → cancelled and inactive straight away (Phase 1 section 2.7). No grace period, no "Update payment method" flow.
-- Payment failures at the Stripe checkout page (e.g. an upgrade) stay as Phase 1: Stripe handles them natively, user retries on the Stripe page.
-- **Not in Phase 2:** cancellation survey, payment-failure grace period, "Update payment method" flow.
+## What changed from the 25 Nov export (100439)
+1. **"Update payment method" is back.** A failed auto top-up before the billing date shows a "Payment failed" pop-up with **"Update payment method"** (→ Stripe checkout for the current plan at full price; the new card is saved) and close. The Billing page shows a banner with an "Update payment method" button while the "payment failed" state is set. The 25 Nov text said "no Update payment method flow, pay on Stripe". Still not in Phase 2: the grace period and the cancellation survey.
+2. **2.4 Turn auto top-up ON never charges** ("Enable" → set ON, no payment now; payment only later from a report request). Matches the product decision of 27 Nov and replaces the 25 Nov decision that turning it on at 0 credits charged.
+3. **2.7 is new: credits run out while a downgrade is scheduled.** Auto top-up does not apply (toggle ON or OFF). Pop-up "Renew current plan" / "Keep scheduled downgrade"; a second pop-up confirms and charges the full Yearly price; on success the downgrade is cancelled, auto top-up turned ON, credits added. A failure here saves **no** "payment failed" state. This replaces the 25 Nov 1.6 #2 (charge and move the downgrade date).
+4. **2.8 is new: credits run out while a cancellation is scheduled.** Pop-up "Reactivate subscription" (reactivate only, **auto top-up setting unchanged**, no payment) / "Close".
+5. **2.2 #3: the toggle is greyed out while a downgrade is scheduled** and cannot be changed.
+6. **1.5 entry points:** "Keep current plan" on Billing (the 1.4 text still calls the same button "Keep yearly plan") and "Cancel downgrade" on Products & Pricing. Pop-up 3 is gone.
+7. **3.2 #3 after a successful "Update payment method":** back to where the user started (report page with the same company, or Billing) with a success pop-up; toggle unchanged.
+8. **3.3 #7:** cancelled and inactive → "Choose a plan" → Products & Pricing with every card showing "Select plan".
+9. **Section 6 API responses** added (no new error codes; tech to confirm the wait time).
+
+## Scope (Overview)
+- Growth (Monthly) and Growth (Yearly) only. Flex keeps its one-time top-up. Business out of scope.
+- Auto top-up renews the plan early, charges the full plan price, and replaces manual $249 top-ups for Growth.
+- A failed payment **on the billing date** (normal auto-renewal) cancels the plan straight away, auto top-up ON or OFF (Phase 1 2.7). No grace period.
+- A failed **auto top-up** payment before the billing date does **not** cancel. The user keeps remaining credits and can use "Update payment method" (section 3).
+- While a downgrade is scheduled, auto top-up does not apply (1.6, 2.7).
+- Not in Phase 2: cancellation survey, payment-failure grace period. "Update payment method" is used only after a failed auto top-up before the billing date.
 
 ## 1. Downgrade (Growth Yearly → Growth Monthly)
 
 ### 1.1 Logic
 | Element | Logic |
 |---|---|
-| Who can downgrade | Growth (Yearly) only, to Growth (Monthly). Growth (Monthly) cannot downgrade to Flex. Business out of scope. |
-| Effective date | Scheduled, not immediate. Takes effect on the end date of the current Yearly billing period. User keeps Growth (Yearly) access and credits until then. No refund. |
-| On the effective date | Plan changes to Growth (Monthly). First monthly charge taken from the saved payment method, monthly credits added. Unused Yearly credits **expire, no rollover**. |
-| Failed monthly charge | Follow 3.3: cancelled and inactive straight away. |
-| Cancel downgrade | Any time before the effective date. User stays on Growth (Yearly), nothing charged. |
-| Interaction | See 1.6. |
+| Who | Growth (Yearly) only, to Growth (Monthly). Growth (Monthly) cannot go to Flex. Business out of scope. |
+| Effective date | Scheduled, not immediate: end of the current Yearly period. Yearly access and credits kept until then. No refund. |
+| On the effective date | Plan becomes Growth (Monthly); first monthly charge from the saved card; monthly credits added; unused Yearly credits expire, no rollover. |
+| Failed monthly charge | Plan cancelled straight away (3.3). |
+| Cancel downgrade | Any time before the effective date; stays on Yearly; nothing charged. |
+| Other flows | 1.6 and 2.7. |
 
-### 1.2 Products & Pricing page (entry point) and 1.3 confirmation flow
-1. A Growth (Yearly) user clicks **"Change plan"** on My Plan, or **"Products & Pricing"** in the navbar → Products & Pricing page, jumps to the card section.
-2. Card section shows **Growth (Monthly), Growth (Yearly) and Business** (replaces Phase 1 section 2.5, which hid the Monthly card for Yearly users).
-3. Growth (Yearly) card: CTA "Your current plan", not clickable.
-4. Growth (Monthly) card: CTA "Select plan" → starts the downgrade flow (1.3).
-5. Business card: CTA "Talk to sales" → HubSpot booking page (no change).
-6. Pricing calculator for Yearly users stays (Phase 1 rule, section 2.2). If Growth (Monthly) is the suggested plan, its CTA "Select plan" starts the downgrade flow, same as Phase 1 upgrade logic for plan selection from the calculator.
+### 1.2 Products & Pricing (entry point)
+1. A Growth (Yearly) user opens Products & Pricing by "Change plan" on Billing or "Products & Pricing" in the navbar. **The page jumps to the card section.**
+2. Cards: Growth (Monthly), Growth (Yearly), Business (replaces Phase 1 2.5, which hid Monthly for Yearly users). Yearly: "Your current plan" (not clickable). Monthly: "Select plan" → 1.3. Business: "Talk to sales" → HubSpot booking page (no change).
+
+### 1.3 Downgrade confirmation flow
+1. "Select plan" on Growth (Monthly) → pop-up 1: "Keep current plan" (close, no change) / "Proceed to downgrade" (→ pop-up 2; backend schedules the downgrade for the end of the period).
+2. Pop-up 2: confirmation with the (dynamic) downgrade date. CTA "Back to Billing" → closes pop-up 2. Billing then shows the scheduled state (1.4).
 
 ### 1.4 Downgrade scheduled state
-1. "Select plan" under Growth (Monthly) → **pop-up 1**. CTAs: "Keep current plan" (close, no change), "Proceed to downgrade" (open pop-up 2). On "Proceed to downgrade" the backend schedules the downgrade for the end of the current billing period.
-2. **Pop-up 2** shows the confirmation and the downgrade date (dynamic). CTA: "Back to my plan" (closes pop-up 2). Billing page reflects the scheduled downgrade messaging and date (dynamic).
-3. **My Plan (100439 export):** a "Downgrade scheduled" **label on the Growth card**, with explanatory text and the downgrade date (dynamic). Not an orange box any more.
-4. **My Plan:** the **"Change plan" button is hidden** while a downgrade is scheduled, the same as when a cancellation is scheduled. **There is no separate "Cancel downgrade" button.** The card shows **"Keep yearly plan" as the only primary button, with "Cancel plan" beside it**. "Keep yearly plan" opens the cancel-downgrade pop-up (1.5). "Cancel plan" starts the cancellation flow (Phase 1 section 2.6). To upgrade to Business the user goes to Products & Pricing in the left nav.
-5. **My Plan:** the Auto top-up text box shows the scheduled-downgrade text (2.2 #3 and 1.5 #3; no longer listed in 1.4 but still stated there).
-6. **Products & Pricing, Growth (Monthly) card:** button disabled, scheduled downgrade date shown below.
-7. **Products & Pricing, Growth (Yearly) card:** button disabled, "Your current plan" and an "Ends [date]" label.
-8. **Products & Pricing:** a "Cancel downgrade" button **below the Growth (Monthly) CTA**, opens the cancel-downgrade pop-up.
+1. **Billing:** "Downgrade scheduled" label on the Growth card, explanatory text and the date. **"Change plan" hidden** (as with a scheduled cancellation). No separate "Cancel downgrade" button: **"Keep yearly plan" is the only primary button, "Cancel plan" beside it.** "Keep current plan" opens the cancel-downgrade pop-up (1.5). "Cancel plan" starts the Phase 1 2.6 cancellation. To upgrade to Business the user goes to Products & Pricing in the left nav. *(Design image: Billing card with "Downgrade scheduled" chip, "Keep yearly plan" button, Auto top up toggle greyed with "Unavailable while your switch to monthly is scheduled".)*
+2. **Products & Pricing:** Growth (Monthly) button disabled, showing the scheduled date; a **"Cancel downgrade"** button below it opens the cancel-downgrade pop-up. Growth (Yearly) button disabled, "Plan Ends [date]" label. *(Design image: Monthly "Scheduled for [date]" + "Cancel downgrade" link; Yearly "Plan ends [date]".)*
 
 ### 1.5 Cancel downgrade
-- Entry points (all open the same pop-up): **"Keep yearly plan" on My Plan**; the "Cancel downgrade" button on Products & Pricing; the "Cancel downgrade" CTA in pop-up 3. (The 022824 export also listed the orange box CTA and a My Plan "Cancel downgrade" button; both were removed.)
-- CTAs: "Close" → downgrade stays scheduled. "Cancel downgrade" → backend removes the scheduled downgrade; **a pop-up shows successful downgrade** (PRD wording; read as "successful cancellation of the downgrade", confirm in Figma).
-- After cancelling: remove all scheduled-downgrade indicators on My Plan and Products & Pricing. User stays on Growth (Yearly), not charged, Auto top-up text box returns to default text.
+1. Entry points (same pop-up): "Keep current plan" on Billing; "Cancel downgrade" on Products & Pricing.
+2. Pop-up CTAs: "Close" (downgrade stays) / "Keep current plan" (backend removes the downgrade; pop-up "Downgrade cancelled successfully!").
+3. After: remove every scheduled-downgrade indicator on Billing and Products & Pricing; stays on Yearly, not charged; **auto top-up message returns to the default text**.
 
 ### 1.6 Edge cases
-| # | Case | Logic |
-|---|---|---|
-| 1 | User cancels the subscription while a downgrade is scheduled | Scheduled downgrade is removed; the "Downgrade scheduled" box and button disappear (PRD wording; 1.4 now calls it a label and "Keep yearly plan"). Follow Phase 1 section 2.6 for cancellation. If the user reverses the cancellation before the billing period ends, the user stays on Growth (Yearly) with **no downgrade scheduled**. |
-| 2 | Auto top-up triggers while a downgrade is scheduled | Auto top-up works as normal: full Growth (Yearly) price charged, billing date resets. Downgrade stays scheduled, its effective date **moves to the end of the new billing period**. Update the date on My Plan, Products & Pricing and the downgrade emails. The auto top-up success message shows the new downgrade date. Same when the user pays on Stripe after a failed auto top-up (3.2). |
-| 3 | First monthly charge fails on the effective date | Follow 3.3 (cancelled and inactive straight away). |
+| Case | Logic |
+|---|---|
+| 1. Cancels the subscription while a downgrade is scheduled | Downgrade removed; "Downgrade scheduled" label and "Keep yearly plan" go; cancelled state from Phase 1 2.6 shows. Reversing the cancellation before the period ends → stays on Yearly, no downgrade. |
+| 2. Credits run out while a downgrade is scheduled | Auto top-up does not trigger (it renews the current plan, and the downgrade replaces that plan). User sees the 2.7 pop-up. |
+| 3. First monthly charge fails on the effective date | 3.3 (cancelled and inactive straight away). |
 
 ## 2. Auto top-up
 
 ### 2.1 Logic
 | # | Element | Logic |
 |---|---|---|
-| 1 | Scope | Growth (Monthly) and Growth (Yearly). Flex keeps its one-time top-up. Business out of scope. |
-| 2 | Default | Auto top-up is **ON by default** for: new Growth subscribers; users who subscribe again after being cancelled; all existing Growth users from rollout day (23 Mar 2027). |
-| 3 | Manual top-up | Manual $249 top-ups no longer available for Growth. **Remove the top-up CTAs and the Top-up page for Growth users.** |
-| 4 | Trigger (ON) | User clicks "Generate report" and the report cost is higher than the credit balance. Same for a report requested through the API: if auto top-up is ON on the Portal and credits are insufficient, auto top-up triggers and the report is generated after the charge succeeds. |
-| 5 | What it does | Renews the billing period early and charges the **full plan price** (Growth Monthly or Yearly) to the saved payment method. Billing date resets to the day of the charge. New plan credits added immediately. |
-| 6 | After a successful charge | Success message (final copy in Figma). The report continues with the same company selected. Update the Auto top-up text box on My Plan. Send a payment confirmation email. |
-| 7 | Limit | No cap on the number of auto top-ups per billing period. |
-| 8 | Failed charge | Subscription **not cancelled**. Follow 3.1 and 3.2: "Payment failed" pop-up, user can pay on Stripe. Applies ONLY to a charge started by (1) a report request (auto top-up ON) and (2) "Enable auto top-up" in 2.5. |
-| 9 | Cancellation scheduled (account still active) | Auto top-up does **not** trigger. When credits run out the user must reactivate the subscription to continue. |
-| 10 | Auto top-up OFF | User cannot generate a report when credits are insufficient (see 2.5). API returns an error that credits are insufficient and auto top-up must be turned ON on the Portal. No charge. |
+| 1 | Applies to | Growth (Monthly) and Growth (Yearly). Flex keeps its one-time top-up. Business out of scope. |
+| 2 | Default | ON by default for new Growth subscribers, users who subscribe again after being cancelled, and all existing Growth users from rollout (23 Mar 2027). |
+| 3 | Manual top-up | Manual $249 top-ups removed for Growth: remove the top-up CTAs and the Top-up page for Growth. |
+| 4 | Triggers when | Auto top-up is ON **and** the user asks for a report that costs more than their balance (Portal or API). |
+| 5 | What it does | Renews the plan early; charges the full plan price (Monthly or Yearly) to the saved card; billing date resets to the charge day; new plan credits added immediately. |
+| 6 | After success | Success message (copy in Figma); report carries on with the same company; update the Billing auto top-up message (2.2); send Email 4. |
+| 7 | Limit | No limit per billing period. |
+| 8 | Payment fails | Plan not cancelled; section 3 ("Payment failed" pop-up, "Update payment method"). Same for 2.5, 2.6 and 2.7, except **2.7 saves no "payment failed" state**. |
+| 9 | Cancellation scheduled (still active) | Does not trigger. Credits run out → 2.8 pop-up; must reactivate to continue. |
+| 10 | Downgrade scheduled | Does not trigger, toggle ON or OFF. Credits run out → 2.7 pop-up. |
+| 11 | Auto top-up OFF | Cannot generate a report when credits are not enough → 2.5 pop-up. No payment. API: section 6. |
 
-### 2.2 Auto top-up section on My Plan
-All Growth users see a message for auto top-up on My Plan. Which text shows:
-| # | State | Text |
+### 2.2 Auto top-up section on Billing (message by state)
+| # | State | Message |
 |---|---|---|
-| 1 | Default | New subscribers; users who subscribed again after being cancelled and inactive; users with auto top-up OFF; Growth (Monthly) users who upgraded to Growth (Yearly) |
-| 2 | After an auto top-up | Text showing the date of the last auto top-up; the date updates every time an auto top-up happens |
-| 3 | Growth (Yearly) with a downgrade scheduled | Scheduled-downgrade text until the effective date. Once the downgrade happens, or the user cancels it, show the default text |
-| 4 | Cancelled but still active | Cancelled text until the billing period ends and the account becomes cancelled and inactive. If the user reverses the cancellation, show the default text |
-| 5 | Cancelled and inactive | No text box |
+| 1 | Default: new subscribers, re-subscribers after cancelled and inactive, users with auto top-up OFF, Monthly users who upgraded to Yearly | Default text |
+| 2 | After an auto top-up | Date of the last auto top-up; updates on every auto top-up |
+| 3 | Yearly with a downgrade scheduled | Scheduled-downgrade text until the effective date; default text once it happens or is cancelled. **Toggle greyed out and cannot be changed while scheduled**; works normally again after. |
+| 4 | Cancelled but still active | Cancelled text until the account is cancelled and inactive; default text if the cancellation is reversed |
+| 5 | Cancelled and inactive | No message |
 
 ### 2.3 Turn auto top-up OFF
-1. User toggles auto top-up OFF → **pop-up 1**. "Stay enabled" → close, no backend change.
-2. "Disable auto top-up" → **confirmation pop-up**. Backend: auto top-up = OFF. Frontend: toggle shows OFF on My Plan and the text box shows the default text.
+1. Toggle OFF → pop-up 1. "Stay enabled" → close, no change.
+2. "Disable auto top-up" → confirmation pop-up; backend OFF; Billing toggle OFF; message back to default text.
 
-### 2.4 Turn auto top-up ON
-1. User toggles ON → pop-up. The copy **must state the charge**: if credits run out, the plan renews early for {{plan_price}} and the billing date resets.
-2. "Enable auto top-up" → **confirmation pop-up**. Backend: auto top-up = ON. Frontend: toggle shows ON on My Plan.
+### 2.4 Turn auto top-up ON (insufficient credits, before the billing date)
+1. Toggle ON → pop-up. Copy must state the charge: if credits run out, the plan renews early for {{plan_price}} and the billing date resets.
+2. "Enable" → next pop-up. Backend ON. **No payment now**; a payment is only taken later from a report request above the balance (2.6). Billing toggle ON.
 
-### 2.5 Insufficient credits with auto top-up OFF
-1. User clicks "Generate report" with insufficient credits → **pop-up 1**. The copy **must state the charge** ({{plan_price}}).
-2. "Enable auto top-up" → backend attempts the charge as in 2.1. **If it succeeds:** show a success pop-up, set auto top-up = ON (backend and My Plan), user continues generating the report with the same company.
-3. **If the charge fails:** follow 3.1 and 3.2: subscription not cancelled, **auto top-up stays OFF**, user sees the "Payment failed" pop-up.
-4. Other options in this pop-up: keep **"View upgrade options"** and, for Growth (Yearly) users, **"Talk to sales"** (both from Phase 1). **Remove "Top up instead".** (Ambiguous: it follows the failed-charge item, so "this pop-up" most likely means the "Payment failed" pop-up. The insufficient-credits pop-up image on page 10 shows only two CTAs, enable-and-pay and "Not now".)
+### 2.5 Insufficient credits at "Generate report", auto top-up OFF
+1. Pop-up 1 (dynamic). "Enable auto top-up" → backend takes the payment as in 2.1. Success → success pop-up; auto top-up ON (backend and Billing); user carries on with the same company.
+2. Failure → section 3. Plan not cancelled; **auto top-up stays OFF**; "Payment failed" pop-up and the Billing banner.
+
+### 2.6 Insufficient credits at "Generate report", auto top-up ON
+1. Payment taken straight away as in 2.1, no extra click. Success → success pop-up, carry on with the same company.
+2. Failure → section 3. Plan not cancelled; **auto top-up stays ON**; "Payment failed" pop-up and the Billing banner.
+
+### 2.7 Insufficient credits while a downgrade is scheduled (before the effective date)
+1. Yearly user with a scheduled downgrade asks for a report above the balance → pop-up. Auto top-up does not apply, toggle ON or OFF.
+   - "Renew current plan" → pop-up 2. Its "Renew current plan" takes the full Yearly price from the saved card with a processing state. Nothing changes until the payment works; on success cancel the downgrade, **turn auto top-up ON**, add the credits so the report can be generated → next pop-up.
+   - "Keep scheduled downgrade" → close, no change.
+   *(Design images: "Not enough credits for this report" with "Renew current plan" / "Keep scheduled downgrade"; "Renew Growth yearly now?" listing credits added, auto top-up turns on, switch to monthly cancelled, next billing date; "Renew and pay $999" → "Processing…".)*
+
+### 2.8 Insufficient credits while a cancellation is scheduled (account still active)
+1. Pop-up. "Reactivate subscription" → **reactivate the plan only; auto top-up setting does not change; no payment.** "Close" → no change. After reactivating, "Generate report" again: if still short, 2.5 (OFF) or 2.6 (ON) applies.
 
 ## 3. Failed payment during auto top-up
 
 ### 3.1 Logic
 | # | Element | Logic |
 |---|---|---|
-| 1 | Scope | A failed auto top-up charge, started by a report request (Portal or API) while auto top-up is ON, or by "Enable auto top-up" in 2.5. A failed auto-renewal is different (3.3). |
-| 2 | Subscription | **Not cancelled.** Plan stays active, user keeps remaining credits, **billing date does not change**. This is the ONLY case where a failed charge does not cancel the subscription. |
-| 3 | Failed charge on the billing date | If the normal auto-renewal charge on the billing date fails → cancelled and inactive straight away (Phase 1 section 2.7), whether auto top-up is ON or OFF. The same applies to a failed first monthly charge on a downgrade effective date. |
-| 4 | Report that triggered the charge | Not generated, no credits deducted. User can still generate reports that cost less than the balance. |
-| 5 | Auto top-up toggle | Stays as it was. ON stays ON, OFF stays OFF. |
-| 6 | After a failure | The saved card is **not charged again** until the user pays on Stripe. A report request above the balance shows the "Payment failed" pop-up (Portal) or an error message (API), not a new charge attempt. |
-| 7 | How the user continues | Pays on Stripe (3.2). A successful payment works like a successful auto top-up: billing period renews, billing date resets, plan credits added. |
-| 8 | Scheduled downgrade | Not affected by the failure. A successful Stripe payment moves the downgrade date, as in 1.6. |
-| 9 | No grace period | No grace period and no "Update payment method" flow. |
+| 1 | Plan NOT cancelled | An auto top-up payment fails before the billing date: report request with ON (2.6); "Enable auto top-up" in a report pop-up (2.5); "Keep current plan & turn auto top-up ON" (2.7, no "payment failed" state saved). |
+| 2 | Plan | Stays active; credits kept; billing date unchanged; the report is not generated, no credits deducted; reports within the balance still work. |
+| 3 | State | System saves a "payment failed" state. Toggle unchanged (ON stays ON, OFF stays OFF). |
+| 4 | User can | Use "Update payment method" (3.2). A successful payment works like a successful auto top-up: period renews, billing date resets, plan credits added. |
+| 5 | While set | ON: card not charged again automatically; a report above the balance shows "Payment failed" (Portal) or the standard insufficient-credits response (API). OFF: the user sees the "Enable auto top-up" pop-up (2.5); if that payment fails again, the same "Payment failed" pop-up. |
+| 6 | Cleared when | The user pays through "Update payment method"; a later auto top-up payment works; the next normal renewal works. |
+| 7 | Failure on the billing date | Plan cancelled straight away (Phase 1 2.7), ON or OFF. Same for a failed first monthly charge on a downgrade date (3.3). |
+| 8 | No grace period | "Update payment method" only after a failed auto top-up before the billing date. |
 
-### 3.2 "Payment failed" pop-up and Pay on Stripe during report generation
-1. **Backend:** on a failed auto top-up charge: do not cancel, deduct no credits, do not generate the report. Save a "payment failed" state on the account.
-2. **Portal:** show the "Payment failed" pop-up. It says the auto top-up payment failed and the report was not generated, that the user keeps their credits, and that reports below the balance still work. CTAs: "Pay on Stripe" and close. "Pay on Stripe" → Stripe checkout for the user's current plan (Growth Monthly or Yearly) at the **full plan price**. The **new card is saved** as the payment method for future charges. If the user closes the pop-up or leaves Stripe without paying: no change; they can still generate reports below the balance; a report above the balance shows the "Payment failed" pop-up again, with no new charge attempt.
-3. After a successful payment: redirect back to the report generation page with the **same company selected** and show a success pop-up. Backend: renew the billing period, reset the billing date, add plan credits, clear the "payment failed" state. **The auto top-up toggle does not change.**
-4. **API:** a report request above the balance while in the "payment failed" state returns an error saying the payment failed and the user needs to pay on the Portal.
-5. **My Plan:** show a **banner with a "Pay on Stripe" CTA** while the account is in the "payment failed" state. The banner disappears once the user pays on Stripe.
-6. The "payment failed" state is also cleared if the next normal renewal succeeds. If the renewal fails, follow 3.3.
+### 3.2 "Payment failed" pop-up and Update payment method (report generation)
+1. Backend: do not cancel, do not deduct credits, do not generate the report, save the "payment failed" state.
+2. Portal: "Payment failed" pop-up saying the payment did not go through, the report was not generated, credits are still there and smaller reports still work, and the price ("Your plan will renew for {{plan_price}} today"). CTAs **"Update payment method"** and close. "Update payment method" → **Stripe checkout for the current plan at full price; the new card is saved**. Closing or leaving Stripe without paying → nothing changes; smaller reports work; a report above the balance shows "Payment failed" again. **Billing page: banner with an "Update payment method" button while the state is set**; it goes once the user pays.
+3. After a successful payment: **back to where the user started (the report page with the same company selected, or Billing) with a success pop-up**. Backend renews the period, resets the billing date, adds the plan credits, clears the state. Toggle unchanged.
 
-### 3.3 Stage 1: charge fails (auto-renewal, or first monthly charge on downgrade date)
-BE/FE checklist: (1) subscription status → cancelled and inactive immediately; (2) all active pKYB monitoring stops; (3) new report generation blocked on Portal and API, API key deactivated automatically; (4) historical reports (incl. pKYB) remain accessible 90 days from this date; (5) send the failure email; (6) FE shows the cancelled-and-inactive screen from Phase 1 section 2.7 as it is; (7) "Choose a plan" → Products & Pricing with all plan cards showing "Select plan" → plan confirmation pop-up → Stripe payment → back to My Plan with a confirmation pop-up (same as Phase 1 section 2.7).
+### 3.3 Failed renewal, Stage 1 (billing date; plan cancelled)
+Applies to a failed normal renewal (ON or OFF) and a failed first monthly charge on a downgrade date.
+1. BE: status → cancelled and inactive immediately. 2. BE: all pKYB monitoring stops. 3. BE: new reports blocked on Portal and API; API key deactivated. 4. BE: history kept 90 days. 5. BE: Email 6. 6. FE: Phase 1 2.7 cancelled-and-inactive screen as it is. 7. FE: **"Choose a plan" → Products & Pricing with all cards "Select plan" → plan confirmation pop-up → Stripe → back to Billing with a confirmation pop-up** (Phase 1 2.7).
 
-### 3.3 Stage 2 and Stage 3
-Same as Phase 1: Stage 2: 10 days before the 90-day deletion deadline, send the reminder email. Stage 3a: no plan purchased within 90 days → Phase 1 section 2.6 (historical reports permanently deleted, user can no longer view reports). Stage 3b: a plan purchased within 90 days → historical reports restored, user gets access again.
+### 3.4 Failed renewal, Stage 2 and 3
+Stage 2: 10 days before the 90-day deletion deadline, Email 7. Stage 3a: no plan within 90 days → Phase 1 2.6 (reports deleted). Stage 3b: plan bought within 90 days → reports restored.
 
-## 4. Emails (copy ignored)
-The 100439 export lists 7 emails with full templates (wording not transcribed): (1) Plan downgraded, sent when the effective date is reached; (2) Plan downgrade scheduled, sent when the user confirms the downgrade; (3) Downgrade cancelled, sent when the user cancels a scheduled downgrade; (4) Auto top-up payment confirmation, sent after a successful auto top-up charge (started by a report request or "Enable auto top-up") **or after a successful "Pay on Stripe" payment**, with an extra line only when a downgrade is scheduled (its new date); (5) Auto top-up payment failed, sent when an auto top-up charge fails and the subscription stays active, with a "Pay on Stripe" button; (6) Plan cancelled after a failed charge on the billing date (90 days left), sent at Stage 1; (7) the same with 10 days left, sent at Stage 2. The earlier "[need input: downgrade scheduled / cancelled emails needed or not?]" is answered: both are needed. Emails are not part of the prototype.
+## 4. Emails (copy ignored; not part of the prototype)
+1 Plan downgraded (effective date). 2 Downgrade scheduled (on confirm). 3 Downgrade cancelled. 4 Auto top-up payment confirmation (after a report request, "Enable auto top-up", "Keep current plan & turn auto top-up ON", or "Update payment method"). 5 Auto top-up payment failed (plan stays active; CTA "Update payment method"). 6 Plan cancelled after a failed billing-date payment, 90 days left (Stage 1). 7 Same, 10 days left (Stage 2).
 
 ## 5. Pre and post-rollout (23 March 2027)
 
 ### 5.1 Transition logic
 | When | Logic |
 |---|---|
-| Before rollout (until 22 Mar 2027) | Existing Growth rules from Phase 1 remain, including unlimited $249 manual top-ups. |
-| On rollout (23 Mar 2027) | Auto top-up turns ON by default for all existing Growth (Monthly and Yearly) users. Manual $249 top-ups removed for Growth. Downgrade (Yearly → Monthly) becomes available. **Credit balances and billing dates do not change.** |
-| After rollout | Growth users follow sections 1 to 3. Flex unchanged. |
-| Users who activate between T-30 and rollout day | Phase 1 pre-rollout PRD section 4: T-30 catch-up email, then only the scheduled emails not yet sent, the in-app banner on first login, and the checkout disclosure. |
+| Until 22 Mar 2027 | Phase 1 Growth rules, including unlimited $249 manual top-ups. |
+| 23 Mar 2027, 00:00 SGT | Auto top-up ON for all existing Growth users in one update. Manual top-ups removed for Growth. Downgrade available. Credit balances and billing dates unchanged. |
+| After | Growth follows sections 1-3. Flex unchanged. |
+| Activated between T-30 and rollout | Phase 1 pre-rollout PRD section 4: T-30 catch-up email, then only unsent scheduled emails; in-app banner on first login. |
 
-### 5.2 Communication timeline (copy ignored; timing kept; the 100439 export now prints the email A/B/C and banner/pop-up A/B copy in 5.2.1 and 5.2.2, still ignored)
-| Stage | Method |
-|---|---|
-| T-30 (22 Feb 2027) | Announcement email + persistent in-app banner and pop-up A |
-| T-14 (9 Mar 2027) | Reminder email B (14 days); same in-app content |
-| T-7 (16 Mar 2027) | Reminder email B (7 days); same in-app content |
-| T = rollout (23 Mar 2027) | Rollout email C; replace pre-rollout in-app messaging with banner and pop-up B |
-| First login after rollout, up to T+14 (6 Apr 2027) | Intro pop-up B; minimise to a persistent top banner |
-| Inactive users, T-21 (2 Mar 2027) to T+14 | If never logged in during the period, show pop-up B on first login; do not restore the banner |
-| Checkout, from T-30 until rollout | Purchase and upgrade pages show a checkout disclosure |
+### 5.2 Communication timeline (copy ignored)
+| When | Method | Messaging |
+|---|---|---|
+| T-30, Monday 22 Feb 2027 | Announcement email; persistent banner and pop-up | Email A; banner and pop-up A |
+| T-14, 9 Mar 2027 | Reminder email; same in-app | Email B (14 days) |
+| T-7, 16 Mar 2027 | Final reminder; same in-app | Email B (7 days) |
+| T, 23 Mar 2027 | Rollout email; replace pre-rollout in-app messaging | Email C; banner and pop-up B |
+| First login after rollout, to T+14 (6 Apr 2027) | Intro pop-up, minimisable to a persistent top banner | Banner and pop-up B |
+| Inactive users, T-21 (2 Mar) to T+14 | Never logged in during the period → intro pop-up on first login; no banner | Pop-up B only |
 
-Notes: plan name, price and billing period in emails and in-app messages must be dynamic. **[need input]** T-30 is Sunday 21 Feb 2027 (send Sunday or Monday 22 Feb?). PRD-internal inconsistency: heading says T-30 = 21 Feb, table says 22 Feb.
+5.2.2 structure (logic only): banner A has a link that opens pop-up A; **pop-up A CTA "Got it" minimises to the banner**. Banner B has "Manage auto top-up"; **pop-up B CTAs "Manage auto top-up" (→ Billing) and "Got it" (minimise to the persistent banner until T+14)**.
 
-## PRD-internal contradictions and gaps (open questions for the PM; found on the second read, 25 Nov 2026)
-- **Does a failed auto top-up cancel the account?** The Overview notes (pages 1-2) say: "A failed auto top-up charge is handled the same way as a failed auto-renewal in Phase 1 (section 2.7): the account goes straight to cancelled and inactive." Sections 2.1 #8, 2.5 #3, 3.1 and 3.2 say the opposite: **not cancelled**, billing date unchanged, "Payment failed" pop-up, pay on Stripe. Email A and pop-up A (section 5.2) also tell customers "If the charge fails, your subscription will be cancelled straight away." Working baseline in this file, the prototype and the audit: sections 2.1, 3.1 and 3.2 (the detailed, newest logic). Not yet confirmed by the PM. The 100439 export tips it further toward "not cancelled": its new email 5 is "Auto top-up payment failed, sent when an auto top-up charge fails and the subscription stays active", and email 4 is also sent after a successful "Pay on Stripe" payment. The overview note, Email A and pop-up A still say it cancels.
-- **"Pop-up 3" is not defined.** Section 1.5 #1 lists "the Cancel downgrade CTA in pop-up 3" as an entry point, but 1.3 only defines pop-up 1 (Keep current plan / Proceed to downgrade) and pop-up 2 (Back to my plan). No pop-up 3 exists anywhere in the text.
-- **Scope of the failed-charge rule leaves a hole.** 2.1 #8 and 3.1 #1 say the "not cancelled" handling applies ONLY to a charge started by a report request or by "Enable auto top-up" in 2.5. A charge started by turning Auto top up ON at 0 credits on My Plan (decided to charge on 25 Nov, see below) is neither, so its failure is not specified.
-- **Auto top-up toggle after reactivation, or after a Monthly to Yearly upgrade, is not specified.** 2.1 #2 only says ON by default for new subscribers, re-subscribers and existing users at rollout.
+## 6. API responses
+- Works as on the Portal (2.1). With ON and too few credits, the request waits for the payment; on success the report is generated. **[need input: tech to confirm max wait time and timeout behaviour.]**
+- Credits deducted at request; async failures use the existing refund logic.
+- Auto top-up can only be turned ON/OFF on the Portal.
+- Flex and cancelled-and-inactive accounts: no change (inactive → API key deactivated).
+- No new error messages: whenever credits are short and no report is generated (OFF, failed payment, "payment failed" state, scheduled cancellation or downgrade) return `{"errorCode": "INSUFFICIENT_CREDITS", "message": "Insufficient credits to generate this report. Please top up or upgrade your plan."}`.
 
-- **1.6 case 1 still says "box and button" (100439 export).** 1.4 no longer has an orange box or a "Cancel downgrade" button on My Plan; it has a label and "Keep yearly plan". Read as: when the user cancels the subscription, the label and "Keep yearly plan" go and the cancelled-but-active card shows. Not confirmed.
-- **Where does "Cancel downgrade" live on My Plan now?** 1.4 says "no separate Cancel downgrade button" and 1.5 names "Keep yearly plan" as the My Plan entry, but 1.5 #2 still labels the pop-up's confirm CTA "Cancel downgrade" and Products & Pricing keeps a "Cancel downgrade" button. Two names for one action across the two pages (this is the concept in LAB-09).
+## PRD-internal inconsistencies (27 Nov export)
+- **One button, two names on Billing:** 1.4 says "Keep yearly plan" is the only primary button; the next bullet and 1.5 #1 call it "Keep current plan". The 1.4 design image shows "Keep yearly plan".
+- **2.7 CTA naming:** 2.7 says "Renew current plan"; 3.1 #1 and Email 4 call the same flow "Keep current plan & turn auto top-up ON".
+- **2.7 failure UI is not described.** 2.1 #8 / 3.1 #1 say only that no "payment failed" state is saved; it is not said whether the "Payment failed" pop-up shows, or whether "Update payment method" is offered.
+- **Toggle value while a downgrade is scheduled and after it is cancelled** is not stated: 2.2 #3 says greyed out and "works normally again" after; 1.5 #3 says only that the message returns to default.
+- **Toggle value through a cancellation:** 2.8 says reactivating does not change the auto top-up setting, which implies the setting survives the cancellation. 2.2 #4 says only that the message shows the cancelled text.
+- 3.2 #2 says the pop-up states "Your plan will renew for {{plan_price}} today" (copy, Figma decides).
+- 2.6 #2 and 2.5 #2 sit on the same PDF page; the PDF heading order makes 2.5 #2 look like part of 2.6.
 
-## PRD-internal notes (not conflicts with the prototype)
-- Page 2 says emails are "see section 6"; the emails are in section 4. Section 3.3 is used for both "Stage 1" and "Stage 2 and 3". Email 7 says "Stage 2 (3.4)"; there is no 3.4.
-- 1.5 says "a pop-up shows successful downgrade" after cancelling the downgrade, which reads like a wording slip.
-- 1.1 says Phase 1 section 2.5 hid the Monthly card for Yearly users; Phase 1 Part 2 in the old PRD (docs/PRD-billing-phase1.md) said Yearly → Monthly is "Not available".
-
-## What the embedded design images show (pages 3 and 8-11)
-Read on 25 Nov 2026. All use a Growth (Monthly) account, $99 / 535 credits, billing date 12 June 2024, so for Monthly "full plan price" and the $99 pack are the same number. No image shows a Yearly auto top-up.
-- p3: My Plan (Growth Monthly) still shows a **"Top up now"** button, and the Products & Pricing page for a Yearly user shows the Monthly card CTA as "Switch at renewal" (the PRD text says "Select plan"). The Top up now button contradicts PRD 2.1 #3 (remove top-up CTAs), so these images are older than the text.
-- p8-9: "Turn off Auto top up?" with "Stay enabled" / "Disable", then the "turned off" confirmation with "View balance"; My Plan with the toggle OFF.
-- p9: **"Turn on Auto top up?" at 0 credits with "Enable and pay $99" / "Stay disabled"**, i.e. turning it on from My Plan with 0 credits charges the pack and renews early. This disagrees with the PRD text in 2.4 and 2.1 #8, where toggling ON only sets ON and a charge starts only from a report request or from "Enable auto top-up" in 2.5.
-- p10: "535 credits added" confirmation on My Plan after that charge; My Plan with the toggle ON; the report-page "Not enough credits" pop-up with only "Enable Auto top up and pay $99" and "Not now".
-- p11: report-page success pop-up "535 credits added" with "Continue with report".
-
-## Decisions made after the export (product owner, 25 Nov 2026)
-These settle gaps and conflicts in the text above; the prototype and Figma follow them.
-- **Toggling auto top-up ON with 0 credits charges at once** (2.4, and the p9 image): $99 on Growth Monthly, $999 on Growth Yearly, the plan's pack is added and the plan renews early. Every payment goes through Stripe, which is why the PRD does not write it down.
-- **"Continue with report" generates the report** (2.1 and 2.5, and the p11 image): after Auto top up has paid for the credits, the button requests the report the user chose, for the same company. It does not just close the pop-up.
-- **Plan credits:** Growth Monthly $99 = 267 credits; Growth Yearly $999 = 3,047 credits (no 535 or 6,094 anywhere). An auto top-up adds the plan's own credits: 267 on Monthly, 3,047 on Yearly.
-- **No grace period and no "Update payment method" flow** (3.3), as already stated above.
+## Product decisions not in the PRD (still in force, 27 Nov 2026)
+- **Plan credits:** Growth Monthly $99 = 267 credits; Growth Yearly $999 = 3,047 credits. An auto top-up adds the plan's own credits.
+- **Report-page success after an auto top-up (2.5, 2.6): "Got it" only closes**, the company stays selected and the user clicks "Generate report" again (27 Nov). After "Renew current plan" (2.7) the success pop-up's "Continue with your report" generates the report.
+- **While a downgrade is scheduled the toggle is set OFF**, and "Keep current plan" does not turn it back on (27 Nov, Claude's choice, not confirmed by the user; the PRD only says greyed out).
+- **A failed auto top-up is fixed by topping up credits, never described as renewing the plan** (user, 27 Nov, before this export). **Conflicts with 3.1 #4 and 3.2 #3 of this export**, which say the "Update payment method" payment renews the period and resets the billing date. Open.
+- Superseded and dropped: "toggling ON at 0 credits charges at once" (25 Nov; replaced by 2.4 and the 27 Nov decision); "Continue with report generates the report" for 2.5/2.6 (25 Nov; replaced by "Got it"); "no Update payment method flow" (25 Nov; replaced by 3.2 in this export).

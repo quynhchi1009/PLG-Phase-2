@@ -31,13 +31,9 @@ export type Success =
   | { kind: 'auto-top-up-enable-confirm' }
   /** Auto top up was switched back on. */
   | { kind: 'auto-top-up-on' }
-  /** Version A: asked to turn Auto top up on with 0 credits left, so turning it on also pays now. */
-  | { kind: 'auto-top-up-pay-confirm' }
   /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved.
    *  `downgradeCancelled`: a switch to monthly was scheduled, and renewing now cancelled it ("Renew current plan"). */
   | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; downgradeCancelled?: boolean; report?: ReportRequest }
-  /** Version A: the charge from turning Auto top up on at 0 credits was declined (PRD 3.2). Auto top up stays off. */
-  | { kind: 'auto-top-up-failed' }
   /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
   | { kind: 'downgrade-confirm' }
   /** The switch to monthly is scheduled for the end of the yearly cycle. */
@@ -118,14 +114,12 @@ type Action =
   | { type: 'schedule-downgrade'; today: string }
   | { type: 'cancel-downgrade'; today: string }
   | { type: 'request-reactivate'; needed?: number }
-  /** `payNow` (Version A, 0 credits left): turning it on also buys the first pack right away. */
-  | { type: 'request-enable-auto-top-up'; payNow?: boolean }
+  | { type: 'request-enable-auto-top-up' }
   | { type: 'enable-auto-top-up' }
   /** Auto top up renews the plan early with the payment method on file: pays the pack, adds the credits, moves the billing date, turns Auto top up on. */
   | { type: 'charge-auto-top-up'; today: string; report?: ReportRequest }
   /** The Auto top up charge was declined (PRD 3.2). Only remembers it: no credits, no new billing date, the plan is not cancelled and Auto top up keeps its setting. */
-  /** `showResult`: the charge came from My Plan, so the Payment failed pop-up takes the confirmation's place there. */
-  | { type: 'fail-auto-top-up'; showResult?: boolean }
+  | { type: 'fail-auto-top-up' }
   | { type: 'request-disable-auto-top-up' }
   | { type: 'disable-auto-top-up' }
   | { type: 'reactivate'; today: string }
@@ -199,13 +193,9 @@ function reducer(state: BillingState, action: Action): BillingState {
     case 'request-enable-auto-top-up':
       // While a switch to monthly is scheduled, Auto top up stays off (see `pendingDowngrade`).
       if (state.planId === 'flex' || state.status !== 'active' || state.autoTopUp || state.pendingDowngrade) return state
-      // PRD 3.1 #6: after a failed charge the card is not charged again until the customer pays on Stripe,
-      // so turning it on at 0 credits shows the Payment failed pop-up instead of a new charge.
-      if (action.payNow && state.paymentFailed) return { ...state, success: { kind: 'auto-top-up-failed' } }
-      return {
-        ...state,
-        success: { kind: action.payNow ? 'auto-top-up-pay-confirm' : 'auto-top-up-enable-confirm' },
-      }
+      // Turning it on never charges, even at 0 credits (27 Nov 2026): the first charge comes when a report
+      // needs more credits than are left, so the billing date only moves then.
+      return { ...state, success: { kind: 'auto-top-up-enable-confirm' } }
 
     case 'enable-auto-top-up':
       if (state.planId === 'flex' || state.status !== 'active' || state.pendingDowngrade) return state
@@ -259,11 +249,7 @@ function reducer(state: BillingState, action: Action): BillingState {
     // Auto top up setting stay as they were; the report page shows the "Payment failed" pop-up.
     case 'fail-auto-top-up':
       if (state.planId === 'flex' || state.status !== 'active') return state
-      return {
-        ...state,
-        paymentFailed: true,
-        ...(action.showResult ? { success: { kind: 'auto-top-up-failed' as const } } : {}),
-      }
+      return { ...state, paymentFailed: true }
 
     case 'request-disable-auto-top-up':
       if (!state.autoTopUp) return state
@@ -290,7 +276,7 @@ function reducer(state: BillingState, action: Action): BillingState {
         events: [event('Downgrade to Growth monthly scheduled', action.today, null), ...state.events],
       }
 
-    // Opens the "Keep your yearly plan?" confirmation; nothing changes yet.
+    // Opens the "Keep current plan?" confirmation; nothing changes yet.
     case 'request-cancel-downgrade':
       if (!state.pendingDowngrade || state.status !== 'active') return state
       return { ...state, success: { kind: 'keep-yearly-confirm' } }

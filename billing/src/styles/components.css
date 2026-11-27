@@ -878,6 +878,15 @@
   margin-block-start: calc(var(--space-2) * -1);
 }
 
+/* A lede in more than one paragraph: what happened, then what to do. */
+.dialog__lede--paras > p {
+  margin: 0;
+}
+
+.dialog__lede--paras > p + p {
+  margin-block-start: var(--space-3);
+}
+
 .dialog__actions {
   display: flex;
   justify-content: flex-end;

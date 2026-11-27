@@ -248,7 +248,7 @@
 
   /* Scheduled switch to monthly: the way back sits like the other rows of the card, text on
      the left and its control on the shared right edge, instead of stacked and left-aligned.
-     "Keep yearly plan" is the card's one primary button (Change plan is hidden in this state).
+     "Keep current plan" is the card's one primary button (Change plan is hidden in this state).
      When the sentence needs the full row the button wraps beneath and stays flush right. */
   .settings__changed--downgrade:has(.settings__actions) {
     flex-flow: row wrap;

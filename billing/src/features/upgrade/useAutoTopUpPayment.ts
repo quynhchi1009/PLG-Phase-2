@@ -11,7 +11,7 @@ import { useTakingLonger } from '../../components/ui/useTakingLonger'
  *
  * The charge can fail (PRD 3.2). `onFailed` then runs instead of `onPaid`; nothing has been charged,
  * so the caller closes its dialog and shows the "Payment failed" pop-up. A caller that passes no
- * `onFailed` (the My Plan turn-on at 0 credits, still an open question) always succeeds.
+ * `onFailed` always succeeds.
  */
 export function useAutoTopUpPayment(onPaid: () => void, onFailed?: () => void) {
   const [paying, setPaying] = useState(false)

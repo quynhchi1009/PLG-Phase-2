@@ -110,7 +110,7 @@ const GROUPS: Group[] = [
       },
       {
         id: 'a-on',
-        label: '2 · Turn back on at 0 credits, renew early',
+        label: '2 · Turn back on at 0 credits',
         status: 'active',
         planId: 'monthly',
         creditsLeft: 0,
@@ -237,7 +237,7 @@ const GROUPS: Group[] = [
       },
       {
         id: 'p-off',
-        label: 'Enable and pay fails · off',
+        label: 'Enable Auto top up fails · off',
         status: 'active',
         planId: 'monthly',
         creditsLeft: 15,
@@ -255,7 +255,7 @@ const GROUPS: Group[] = [
         paymentFailed: true,
         route: 'report',
       },
-      // PRD 3.2 #5: My Plan carries a banner with Update your payment details while the charge is unpaid.
+      // PRD 3.2 #5: My Plan carries a banner with Update payment details while the charge is unpaid.
       {
         id: 'p-banner',
         label: 'My Plan banner · charge failed',
@@ -287,7 +287,7 @@ const PAYMENT_OUTCOMES: { id: PaymentOutcome; label: string; hint: string }[] = 
   {
     id: 'fail',
     label: 'Fails',
-    hint: 'The charge is declined: the Payment failed pop-up shows and nothing is added. It covers the report page and turning Auto top up on from My Plan at 0 credits.',
+    hint: 'The charge is declined: the Payment failed pop-up shows and nothing is added. It covers the report page.',
   },
 ]
 

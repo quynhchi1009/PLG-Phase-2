@@ -457,7 +457,7 @@ function PlanCard({
           {cta.label}
         </Button>
         {cta.cancelDowngrade && (
-          // Opens the same "Keep your yearly plan?" pop-up as My Plan's "Keep yearly plan", here on
+          // Opens the same "Keep current plan?" pop-up as My Plan's "Keep current plan", here on
           // Products & Pricing (PRD 1.5).
           <button type="button" className="text-btn plan__cta-link" onClick={() => dispatch({ type: 'request-cancel-downgrade' })}>
             Cancel downgrade

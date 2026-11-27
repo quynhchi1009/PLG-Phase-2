@@ -39,7 +39,7 @@ export function BillingPage() {
         </p>
       </header>
 
-      {/* PRD 3.2 #5: while the last Auto top up charge is unpaid, a banner with "Update your payment details" runs across the
+      {/* PRD 3.2 #5: while the last Auto top up charge is unpaid, a banner with "Update payment details" runs across the
           page above the cards. It goes once the payment is made on Stripe (the failed state is cleared). */}
       {state.status === 'active' && state.planId !== 'flex' && state.paymentFailed && <PaymentFailedBanner />}
 
@@ -75,7 +75,7 @@ function PaymentFailedBanner() {
         title="Update your payment details to keep accessing our services"
         action={
           <Button size="sm" onClick={payOnStripe}>
-            Update your payment details
+            Update payment details
           </Button>
         }
       >
@@ -183,7 +183,7 @@ function SettingsCard({
           {/* Plan-level actions live together: Change plan leads, Cancel plan
               sits beside it as a quiet ghost button. Change plan only shows while the plan is
               untouched: once a cancellation or a switch to monthly is scheduled, the card's one
-              story is the way back ("Reactivate subscription" / "Keep yearly plan" below), and
+              story is the way back ("Reactivate subscription" / "Keep current plan" below), and
               every other plan is either already included or opens from Products & Pricing.
               Cancel plan stays while a switch is scheduled (cancelling clears the switch). */}
           {!cancelling && (
@@ -260,7 +260,7 @@ function SettingsCard({
 
         {/* The way back from a scheduled switch: text on the left, the primary button on the
             card's right edge with the other controls. It opens a confirmation first
-            ("Keep your yearly plan?"); the switch is only cancelled once that is confirmed. */}
+            ("Keep current plan?"); the switch is only cancelled once that is confirmed. */}
         {state.pendingDowngrade && !cancelling && (
           <div className="settings__row settings__changed settings__changed--downgrade">
             <div>
@@ -272,7 +272,7 @@ function SettingsCard({
             </div>
             <div className="settings__actions">
               <Button size="sm" onClick={() => dispatch({ type: 'request-cancel-downgrade' })}>
-                Keep yearly plan
+                Keep current plan
               </Button>
             </div>
           </div>
@@ -369,15 +369,15 @@ function AutoTopUp() {
   const labelId = useId()
   const hintId = useId()
   const pack = TOP_UP[state.planId]
-  // Turning it on with no credits left also pays for a pack now ("toggle ON to continue
-  // immediately"); with credits left it only switches the setting on.
+  // Turning it on only switches the setting on, even at 0 credits: the charge comes when a report needs more
+  // credits than are left (27 Nov 2026).
   // While a switch to monthly is scheduled Auto top up stays off: a top-up would renew the yearly plan and
-  // undo the switch. The way back is "Keep yearly plan" (above), after which the switch works again.
+  // undo the switch. The way back is "Keep current plan" (above), after which the switch works again.
   const locked = state.pendingDowngrade
   const toggle = () => {
     if (locked) return
     if (state.autoTopUp) dispatch({ type: 'request-disable-auto-top-up' })
-    else dispatch({ type: 'request-enable-auto-top-up', payNow: state.creditsRemaining === 0 })
+    else dispatch({ type: 'request-enable-auto-top-up' })
   }
   return (
     <div className="autotopup">
@@ -390,8 +390,9 @@ function AutoTopUp() {
             The cancelled state has its own notice above, and a lapsed account has no box at all. */}
         <p className="settings__hint" id={hintId}>
           {locked ? (
-            // The switch row above already names the date and offers "Keep yearly plan", so this only says why.
-            <>Unavailable while your switch to monthly is scheduled.</>
+            // The state first (unavailable), then why, then the way out: "Keep current plan" in the switch row above.
+            // Keeping yearly only unlocks the switch; it does not turn Auto top up back on by itself.
+            <>Unavailable while your plan is set to switch to monthly. To use it, select Keep current plan above.</>
           ) : (
             <>
               {state.autoTopUp ? 'On. ' : ''}

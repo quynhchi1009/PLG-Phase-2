@@ -49,7 +49,6 @@ export function AutoTopUpGate({
   const headingId = useId()
   const descId = useId()
   const { state, dispatch } = useBilling()
-  const pack = TOP_UP[state.planId]
   const { paying, longer, pay } = useAutoTopUpPayment(
     () => {
       // The success dialog takes over from here, and it also opens on this page.
@@ -83,7 +82,7 @@ export function AutoTopUpGate({
           <PaymentFacts facts={autoTopUpFacts(state.planId)} />
           <div className="dialog__actions dialog__actions--stack">
             <Button data-autofocus block loading={paying} onClick={pay}>
-              {paying ? 'Processing…' : `Enable and pay ${formatPrice(pack.price)}`}
+              {paying ? 'Processing…' : 'Enable Auto top up'}
             </Button>
             <Button variant="link" aria-disabled={paying} onClick={paying ? undefined : onClose}>
               Not now
@@ -353,7 +352,7 @@ function RenewConfirm({
         </ul>
         <div className="perk-box__action">
           <Button data-autofocus block loading={paying} onClick={pay}>
-            {paying ? 'Processing…' : `Renew and pay ${formatPrice(pack.price)}`}
+            {paying ? 'Processing…' : 'Renew your current plan'}
           </Button>
           <PaymentNote busy={paying} longer={longer} />
         </div>

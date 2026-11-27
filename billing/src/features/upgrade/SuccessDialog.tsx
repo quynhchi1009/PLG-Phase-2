@@ -1,17 +1,13 @@
-import { useEffect, useId, useState, type CSSProperties, type ReactNode } from 'react'
+import { useId, type CSSProperties, type ReactNode } from 'react'
 import { Check, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
-import { PaymentNote } from '../../components/ui/PaymentProgress'
-import { FailedMark } from '../../components/ui/FailedMark'
 import { SuccessMark } from '../../components/ui/SuccessMark'
 import { PLANS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
-import { TODAY, earlyRenewalDate, reportRequestedMessage, useBilling, type ReportRequest } from '../../state/billing'
+import { TODAY, reportRequestedMessage, useBilling, type ReportRequest } from '../../state/billing'
 import { useUi } from '../../state/ui'
 import { flagUpdated } from './flagUpdated'
-import { useAutoTopUpPayment } from './useAutoTopUpPayment'
-import { usePayOnStripe } from './usePayOnStripe'
 
 /* Choreography (ms after the dialog opens). Each step lands before the next
    starts: the badge, the title, then what the customer now has. */
@@ -35,12 +31,9 @@ const DOWNGRADE_KINDS = new Set<string>(['downgrade-confirm', 'downgrade-schedul
 export function SuccessDialog() {
   const { state, dispatch } = useBilling()
   const { route, toast } = useUi()
-  const payOnStripe = usePayOnStripe()
   const headingId = useId()
   const descId = useId()
   const s = state.success
-  // A charge is going through (set by the pay step below): the dialog can't be closed until it answers.
-  const [paying, setPaying] = useState(false)
   // An Auto top up that was paid for on the report page confirms there, so the customer
   // can carry on with the report they were generating.
   const onReport = route === 'report' && s?.kind === 'auto-top-up-charged'
@@ -53,7 +46,7 @@ export function SuccessDialog() {
   const reactivateAskedOnReport = route === 'report' && s?.kind === 'reactivate-confirm'
   const open = !!s && (route === 'billing' || onReport || onPlans || reactivatedOnReport || reactivateAskedOnReport)
   // Short confirmations (a top-up, a reactivation) take the narrow dialog.
-  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'auto-top-up-charged' || s?.kind === 'auto-top-up-failed'
+  const compact = s?.kind === 'topped-up' || s?.kind === 'reactivated' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged'
 
   // When the primary button already just closes the dialog (every result dialog, and the
   // confirmations whose primary is "stay as you are"), the X is a second way to do the same thing,
@@ -73,7 +66,7 @@ export function SuccessDialog() {
 
   const close = () => {
     // Backing out of the reactivation confirmation (or leaving the Payment failed pop-up) changes nothing on the page.
-    if (s?.kind === 'auto-top-up-failed' || s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
+    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
     const settingsOnly =
       s?.kind === 'auto-top-up-off' ||
       s?.kind === 'auto-top-up-on' ||
@@ -83,7 +76,7 @@ export function SuccessDialog() {
     const changed = onPlans ? ['.plans'] : settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
-    // "Keep yearly plan" left the page when the switch was cancelled, so there is nothing to
+    // "Keep current plan" left the page when the switch was cancelled, so there is nothing to
     // hand focus back to: land on the settings card (or the plan cards' heading) instead of <body>.
     // Scheduling the switch from Products & Pricing re-labels the card button that opened the pop-up,
     // so focus lands on the same heading there.
@@ -103,12 +96,12 @@ export function SuccessDialog() {
   return (
     <Dialog
       open={open}
-      onClose={paying ? () => {} : close}
+      onClose={close}
       labelledBy={headingId}
       describedBy={descId}
       size={compact ? 'sm' : 'md'}
       stepKey={s?.kind}
-      hideClose={hideClose || paying}
+      hideClose={hideClose}
     >
       {open && s?.kind === 'upgraded' && (
         <div className="activated">
@@ -239,8 +232,9 @@ export function SuccessDialog() {
             Turn on Auto top up?
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-            When your credits run out, we'll charge {formatPrice(TOP_UP[state.planId].price)} and add{' '}
-            {formatCount(TOP_UP[state.planId].credits)} credits. Your next billing date moves to the day we renew.
+            Nothing is charged now. When a report needs more credits than you have, we'll charge{' '}
+            {formatPrice(TOP_UP[state.planId].price)}, add {formatCount(TOP_UP[state.planId].credits)} credits and move
+            your next billing date to that day.
           </p>
           <div className="dialog__pair success__in" style={at(T.panel)}>
             <Button data-autofocus block onClick={() => dispatch({ type: 'enable-auto-top-up' })}>
@@ -251,10 +245,6 @@ export function SuccessDialog() {
             </Button>
           </div>
         </div>
-      )}
-
-      {open && s?.kind === 'auto-top-up-pay-confirm' && (
-        <AutoTopUpPayConfirm headingId={headingId} descId={descId} onStay={close} onPaying={setPaying} />
       )}
 
       {/* "Renew current plan" on the report page (a switch to monthly was scheduled): the same charge as an Auto
@@ -287,34 +277,17 @@ export function SuccessDialog() {
             We charged {formatPrice(TOP_UP[state.planId].price)} and moved your next billing date to{' '}
             {keepTogether(formatDate(s.renewsOn))}.
           </p>
-          <Button data-autofocus block onClick={onReport && s.report ? () => continueWithReport(s.report!) : close}>
-            {onReport ? 'Continue with your report' : 'View balance'}
-          </Button>
-        </div>
-      )}
-
-      {/* The charge from turning Auto top up on at 0 credits was declined: the same pop-up as on the report page
-          (PRD 3.2), without a report to name. Auto top up stays off and nothing is added. */}
-      {open && s?.kind === 'auto-top-up-failed' && (
-        <div className="dialog__body success topped">
-          <FailedMark />
-          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
-            Auto top up payment failed
-          </h2>
-          <p id={descId} className="dialog__lede dialog__lede--left">
-            Your card was declined, so Auto top up wasn&apos;t turned on and no credits were added. Update your payment
-            details before {keepTogether(formatDate(state.cycleEnd))}, or your subscription will be cancelled.
-          </p>
-          <Button
-            data-autofocus
-            block
-            onClick={() => {
-              close()
-              payOnStripe()
-            }}
-          >
-            Update your payment details
-          </Button>
+          {/* On the report page (flows 3 and 4, Auto top up turned on there or already on): "Got it" only closes
+              the pop-up, and the customer generates the report themselves. */}
+          {onReport ? (
+            <Button data-autofocus block onClick={() => dispatch({ type: 'dismiss-success' })}>
+              Got it
+            </Button>
+          ) : (
+            <Button data-autofocus block onClick={close}>
+              View balance
+            </Button>
+          )}
         </div>
       )}
 
@@ -328,7 +301,7 @@ export function SuccessDialog() {
             We'll add credits automatically whenever you run out. You can turn it off anytime from your plan page.
           </p>
           <Button data-autofocus block onClick={close}>
-            View balance
+            Got it
           </Button>
         </div>
       )}
@@ -343,7 +316,7 @@ export function SuccessDialog() {
             We won't add credits automatically anymore. You can turn it back on anytime from your plan page.
           </p>
           <Button data-autofocus block onClick={close}>
-            View balance
+            Got it
           </Button>
         </div>
       )}
@@ -472,57 +445,6 @@ function DowngradeCancelled({ renewsOn, ...rest }: { headingId: string; descId: 
   )
 }
 
-/* Turning Auto top up on with 0 credits left: the first pack is paid for now, so the customer
-   sees the charge before agreeing to it. Once they agree the dialog stays as it is while the card on
-   file is charged: the button turns into a spinner, "Stay disabled" waits, and the note under the
-   buttons asks the customer to stay. The result dialog takes over when Stripe answers. */
-function AutoTopUpPayConfirm({
-  headingId,
-  descId,
-  onStay,
-  onPaying,
-}: {
-  headingId: string
-  descId: string
-  onStay: () => void
-  /** Tells the dialog a charge is in flight, so it can refuse to close. */
-  onPaying: (paying: boolean) => void
-}) {
-  const { state, dispatch } = useBilling()
-  const pack = TOP_UP[state.planId]
-  // A declined card (PRD 3.2): the Payment failed pop-up takes this dialog's place and Auto top up stays off.
-  const { paying, longer, pay } = useAutoTopUpPayment(
-    () => dispatch({ type: 'charge-auto-top-up', today: TODAY }),
-    () => dispatch({ type: 'fail-auto-top-up', showResult: true }),
-  )
-  useEffect(() => {
-    onPaying(paying)
-    return () => onPaying(false)
-  }, [paying, onPaying])
-
-  return (
-    <div className="dialog__body success" aria-busy={paying}>
-      <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-        Turn on Auto top up?
-      </h2>
-      <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-        You're out of credits. We'll charge {formatPrice(pack.price)} now, add {formatCount(pack.credits)} credits and
-        move your next billing date to {formatDate(earlyRenewalDate(state.planId, TODAY))}. We'll do the same whenever
-        you run out.
-      </p>
-      <div className="dialog__pair success__in" style={at(T.panel)}>
-        <Button data-autofocus block loading={paying} onClick={pay}>
-          {paying ? 'Processing…' : `Enable and pay ${formatPrice(pack.price)}`}
-        </Button>
-        <Button block variant="secondary" aria-disabled={paying} onClick={paying ? undefined : onStay}>
-          Stay disabled
-        </Button>
-      </div>
-      <PaymentNote busy={paying} longer={longer} />
-    </div>
-  )
-}
-
 /* The one step before a scheduled switch to monthly is cancelled (Version A): nothing changes until
    the customer confirms, and the dialog's X leaves the switch scheduled. It mirrors the step that
    scheduled it: that one lists what is lost, this one lists what is kept. Its head and credit sum are
@@ -539,7 +461,7 @@ function KeepYearlyConfirm({ headingId, descId }: { headingId: string; descId: s
     <div className="dialog__body upc">
       <div className="upc__head">
         <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-          Keep your yearly plan?
+          Keep current plan?
         </h2>
         <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
           You're keeping your Growth plan on <strong>yearly billing</strong>, renewing on <strong>{date}</strong>
@@ -547,7 +469,7 @@ function KeepYearlyConfirm({ headingId, descId }: { headingId: string; descId: s
       </div>
 
       <section className="perk-box perk-box--firm success__in" style={at(T.panel)} aria-label="What you keep">
-        <p className="perk-box__title">What you keep on Growth yearly:</p>
+        <p className="perk-box__title">Stay on yearly billing to continue enjoying:</p>
         <ul className="checklist checklist--md">
           {stayPerks('yearly').map((f, i) => (
             <li key={f.title} className="success__in" style={at(T.list + i * 80)}>
@@ -576,7 +498,7 @@ function KeepYearlyConfirm({ headingId, descId }: { headingId: string; descId: s
       </dl>
 
       <Button data-autofocus block className="success__in" style={at(T.list + 60)} onClick={keep}>
-        Keep yearly plan
+        Keep current plan
       </Button>
     </div>
   )
@@ -612,7 +534,9 @@ function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; de
           Switch to monthly billing?
         </h2>
         <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
-          You're switching your Growth plan from yearly to <strong>monthly billing</strong> on <strong>{date}</strong>
+          You're switching your Growth plan from yearly to <strong>monthly billing</strong> on <strong>{date}</strong>.
+          {/* Yearly credits end with the yearly plan: unlike an upgrade, nothing carries over. */}
+          {' '}Unused credits expire on that date and won&apos;t roll over.
         </p>
       </div>
 
@@ -652,10 +576,10 @@ function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; de
 
       <div className="dialog__pair success__in" style={at(T.list + 60)}>
         <Button data-autofocus block onClick={onKeep}>
-          Keep yearly plan
+          Keep current plan
         </Button>
         <Button block variant="secondary" onClick={() => dispatch({ type: 'schedule-downgrade', today: TODAY })}>
-          Switch to monthly
+          Proceed to downgrade
         </Button>
       </div>
     </div>

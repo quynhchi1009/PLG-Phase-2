@@ -185,7 +185,7 @@ export function ReportPage() {
         needed={total}
         request={request}
       />
-      <PaymentFailedDialog open={failedOpen} onClose={() => setFailedOpen(false)} needed={total} />
+      <PaymentFailedDialog open={failedOpen} onClose={() => setFailedOpen(false)} />
     </div>
   )
 }

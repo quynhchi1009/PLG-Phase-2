@@ -2274,6 +2274,11 @@
   }
 }
 
+/* Two full-width buttons on top of each other, when the labels are too long to sit side by side. */
+.dialog__pair--stack {
+  grid-template-columns: 1fr;
+}
+
 /* Growth yearly: two quiet links stacked under the plan card. */
 .plan-card__foot {
   display: grid;

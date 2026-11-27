@@ -2033,6 +2033,26 @@
   color: var(--color-content-primary);
 }
 
+/* A light box of what a choice changes, with its one action inside ("Renew Growth yearly now?"), built like the
+   "Don't miss out on your plan benefits" box in Figma: hairline border, dark green title, circled ticks. */
+.perk-box--panel {
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-color: var(--color-border-subtle);
+  background: var(--color-base-light);
+}
+
+.perk-box--panel .upc__perks strong {
+  color: var(--color-content-primary);
+  font-weight: 600;
+}
+
+.perk-box__action {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-1);
+}
+
 /* "N credits added!": left-aligned, a rosette tick that pops in and draws. */
 .topped {
   gap: var(--space-2);
@@ -2259,6 +2279,18 @@
 .switch[aria-checked='true'] .switch__knob {
   background: var(--color-base-light);
   transform: translateX(20px);
+}
+
+/* Off and locked (Auto top up while a switch to monthly is scheduled): a filled track and a faded knob,
+   so it reads as unavailable rather than simply off. */
+.switch[aria-disabled='true'] {
+  border-color: var(--color-border-neutral);
+  background: var(--color-background-subtle);
+  cursor: not-allowed;
+}
+
+.switch[aria-disabled='true'] .switch__knob {
+  background: var(--color-content-disabled);
 }
 
 .upc__perks {

@@ -5,7 +5,7 @@ import { Badge, Tabs } from '../../components/ui/primitives'
 import { formatCount } from '../../data/plans'
 import { TODAY, reportRequestedMessage, useBilling } from '../../state/billing'
 import { useUi } from '../../state/ui'
-import { AutoTopUpGate, AutoTopUpRenewal } from '../upgrade/AutoTopUpGate'
+import { AutoTopUpGate, AutoTopUpRenewal, RenewPlanGate } from '../upgrade/AutoTopUpGate'
 import { PaymentFailedDialog } from '../upgrade/PaymentFailedDialog'
 import { UpgradePrompt } from '../upgrade/UpgradePrompt'
 
@@ -45,7 +45,10 @@ export function ReportPage() {
   // Growth: too few credits no longer means the upgrade prompt. With Auto top up
   // off, the only way on is to turn it on (and renew early); with it on, it renews early itself.
   const growthA = state.status === 'active' && state.planId !== 'flex'
-  const autoTopUpGate = growthA && !state.autoTopUp
+  // Growth yearly with a switch to monthly scheduled: Auto top up is off and can't be turned on here, so the
+  // prompt offers to renew the yearly plan (cancelling the switch) or keep the switch.
+  const renewGate = growthA && state.pendingDowngrade
+  const autoTopUpGate = growthA && !state.autoTopUp && !state.pendingDowngrade
   const autoTopUpRenewal = growthA && state.autoTopUp
   // A cancelled plan that is still active (PRD 2.1 #9): Auto top up does not run, and an upgrade is not
   // offered here either. With too few credits the one way on is to reactivate the subscription.
@@ -170,6 +173,13 @@ export function ReportPage() {
       />
       <AutoTopUpRenewal
         open={prompt && autoTopUpRenewal}
+        onClose={() => setPrompt(false)}
+        onFailed={chargeFailed}
+        needed={total}
+        request={request}
+      />
+      <RenewPlanGate
+        open={prompt && renewGate}
         onClose={() => setPrompt(false)}
         onFailed={chargeFailed}
         needed={total}

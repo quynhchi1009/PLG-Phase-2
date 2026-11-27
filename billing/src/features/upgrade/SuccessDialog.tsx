@@ -75,7 +75,11 @@ export function SuccessDialog() {
     // Backing out of the reactivation confirmation (or leaving the Payment failed pop-up) changes nothing on the page.
     if (s?.kind === 'auto-top-up-failed' || s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'auto-top-up-pay-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
     const settingsOnly =
-      s?.kind === 'auto-top-up-off' || s?.kind === 'auto-top-up-on' || s?.kind === 'auto-top-up-charged' || s?.kind === 'topped-up'
+      s?.kind === 'auto-top-up-off' ||
+      s?.kind === 'auto-top-up-on' ||
+      // A renewal that cancelled the switch to monthly also changes the plan card's badge.
+      (s?.kind === 'auto-top-up-charged' && !s.downgradeCancelled) ||
+      s?.kind === 'topped-up'
     const changed = onPlans ? ['.plans'] : settingsOnly ? ['.settings'] : ['.plan-card', '.settings']
     dispatch({ type: 'dismiss-success' })
     flagUpdated(changed)
@@ -253,7 +257,27 @@ export function SuccessDialog() {
         <AutoTopUpPayConfirm headingId={headingId} descId={descId} onStay={close} onPaying={setPaying} />
       )}
 
-      {open && s?.kind === 'auto-top-up-charged' && (
+      {/* "Renew current plan" on the report page (a switch to monthly was scheduled): the same charge as an Auto
+          top up, but the customer chose it and it changed their plan, so the dialog says where they stand now. */}
+      {open && s?.kind === 'auto-top-up-charged' && s.downgradeCancelled && (
+        <div className="dialog__body success topped">
+          <SuccessMark />
+          <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
+            Growth yearly renewed
+          </h2>
+          {/* Built like "Subscription reactivated": one short paragraph, no table. */}
+          <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
+            We added {formatCount(s.credits)} credits and turned on Auto top up. Your Growth yearly plan renews on{' '}
+            {keepTogether(formatDate(s.renewsOn))} at {formatPrice(TOP_UP[state.planId].price)}, and your switch to
+            monthly is cancelled.
+          </p>
+          <Button data-autofocus block onClick={onReport && s.report ? () => continueWithReport(s.report!) : close}>
+            {onReport ? 'Continue with your report' : 'View my plan'}
+          </Button>
+        </div>
+      )}
+
+      {open && s?.kind === 'auto-top-up-charged' && !s.downgradeCancelled && (
         <div className="dialog__body success topped">
           <SuccessMark />
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
@@ -262,12 +286,6 @@ export function SuccessDialog() {
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
             We charged {formatPrice(TOP_UP[state.planId].price)} and moved your next billing date to{' '}
             {keepTogether(formatDate(s.renewsOn))}.
-            {s.downgradeOn && (
-              <>
-                {' '}
-                Your switch to Growth monthly is still scheduled, now for {keepTogether(formatDate(s.downgradeOn))}.
-              </>
-            )}
           </p>
           <Button data-autofocus block onClick={onReport && s.report ? () => continueWithReport(s.report!) : close}>
             {onReport ? 'Continue with your report' : 'View balance'}
@@ -583,6 +601,8 @@ function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; de
       title: 'Smaller credit allowance:',
       detail: `${formatCount(y.credits ?? 0)} credits a year becomes ${formatCount(m.credits ?? 0)} a month`,
     },
+    // Unlike the three above, this one starts now: a top-up would renew the yearly plan and undo the switch.
+    { title: 'Auto top up turns off now:', detail: `credits won't be added if you run out before ${date}` },
   ]
 
   return (
@@ -596,9 +616,10 @@ function DowngradeConfirm({ headingId, descId, onKeep }: { headingId: string; de
         </p>
       </div>
 
-      <section className="upc__card upc__card--loss success__in" style={at(T.panel)} aria-label={`What you lose from ${date}`}>
+      {/* The lede already names the switch date; the Auto top up line says it starts now. */}
+      <section className="upc__card upc__card--loss success__in" style={at(T.panel)} aria-label="What you'll lose">
         <div className="upc__plan">
-          <h3 className="upc__name">What you'll lose from {date}</h3>
+          <h3 className="upc__name">What you'll lose</h3>
           <ul className="upc__perks">
             {losses.map((l) => (
               <li key={l.title}>

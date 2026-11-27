@@ -34,6 +34,8 @@ export function PaymentFailedDialog({
   const descId = useId()
   const { state } = useBilling()
   const payOnStripe = usePayOnStripe()
+  // With a switch to monthly scheduled Auto top up is off, so the declined charge was "Renew current plan".
+  const renewal = state.pendingDowngrade
 
   return (
     <Dialog open={open} onClose={onClose} labelledBy={headingId} describedBy={descId} size="sm">
@@ -41,11 +43,12 @@ export function PaymentFailedDialog({
         <div className="dialog__body success topped">
           <FailedMark />
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
-            Auto top up payment failed
+            {renewal ? 'Renewal payment failed' : 'Auto top up payment failed'}
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left">
-            Your card was declined, so this report ({formatCount(needed)} credits) wasn&apos;t generated. You can still run
-            reports under your {formatCount(state.creditsRemaining)} credits. Update your payment details before{' '}
+            Your card was declined, so {renewal && "your plan wasn't renewed and "}this report ({formatCount(needed)}{' '}
+            credits) wasn&apos;t generated. You can still run reports under your {formatCount(state.creditsRemaining)}{' '}
+            credits. Update your payment details before{' '}
             {formatDate(state.cycleEnd).replace(/ /g, ' ')}, or your subscription will be cancelled.
           </p>
           <Button

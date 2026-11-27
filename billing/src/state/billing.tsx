@@ -33,8 +33,9 @@ export type Success =
   | { kind: 'auto-top-up-on' }
   /** Version A: asked to turn Auto top up on with 0 credits left, so turning it on also pays now. */
   | { kind: 'auto-top-up-pay-confirm' }
-  /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved. */
-  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; downgradeOn?: string; report?: ReportRequest }
+  /** Version A: Auto top up renewed the plan early: the pack was paid for and added, and the billing date moved.
+   *  `downgradeCancelled`: a switch to monthly was scheduled, and renewing now cancelled it ("Renew current plan"). */
+  | { kind: 'auto-top-up-charged'; credits: number; renewsOn: string; downgradeCancelled?: boolean; report?: ReportRequest }
   /** Version A: the charge from turning Auto top up on at 0 credits was declined (PRD 3.2). Auto top up stays off. */
   | { kind: 'auto-top-up-failed' }
   /** Asked to switch Growth yearly to monthly at renewal: confirm before anything changes. */
@@ -96,7 +97,8 @@ export interface BillingState {
    *  My Plan and replaced by every new charge. Empty means the default text. Cleared when Auto top up is
    *  turned off, the plan is cancelled, reactivated, bought again or upgraded. */
   lastAutoTopUpOn: string
-  /** Growth yearly only: a switch to Growth monthly is scheduled for the end of the cycle. */
+  /** Growth yearly only: a switch to Growth monthly is scheduled for the end of the cycle. Auto top up is off
+   *  and can't be turned on meanwhile: a top-up renews the yearly plan, which would undo the switch (27 Nov 2026). */
   pendingDowngrade: boolean
   /** Growth only (PRD 3.2): the last Auto top up charge failed and has not been paid on Stripe. The plan
    *  is not cancelled and nothing else changes; reports that cost more than the balance show the
@@ -195,7 +197,8 @@ function reducer(state: BillingState, action: Action): BillingState {
   switch (action.type) {
     // Growth only. Turning it on or off asks first, then confirms.
     case 'request-enable-auto-top-up':
-      if (state.planId === 'flex' || state.status !== 'active' || state.autoTopUp) return state
+      // While a switch to monthly is scheduled, Auto top up stays off (see `pendingDowngrade`).
+      if (state.planId === 'flex' || state.status !== 'active' || state.autoTopUp || state.pendingDowngrade) return state
       // PRD 3.1 #6: after a failed charge the card is not charged again until the customer pays on Stripe,
       // so turning it on at 0 credits shows the Payment failed pop-up instead of a new charge.
       if (action.payNow && state.paymentFailed) return { ...state, success: { kind: 'auto-top-up-failed' } }
@@ -205,7 +208,7 @@ function reducer(state: BillingState, action: Action): BillingState {
       }
 
     case 'enable-auto-top-up':
-      if (state.planId === 'flex' || state.status !== 'active') return state
+      if (state.planId === 'flex' || state.status !== 'active' || state.pendingDowngrade) return state
       return { ...state, autoTopUp: true, success: { kind: 'auto-top-up-on' } }
 
     // Auto top up renews the subscription early and adds credits immediately: when credits
@@ -213,16 +216,19 @@ function reducer(state: BillingState, action: Action): BillingState {
     // (billing page, or the report page's "not enough credits" prompt). The pack is paid
     // for now, the new billing period starts today, so the next billing date moves to one
     // cycle from today. The card on file is charged, so there is no checkout page.
-    // A scheduled downgrade to monthly stays scheduled: it takes effect on the billing date, so it
-    // moves with it (My Plan and Products & Pricing read cycleEnd) and the success message names it.
+    // A scheduled switch to monthly can't survive this (27 Nov 2026, replacing PRD 1.6 #2): the charge renews the
+    // yearly plan, so the only way it runs while one is scheduled is "Renew current plan" on the report page,
+    // which cancels the switch and turns Auto top up on. The success message says so.
     case 'charge-auto-top-up': {
       if (state.planId === 'flex' || state.status !== 'active') return state
       const pack = TOP_UP[state.planId]
       const credits = state.creditsRemaining + pack.credits
       const renewsOn = earlyRenewalDate(state.planId, action.today)
+      const downgradeCancelled = state.pendingDowngrade
       return {
         ...state,
         autoTopUp: true,
+        pendingDowngrade: false,
         // PRD 2.2 #2: My Plan names the date of the last Auto top up, and every new charge replaces it.
         lastAutoTopUpOn: action.today,
         paymentFailed: false,
@@ -233,10 +239,19 @@ function reducer(state: BillingState, action: Action): BillingState {
           kind: 'auto-top-up-charged',
           credits: pack.credits,
           renewsOn,
-          downgradeOn: state.pendingDowngrade ? renewsOn : undefined,
+          downgradeCancelled,
           report: action.report,
         },
-        events: [event(`Auto top up · plan renewed early (${formatCount(pack.credits)} credits)`, action.today, pack.price), ...state.events],
+        events: [
+          event(
+            downgradeCancelled
+              ? `Plan renewed early · downgrade cancelled, Auto top up on (${formatCount(pack.credits)} credits)`
+              : `Auto top up · plan renewed early (${formatCount(pack.credits)} credits)`,
+            action.today,
+            pack.price,
+          ),
+          ...state.events,
+        ],
       }
     }
 
@@ -268,6 +283,9 @@ function reducer(state: BillingState, action: Action): BillingState {
       return {
         ...state,
         pendingDowngrade: true,
+        // Auto top up would renew the yearly plan and undo the switch, so it goes off until the switch happens.
+        autoTopUp: false,
+        lastAutoTopUpOn: '',
         success: { kind: 'downgrade-scheduled', renewsOn: state.cycleEnd },
         events: [event('Downgrade to Growth monthly scheduled', action.today, null), ...state.events],
       }
@@ -414,7 +432,8 @@ function reducer(state: BillingState, action: Action): BillingState {
               : action.status === 'cancelling'
                 ? Math.round(credits * 0.46)
                 : Math.round(credits * 0.79)
-      const autoTopUp = planId !== 'flex' && (action.autoTopUp ?? true)
+      // A scheduled switch to monthly keeps Auto top up off (see `pendingDowngrade`).
+      const autoTopUp = planId !== 'flex' && !scheduled && (action.autoTopUp ?? true)
       // "After an auto top-up": the last charge was a few days ago, so the billing date is one cycle from it.
       const afterAutoTopUp = !!action.afterAutoTopUp && autoTopUp && action.status === 'active'
       const lastAutoTopUpOn = afterAutoTopUp ? addDays(TODAY, -4) : ''

@@ -371,7 +371,11 @@ function AutoTopUp() {
   const pack = TOP_UP[state.planId]
   // Turning it on with no credits left also pays for a pack now ("toggle ON to continue
   // immediately"); with credits left it only switches the setting on.
+  // While a switch to monthly is scheduled Auto top up stays off: a top-up would renew the yearly plan and
+  // undo the switch. The way back is "Keep yearly plan" (above), after which the switch works again.
+  const locked = state.pendingDowngrade
   const toggle = () => {
+    if (locked) return
     if (state.autoTopUp) dispatch({ type: 'request-disable-auto-top-up' })
     else dispatch({ type: 'request-enable-auto-top-up', payNow: state.creditsRemaining === 0 })
   }
@@ -382,22 +386,29 @@ function AutoTopUp() {
           Auto top up
         </p>
         {/* PRD 2.2: the message is the default text, or after an Auto top up the date of the last one (it
-            changes with every new charge). The scheduled-downgrade and cancelled states have their own rows
-            above (settings__changed, the cancelled notice), and a lapsed account has no box at all. */}
+            changes with every new charge). With a switch to monthly scheduled it says why it is off (PRD 2.2 #3).
+            The cancelled state has its own notice above, and a lapsed account has no box at all. */}
         <p className="settings__hint" id={hintId}>
-          {state.autoTopUp ? 'On. ' : ''}
-          {state.autoTopUp && state.lastAutoTopUpOn && (
+          {locked ? (
+            <>Off while your switch to Growth monthly is scheduled. Keep your yearly plan to turn it on.</>
+          ) : (
             <>
-              Last auto top up on <strong>{formatDate(state.lastAutoTopUpOn)}</strong>.{' '}
+              {state.autoTopUp ? 'On. ' : ''}
+              {state.autoTopUp && state.lastAutoTopUpOn && (
+                <>
+                  Last auto top up on <strong>{formatDate(state.lastAutoTopUpOn)}</strong>.{' '}
+                </>
+              )}
+              Adds {formatCount(pack.credits)} credits when your credits run out.
             </>
           )}
-          Adds {formatCount(pack.credits)} credits when your credits run out.
         </p>
       </div>
       <button
         type="button"
         role="switch"
         aria-checked={state.autoTopUp}
+        aria-disabled={locked || undefined}
         aria-labelledby={labelId}
         aria-describedby={hintId}
         className="switch"

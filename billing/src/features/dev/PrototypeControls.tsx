@@ -96,15 +96,6 @@ const GROUPS: Group[] = [
         creditsLeft: 0,
         autoTopUp: false,
       },
-      {
-        id: 'g-y-zero-down',
-        label: 'Turn on at 0 credits · Yearly, downgrade scheduled',
-        status: 'active',
-        planId: 'yearly',
-        creditsLeft: 0,
-        autoTopUp: false,
-        pendingDowngrade: true,
-      },
     ],
   },
   {
@@ -149,7 +140,8 @@ const GROUPS: Group[] = [
         status: 'active',
         planId: 'yearly',
         creditsLeft: 6,
-        autoTopUp: true,
+        // Auto top up is off while a switch to monthly is scheduled: the report page offers "Renew current plan".
+        autoTopUp: false,
         pendingDowngrade: true,
         route: 'report',
       },

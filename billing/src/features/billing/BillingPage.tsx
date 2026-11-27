@@ -390,7 +390,8 @@ function AutoTopUp() {
             The cancelled state has its own notice above, and a lapsed account has no box at all. */}
         <p className="settings__hint" id={hintId}>
           {locked ? (
-            <>Off while your switch to Growth monthly is scheduled. Keep your yearly plan to turn it on.</>
+            // The switch row above already names the date and offers "Keep yearly plan", so this only says why.
+            <>Unavailable while your switch to monthly is scheduled.</>
           ) : (
             <>
               {state.autoTopUp ? 'On. ' : ''}

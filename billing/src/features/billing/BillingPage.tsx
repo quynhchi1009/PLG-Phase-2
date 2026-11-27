@@ -59,24 +59,28 @@ export function BillingPage() {
   )
 }
 
-/* Growth, after a declined Auto top up charge (PRD 3.2): the plan is not cancelled and the credits are
-   untouched, so the banner says what happened and offers the one way on, paying on Stripe. While it shows,
-   "Update your payment details" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
+/* Growth, after a declined Auto top up charge (PRD 3.1-3.2): the plan stays active until the next billing date,
+   but the renewal on that date uses the same saved card, and a failed renewal cancels the plan straight away (PRD 3.3).
+   So the banner leads with the action and names the date it must happen by (non-breaking spaces keep that date on
+   one line). While it shows, "Update your payment
+   details" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
 function PaymentFailedBanner() {
+  const { state } = useBilling()
   const payOnStripe = usePayOnStripe()
   return (
     <div className="billing-alert">
       <Notice
         tone="negative"
         icon={<CircleAlert size={18} />}
-        title="Auto top up payment failed"
+        title="Update your payment details to keep accessing our services"
         action={
           <Button size="sm" onClick={payOnStripe}>
             Update your payment details
           </Button>
         }
       >
-        We couldn&apos;t charge your card. Your plan is still active and your credits are unchanged.
+        Your card was declined, so no credits were added. Update it before{' '}
+        {formatDate(state.cycleEnd).replace(/ /g, ' ')}, or your subscription will be cancelled.
       </Notice>
     </div>
   )

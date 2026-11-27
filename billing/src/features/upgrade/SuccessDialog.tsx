@@ -284,8 +284,8 @@ export function SuccessDialog() {
             Auto top up payment failed
           </h2>
           <p id={descId} className="dialog__lede dialog__lede--left">
-            We couldn&apos;t charge your card, so Auto top up was not turned on and no credits were added. Your plan is
-            still active. Update your payment details on Stripe to add more credits.
+            Your card was declined, so Auto top up wasn&apos;t turned on and no credits were added. Update your payment
+            details before {keepTogether(formatDate(state.cycleEnd))}, or your subscription will be cancelled.
           </p>
           <Button
             data-autofocus

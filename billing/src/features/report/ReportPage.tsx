@@ -36,6 +36,9 @@ export function ReportPage() {
   // The "Payment failed" pop-up (PRD 3.2): after a declined Auto top up charge, and on every later report that
   // costs more than the balance, with no new charge.
   const [failedOpen, setFailedOpen] = useState(false)
+  // Which charge the pop-up is about: an Auto top up (2.5, 2.6, or a later report while the failed state is set),
+  // or "Renew current plan" while a switch to monthly is scheduled (2.7).
+  const [failedKind, setFailedKind] = useState<'top-up' | 'renewal'>('top-up')
   const groupId = useId()
 
   const chosen = REPORTS.find((r) => r.id === report)!
@@ -63,16 +66,29 @@ export function ReportPage() {
     // Cancelled but still active: the "Don't miss out on your plan benefits" pop-up (the same one as on My
     // Plan) asks to reactivate. It is a success-dialog kind, so it renders from SuccessDialog, not from here.
     if (!enough && cancelled) return dispatch({ type: 'request-reactivate', needed: total })
-    // A charge that already failed is not tried again: the pop-up comes back until the user pays on Stripe.
-    if (!enough && growthA && state.paymentFailed) return setFailedOpen(true)
+    // PRD 3.1 #5: with Auto top up on, a charge that already failed is not tried again: the pop-up comes back until
+    // the payment method is updated. With it off, the "Enable Auto top up" pop-up shows instead and may charge again
+    // (a success clears the failed state). With a switch to monthly scheduled, the 2.7 pop-up shows (PRD 2.1 #10).
+    if (!enough && growthA && state.paymentFailed && state.autoTopUp && !state.pendingDowngrade) {
+      setFailedKind('top-up')
+      return setFailedOpen(true)
+    }
     if (!enough) return setPrompt(true)
     dispatch({ type: 'generate', ...request, today: TODAY })
     toast(reportRequestedMessage(request))
   }
 
-  // The charge was declined: remember it (nothing else changes) and say so.
+  // An Auto top up charge was declined: remember it (nothing else changes) and say so.
   const chargeFailed = () => {
     dispatch({ type: 'fail-auto-top-up' })
+    setFailedKind('top-up')
+    setFailedOpen(true)
+  }
+
+  // "Renew current plan" was declined (PRD 2.7): the same pop-up, but no failed state is saved (PRD 2.1 #8, 3.1 #1),
+  // so there is no Billing banner and the next report above the balance shows the 2.7 pop-up again.
+  const renewalFailed = () => {
+    setFailedKind('renewal')
     setFailedOpen(true)
   }
 
@@ -181,11 +197,11 @@ export function ReportPage() {
       <RenewPlanGate
         open={prompt && renewGate}
         onClose={() => setPrompt(false)}
-        onFailed={chargeFailed}
+        onFailed={renewalFailed}
         needed={total}
         request={request}
       />
-      <PaymentFailedDialog open={failedOpen} onClose={() => setFailedOpen(false)} />
+      <PaymentFailedDialog open={failedOpen} kind={failedKind} onClose={() => setFailedOpen(false)} />
     </div>
   )
 }

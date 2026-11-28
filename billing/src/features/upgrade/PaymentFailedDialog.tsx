@@ -23,19 +23,22 @@ import { usePayOnStripe } from './usePayOnStripe'
  */
 export function PaymentFailedDialog({
   open,
+  kind,
   onClose,
 }: {
   open: boolean
+  /** 'renewal': "Renew current plan" was declined while a switch to monthly is scheduled (PRD 2.7). 'top-up': an
+   *  Auto top up charge was declined, or a later report above the balance while that failed state is set. */
+  kind: 'top-up' | 'renewal'
   onClose: () => void
 }) {
   const headingId = useId()
   const descId = useId()
   const { state } = useBilling()
   const payOnStripe = usePayOnStripe()
-  // With a switch to monthly scheduled Auto top up is off, so the declined charge was "Renew current plan".
-  const renewal = state.pendingDowngrade
-  // Otherwise, with Auto top up off the declined charge was "Enable Auto top up" at the report gate (Scenario 3):
-  // it stays off (PRD 2.5 #3), so the pop-up says so. With it on, Auto top up charged by itself (Scenario 7).
+  const renewal = kind === 'renewal'
+  // With Auto top up off the declined charge was "Enable Auto top up" at the report gate (Scenario 3): it stays off
+  // (PRD 2.5 #2), so the pop-up says so. With it on, Auto top up charged by itself (Scenario 7).
   const enableAttempt = !renewal && !state.autoTopUp
   const plan = PLANS[state.planId]
   const pack = TOP_UP[state.planId]

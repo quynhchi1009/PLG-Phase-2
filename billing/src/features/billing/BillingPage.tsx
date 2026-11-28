@@ -62,35 +62,34 @@ export function BillingPage() {
 /* Growth, after a declined Auto top up charge (PRD 3.1-3.2). A failed Auto top up never cancels the plan, so the
    banner says the same as the report-page Payment failed pop-up: what failed, that the plan stays active with its
    credits, and what updating the payment details does (tops up the credits; only the renewal case renews the plan).
-   No deadline or cancellation line. Three cases: Auto top up charged by itself (on), "Enable Auto top up" at the report gate (off,
-   it stays off), and "Renew current plan" while a switch to monthly is scheduled. While it shows, "Update payment
+   No deadline or cancellation line. Two cases: Auto top up charged by itself (on), and "Enable Auto top up" at the report
+   gate (off, it stays off). A declined "Renew current plan" (PRD 2.7) saves no state, so no banner. While it shows, "Update payment
    details" is the page's one primary button and Change plan steps down to secondary (see SettingsCard). */
 function PaymentFailedBanner() {
   const { state } = useBilling()
   const payOnStripe = usePayOnStripe()
-  const renewal = state.pendingDowngrade
+  // A declined "Renew current plan" (PRD 2.7) saves no failed state, so this banner is only ever about an Auto top up
+  // charge. Auto top up off means the declined charge was "Enable Auto top up" (it stays off). A switch to monthly
+  // scheduled after the failure forces the toggle off, so that case keeps the neutral line.
+  const enableAttempt = !state.autoTopUp && !state.pendingDowngrade
   // The title already says the payment failed, so the body is what happened, that the plan stays active, and the fix.
-  const outcome = renewal
-    ? "Your plan wasn't renewed but remains active."
-    : state.autoTopUp
-      ? 'No credits were added. Your plan remains active.'
-      : "Auto top up wasn't turned on. Your plan remains active."
+  const outcome = enableAttempt
+    ? "Auto top up wasn't turned on. Your plan remains active."
+    : 'No credits were added. Your plan remains active.'
   return (
     <div className="billing-alert">
       <Notice
         tone="negative"
         icon={<CircleAlert size={18} />}
-        title={renewal ? 'Renewal payment failed' : 'Auto top up payment failed'}
+        title="Auto top up payment failed"
         action={
           <Button size="sm" onClick={payOnStripe}>
             Update payment details
           </Button>
         }
       >
-        {outcome}{' '}
-        {renewal
-          ? `Update your payment details to renew it for ${formatPrice(PLANS[state.planId].price ?? 0)}.`
-          : `Update your payment details to top up ${formatCount(TOP_UP[state.planId].credits)} credits for ${formatPrice(TOP_UP[state.planId].price)}.`}
+        {outcome} Update your payment details to top up {formatCount(TOP_UP[state.planId].credits)} credits for{' '}
+        {formatPrice(TOP_UP[state.planId].price)}.
       </Notice>
     </div>
   )
@@ -305,7 +304,9 @@ function CreditBalance({ onFlexTopUp }: { onFlexTopUp: () => void }) {
   const pct = total ? Math.min(100, (remaining / total) * 100) : 0
   const cancelling = state.status === 'cancelling'
   const flexTopUp = canTopUp(state)
-  const growthActive = state.status === 'active' && state.planId !== 'flex'
+  // PRD 2.2: every Growth account with a plan in use sees the Auto top up box, including a cancelled plan that is
+  // still active (#4, cancelled text). A lapsed account has no box (#5).
+  const growthActive = state.status !== 'none' && state.planId !== 'flex'
   const tone = remaining === 0 ? 'empty' : pct <= 15 ? 'low' : 'ok'
   const resets = !state.cycleEnd
     ? `Resets ${formatDate(FLEX_RESETS_ON)}`
@@ -383,7 +384,11 @@ function AutoTopUp() {
   // credits than are left (27 Nov 2026).
   // While a switch to monthly is scheduled Auto top up stays off: a top-up would renew the yearly plan and
   // undo the switch. The way back is "Keep current plan" (above), after which the switch works again.
-  const locked = state.pendingDowngrade
+  const downgrade = state.pendingDowngrade
+  // PRD 2.2 #4 and 2.1 #9: while a cancellation is scheduled Auto top up does not run, so the toggle keeps its
+  // setting but is locked; reactivating unlocks it unchanged (PRD 2.8).
+  const cancelling = state.status === 'cancelling'
+  const locked = downgrade || cancelling
   const toggle = () => {
     if (locked) return
     if (state.autoTopUp) dispatch({ type: 'request-disable-auto-top-up' })
@@ -396,10 +401,13 @@ function AutoTopUp() {
           Auto top up
         </p>
         {/* PRD 2.2: the message is the default text, or after an Auto top up the date of the last one (it
-            changes with every new charge). With a switch to monthly scheduled it says why it is off (PRD 2.2 #3).
-            The cancelled state has its own notice above, and a lapsed account has no box at all. */}
+            changes with every new charge). With a switch to monthly scheduled it says why it is off (PRD 2.2 #3),
+            and with a cancellation scheduled why it is paused (#4). A lapsed account has no box at all (#5). */}
         <p className="settings__hint" id={hintId}>
-          {locked ? (
+          {cancelling ? (
+            // Same build as the downgrade line: the state, why, then the way out ("Reactivate subscription" above).
+            <>Unavailable while your plan is set to cancel. To use it, select Reactivate plan above.</>
+          ) : downgrade ? (
             // The state first (unavailable), then why, then the way out: "Keep current plan" in the switch row above.
             // Keeping yearly only unlocks the switch; it does not turn Auto top up back on by itself.
             <>Unavailable while your plan is set to switch to monthly. To use it, select Keep current plan above.</>

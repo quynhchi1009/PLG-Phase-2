@@ -331,7 +331,7 @@ const keepTogether = (date: string) => date.replace(/ /g, ' ')
    title, one white box of ticked rows, the way back), since what changes, and when, is the one thing the
    customer needs to leave with. Every row comes from the confirmation step and the Billing notice, so the
    two switch receipts (scheduled, cancelled) share this layout and differ only in their finish:
-   - 'plain': the neutral floor, neutral marks and a secondary button, for a plan that is about to change;
+   - 'plain': the neutral floor and neutral marks (the button stays primary, as in Figma), for a plan that is about to change;
    - 'activated': exactly "Plan activated" (green tint, green ticks, primary button), for a plan that
      stays as it was. */
 function SwitchReceipt({
@@ -381,7 +381,7 @@ function SwitchReceipt({
             </li>
           ))}
         </ul>
-        <Button data-autofocus block variant={plain ? 'secondary' : 'primary'} onClick={onDone}>
+        <Button data-autofocus block variant="primary" onClick={onDone}>
           Back to my plan
         </Button>
       </div>
@@ -390,7 +390,8 @@ function SwitchReceipt({
 }
 
 /* Amber pill, like Billing's "Downgrade scheduled" tag and the "Plan cancelled" receipt: the plan is
-   changing. Rows: what is kept until the date, what starts on it, the way out. */
+   changing. The date is said once, in the title (as on Billing's "Your plan changes to … on <date>");
+   the rows point back to it: what is kept until then, what the new plan costs, the way out. */
 function DowngradeScheduled({ renewsOn, ...rest }: { headingId: string; descId: string; renewsOn: string; onDone: () => void }) {
   const date = keepTogether(formatDate(renewsOn))
   const y = PLANS.yearly
@@ -403,17 +404,17 @@ function DowngradeScheduled({ renewsOn, ...rest }: { headingId: string; descId: 
       look="plain"
       title={
         <>
-          Your plan will switch to <span className="dialog__title-accent">{m.name}</span>
+          Your plan will switch to <span className="dialog__title-accent">{keepTogether(m.name)}</span> on {date}
         </>
       }
       rowsLabel="What changes and when"
       rows={[
-        { title: `Until ${date}:`, detail: `you keep ${y.name} and your credits as they are` },
+        { title: 'Until then:', detail: `you keep ${y.name} and your credits as they are` },
         {
-          title: `From ${date}:`,
-          detail: `${m.name} starts at ${formatPrice(m.price ?? 0)} per month, with ${formatCount(m.credits ?? 0)} credits each month`,
+          title: 'After the switch:',
+          detail: `you pay ${formatPrice(m.price ?? 0)} per month and get ${formatCount(m.credits ?? 0)} credits each month`,
         },
-        { title: 'Changed your mind?', detail: `You can keep your yearly plan from your plan page any time before ${date}` },
+        { title: 'Changed your mind?', detail: 'You can keep your yearly plan from your plan page any time before the switch' },
       ]}
     />
   )

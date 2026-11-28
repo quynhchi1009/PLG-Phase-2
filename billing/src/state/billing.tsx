@@ -252,7 +252,7 @@ function reducer(state: BillingState, action: Action): BillingState {
       return { ...state, paymentFailed: true }
 
     case 'request-disable-auto-top-up':
-      if (!state.autoTopUp) return state
+      if (!state.autoTopUp || state.status !== 'active') return state
       return { ...state, success: { kind: 'auto-top-up-confirm' } }
 
     // PRD 2.3 #2: with Auto top up off the message goes back to the default text, so the date is dropped.
@@ -295,8 +295,9 @@ function reducer(state: BillingState, action: Action): BillingState {
       }
 
     case 'cancel':
-      // Cancelling switches Auto top up off: no automatic charges after the plan ends.
-      return { ...state, status: 'cancelling', autoTopUp: false, lastAutoTopUpOn: '', pendingDowngrade: false, notice: null }
+      // The Auto top up setting is kept (PRD 2.8: reactivating does not change it). It just doesn't run while the
+      // cancellation is scheduled (PRD 2.1 #9), and Billing shows the cancelled text with the toggle locked (2.2 #4).
+      return { ...state, status: 'cancelling', lastAutoTopUpOn: '', pendingDowngrade: false, notice: null }
 
     // Opens the "Don't miss out on your plan benefits" confirmation; nothing changes yet.
     case 'request-reactivate':
@@ -310,8 +311,7 @@ function reducer(state: BillingState, action: Action): BillingState {
       return {
         ...state,
         status: 'active',
-        // Growth gets Auto top up back, as it does on any successful Growth subscription.
-        autoTopUp: state.planId !== 'flex',
+        // PRD 2.8: reactivating does not change the Auto top up setting; the message goes back to the default text.
         lastAutoTopUpOn: '',
         notice: null,
         success: { kind: 'reactivated', planId: state.planId, renewsOn: state.cycleEnd },

@@ -42,6 +42,9 @@ export type Success =
   | { kind: 'keep-yearly-confirm' }
   /** Version A: the scheduled switch to monthly was cancelled; the yearly plan renews on `renewsOn`. */
   | { kind: 'downgrade-cancelled'; renewsOn: string }
+  /** 28 Nov 2026: after a switch from Growth yearly to monthly, the first monthly charge failed, so the plan
+   *  was cancelled straight away (no grace period). Shown once, on that day, over the lapsed Billing page. */
+  | { kind: 'switch-payment-failed' }
   | null
 
 export interface LedgerEvent {
@@ -145,6 +148,9 @@ type Action =
       paymentFailed?: boolean
       /** Growth only: start a few days after an Auto top up charge, so My Plan shows its date. */
       afterAutoTopUp?: boolean
+      /** Start lapsed after the switch from yearly to monthly: the first monthly charge failed and the
+       *  "Plan cancelled" pop-up opens over the Billing page. */
+      switchPaymentFailed?: boolean
     }
 
 const CYCLE_END: Record<PaidPlanId, string> = {
@@ -404,6 +410,21 @@ function reducer(state: BillingState, action: Action): BillingState {
       return { ...state, success: null }
 
     case 'demo': {
+      // The yearly plan switched to monthly on `endedOn`, the first $99 charge was declined, and the plan was
+      // cancelled straight away: a lapsed Growth monthly account, with the pop-up that says why.
+      if (action.switchPaymentFailed)
+        return {
+          ...INITIAL_STATE,
+          status: 'none',
+          planId: 'monthly',
+          creditsRemaining: 0,
+          creditsTotal: PLANS.monthly.credits ?? 0,
+          autoTopUp: false,
+          endReason: 'payment-failed',
+          demoRun: state.demoRun + 1,
+          success: { kind: 'switch-payment-failed' },
+          events: [event('Downgrade to Growth monthly scheduled', addDays(INITIAL_STATE.endedOn, -30), null)],
+        }
       const planId = action.planId ?? state.planId
       const credits = PLANS[planId].credits ?? 0
       const scheduled = !!action.pendingDowngrade && planId === 'yearly' && action.status === 'active'

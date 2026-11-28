@@ -36,6 +36,8 @@ interface Scenario {
   paymentFailed?: boolean
   /** Growth, Auto top up on, charged a few days ago: My Plan names the date of that last charge (PRD 2.2 #2). */
   afterAutoTopUp?: boolean
+  /** After the switch to monthly, the first monthly charge failed: the plan is cancelled and the pop-up says so. */
+  switchPaymentFailed?: boolean
   route?: Route
 }
 
@@ -85,6 +87,15 @@ const GROUPS: Group[] = [
         status: 'active',
         planId: 'yearly',
         pendingDowngrade: true,
+      },
+      // 28 Nov 2026: the switch went through but the first monthly charge failed, so the plan is cancelled straight away.
+      {
+        id: 'g-down-failed',
+        label: 'Downgrade · first monthly charge fails',
+        status: 'none',
+        planId: 'monthly',
+        endReason: 'payment-failed',
+        switchPaymentFailed: true,
       },
       { id: 'g-m-low', label: 'Low credits · Monthly', status: 'active', planId: 'monthly', creditsLeft: 6, route: 'report' },
       { id: 'g-y-low', label: 'Low credits · Yearly', status: 'active', planId: 'yearly', creditsLeft: 6, route: 'report' },
@@ -344,6 +355,7 @@ export function PrototypeControls() {
       pendingDowngrade: s.pendingDowngrade,
       paymentFailed: s.paymentFailed,
       afterAutoTopUp: s.afterAutoTopUp,
+      switchPaymentFailed: s.switchPaymentFailed,
     })
     navigate(s.route ?? 'billing')
   }

@@ -3,7 +3,7 @@ import { Check, Minus } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Dialog } from '../../components/ui/Dialog'
 import { SuccessMark } from '../../components/ui/SuccessMark'
-import { PLANS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
+import { PLANS, REPORT_RETENTION_DAYS, TOP_UP, formatAmount, formatCount, formatPrice, perMonth, stayPerks } from '../../data/plans'
 import { formatDate } from '../../data/history'
 import { TODAY, reportRequestedMessage, useBilling, type ReportRequest } from '../../state/billing'
 import { useUi } from '../../state/ui'
@@ -30,7 +30,7 @@ const DOWNGRADE_KINDS = new Set<string>(['downgrade-confirm', 'downgrade-schedul
  */
 export function SuccessDialog() {
   const { state, dispatch } = useBilling()
-  const { route, toast } = useUi()
+  const { route, toast, navigate } = useUi()
   const headingId = useId()
   const descId = useId()
   const s = state.success
@@ -66,7 +66,8 @@ export function SuccessDialog() {
 
   const close = () => {
     // Backing out of the reactivation confirmation (or leaving the Payment failed pop-up) changes nothing on the page.
-    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm') return dispatch({ type: 'dismiss-success' })
+    // The "Plan cancelled" pop-up after a failed first monthly charge leaves the lapsed Billing page as it is.
+    if (s?.kind === 'reactivate-confirm' || s?.kind === 'auto-top-up-confirm' || s?.kind === 'auto-top-up-enable-confirm' || s?.kind === 'downgrade-confirm' || s?.kind === 'keep-yearly-confirm' || s?.kind === 'switch-payment-failed') return dispatch({ type: 'dismiss-success' })
     const settingsOnly =
       s?.kind === 'auto-top-up-off' ||
       s?.kind === 'auto-top-up-on' ||
@@ -206,6 +207,17 @@ export function SuccessDialog() {
 
       {open && s?.kind === 'downgrade-scheduled' && <DowngradeScheduled headingId={headingId} descId={descId} renewsOn={s.renewsOn} onDone={close} />}
 
+      {open && s?.kind === 'switch-payment-failed' && (
+        <SwitchPaymentFailed
+          headingId={headingId}
+          descId={descId}
+          onChoosePlan={() => {
+            dispatch({ type: 'dismiss-success' })
+            navigate('plans')
+          }}
+        />
+      )}
+
       {open && s?.kind === 'auto-top-up-confirm' && (
         <div className="dialog__body success">
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
@@ -253,9 +265,11 @@ export function SuccessDialog() {
         <div className="dialog__body success topped">
           <SuccessMark />
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left success__in" style={at(T.title)}>
-            Growth yearly renewed
+            Growth yearly plan renewed
           </h2>
-          {/* Built like "Subscription reactivated": one short paragraph, no table. */}
+          {/* Built like "Subscription reactivated": one short paragraph, no table. The title answers "Renew current
+              plan now?" the way "Plan activated" and "Subscription reactivated" do (thing + what happened), and names
+              the plan, written as the lede and the Renew pop-up write it (user, 28 Nov 2026). */}
           <p id={descId} className="dialog__lede dialog__lede--left success__in" style={at(T.lede)}>
             We added {formatCount(s.credits)} credits and turned on Auto top up. Your Growth yearly plan renews on{' '}
             {keepTogether(formatDate(s.renewsOn))} at {formatPrice(TOP_UP[state.planId].price)}, and your switch to
@@ -344,6 +358,7 @@ function SwitchReceipt({
   rows,
   rowsLabel,
   onDone,
+  action = 'Back to my plan',
 }: {
   headingId: string
   descId: string
@@ -355,6 +370,8 @@ function SwitchReceipt({
   rows: { title: string; detail: string }[]
   rowsLabel: string
   onDone: () => void
+  /** The button's label; it always runs `onDone`. */
+  action?: string
 }) {
   const plain = look === 'plain'
   return (
@@ -382,7 +399,7 @@ function SwitchReceipt({
           ))}
         </ul>
         <Button data-autofocus block variant="primary" onClick={onDone}>
-          Back to my plan
+          {action}
         </Button>
       </div>
     </div>
@@ -416,6 +433,44 @@ function DowngradeScheduled({ renewsOn, ...rest }: { headingId: string; descId: 
         },
         { title: 'Changed your mind?', detail: 'You can keep your yearly plan from your plan page any time before the switch' },
       ]}
+    />
+  )
+}
+
+/* 28 Nov 2026: the switch to monthly happened, but its first charge was declined, so the plan was cancelled
+   straight away (no grace period, unlike a failed Auto top up). Same amber receipt as "Downgrade scheduled",
+   so the end of the flow reads like its start. The customer sees it on the day the plan ends, so the title
+   carries no date, and the reports are counted from that day ("for the next 90 days", not a date). During
+   those 90 days they can still log in and open View Reports (past reports and pKYB history), so the rows say
+   what stops and what is kept.
+   The one way forward is a new plan; the X leaves the customer on the lapsed Billing page. */
+function SwitchPaymentFailed({
+  onChoosePlan,
+  ...rest
+}: {
+  headingId: string
+  descId: string
+  onChoosePlan: () => void
+}) {
+  const m = PLANS.monthly
+  return (
+    <SwitchReceipt
+      {...rest}
+      badge="Plan cancelled"
+      warn
+      look="plain"
+      title="Your Growth plan has been cancelled"
+      rowsLabel="What happened"
+      rows={[
+        { title: 'Payment failed:', detail: `your first ${formatPrice(m.price ?? 0)} monthly payment was declined` },
+        { title: 'What stops now:', detail: 'new reports and Perpetual KYB monitoring' },
+        {
+          title: 'What you keep:',
+          detail: `your past reports, including your pKYB history, stay in View Reports for the next ${REPORT_RETENTION_DAYS} days. Choose a plan within that time to keep them`,
+        },
+      ]}
+      onDone={onChoosePlan}
+      action="Choose a plan"
     />
   )
 }

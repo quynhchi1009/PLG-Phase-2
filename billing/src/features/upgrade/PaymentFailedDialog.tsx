@@ -52,27 +52,50 @@ export function PaymentFailedDialog({
         <div className="dialog__body success">
           <FailedMark />
           <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
-            {renewal ? 'Renewal payment failed' : 'Auto top up payment failed'}
+            {renewal ? 'Renewal payment failed' : 'Payment failed'}
           </h2>
           {/* A declined Auto top up never cancels the plan (PRD 3.2): it stays active with its credits until the
               next billing date. All the customer needs is the credits, so updating the payment details tops them
               up. Only the renewal variant (a switch to monthly scheduled, "Renew current plan") renews the plan. */}
-          <p id={descId} className="dialog__lede dialog__lede--left">
-            We couldn&apos;t process your payment, so {renewal && "your plan wasn't renewed and "}
-            {enableAttempt && "Auto top up wasn't turned on and "}this report wasn&apos;t generated. Your plan remains active, and you can continue using your remaining credits.{' '}
-            {renewal
-              ? 'Update your payment details to renew your current plan.'
-              : 'Update your payment details to top up your credits.'}
-          </p>
-          {/* The balance that still works, the next billing date, and what updating the payment details buys:
-              the top-up pack, or for the renewal variant the plan at its full price. */}
+          {enableAttempt ? (
+            // Scenario 3, "Enable Auto top up" at the report gate was declined (PRD 2.5 #2): what failed and what it
+            // left as it was (Auto top up off, no report, plan active), then the way back. Growth has no manual
+            // top-up, so the fix is the same step again once the card works, not a "Top up" offer.
+            // Two paragraphs: what happened (and what didn't change), then the way back.
+            <div id={descId} className="dialog__lede dialog__lede--left dialog__lede--paras">
+              <p>
+                We couldn&apos;t take the {formatPrice(pack.price)} payment, so Auto top up wasn&apos;t turned on and
+                this report wasn&apos;t generated. Your plan remains active.
+              </p>
+              <p>Update your payment details, then generate the report again.</p>
+            </div>
+          ) : renewal ? (
+            <p id={descId} className="dialog__lede dialog__lede--left">
+              We couldn&apos;t process your payment, so your plan wasn&apos;t renewed and this report wasn&apos;t
+              generated. Your plan remains active, and you can continue using your remaining credits. Update your
+              payment details to renew your current plan.
+            </p>
+          ) : (
+            // Scenario 7, Auto top up on charged by itself and was declined (Figma S7, 16033:52588): the same two
+            // paragraphs as Scenario 3. Auto top up stays on, so the next report above the balance tries again.
+            <div id={descId} className="dialog__lede dialog__lede--left dialog__lede--paras">
+              <p>
+                We couldn&apos;t process your payment, so this report wasn&apos;t generated. Your plan remains active,
+                and you can continue using your remaining credits.
+              </p>
+              <p>Update your payment details, then generate the report again.</p>
+            </div>
+          )}
+          {/* The balance that still works, the next billing date, and the Auto top up setting after the decline
+              (off when the decline was "Enable Auto top up", on when it charged by itself), or for the renewal
+              variant the plan at its full price. */}
           <PaymentFacts
             facts={[
               { label: 'Credits remaining', value: formatCount(state.creditsRemaining) },
               { label: 'Next billing date', value: formatDate(state.cycleEnd) },
               renewal
                 ? { label: 'Current plan renews for', value: formatPrice(plan.price ?? 0) }
-                : { label: 'Top up', value: `${formatCount(pack.credits)} credits for ${formatPrice(pack.price)}` },
+                : { label: 'Auto top up', value: enableAttempt ? 'Off' : 'On' },
             ]}
           />
           <div className="dialog__actions dialog__actions--stack">

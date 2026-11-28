@@ -321,23 +321,29 @@ function RenewConfirm({
 
   // Built like "Don't miss out on your plan benefits": what changes sits in one light box, key phrase first,
   // with the one action inside it. The dialog's X is the way out (nothing changes, the switch stays scheduled).
+  // Each part says something new (28 Nov 2026, PM title "Renew current plan now?"): the title asks, the lede gives
+  // the price and the plan, the box lists what follows the payment, and the button pays. Like "Keep current plan?"
+  // (button "Keep current plan") and "Stay on yearly billing to continue enjoying:", the box title names the action
+  // ("With today's renewal:", picking up the lede's "today"; user, 28 Nov 2026) and the button repeats the title's action ("Renew current plan", the same label as the
+  // report-page button that opened this pop-up). The price stays out of the button (user, 28 Nov 2026).
   const changes = [
     { key: `${formatCount(pack.credits)} credits added`, rest: `to your ${formatCount(state.creditsRemaining)} remaining credits` },
     { key: 'Auto top up turns on,', rest: `adding ${formatCount(pack.credits)} credits whenever you run out` },
-    { key: 'Your switch to Growth monthly is cancelled;', rest: 'you stay on Growth yearly' },
+    { key: 'Your switch to Growth monthly', rest: 'is cancelled' },
     { key: 'Next billing date', rest: `moves to ${formatDate(earlyRenewalDate(state.planId, TODAY))}` },
   ]
 
   return (
     <div className="dialog__body success" aria-busy={paying}>
       <h2 id={headingId} tabIndex={-1} className="dialog__title dialog__title--left">
-        Renew Growth yearly now?
+        Renew current plan now?
       </h2>
       <p id={descId} className="dialog__lede dialog__lede--left">
-        We&apos;ll charge {formatPrice(pack.price)} to your card today and start a new yearly billing period.
+        We&apos;ll charge {formatPrice(pack.price)} to your card today, and your Growth yearly plan starts a new billing
+        year.
       </p>
       <section className="perk-box perk-box--panel" aria-label="What renewing changes">
-        <p className="perk-box__title">Renewing your current plan means:</p>
+        <p className="perk-box__title">With today&apos;s renewal:</p>
         <ul className="upc__perks">
           {changes.map((c) => (
             <li key={c.key}>
@@ -352,7 +358,7 @@ function RenewConfirm({
         </ul>
         <div className="perk-box__action">
           <Button data-autofocus block loading={paying} onClick={pay}>
-            {paying ? 'Processing…' : 'Renew your current plan'}
+            {paying ? 'Processing…' : 'Renew current plan'}
           </Button>
           <PaymentNote busy={paying} longer={longer} />
         </div>

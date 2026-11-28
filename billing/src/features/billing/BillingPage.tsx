@@ -81,15 +81,24 @@ function PaymentFailedBanner() {
       <Notice
         tone="negative"
         icon={<CircleAlert size={18} />}
-        title="Auto top up payment failed"
+        // Same title as the report-page pop-up for each case, so the two read as one event.
+        title={enableAttempt ? 'Payment failed' : 'Auto top up payment failed'}
         action={
           <Button size="sm" onClick={payOnStripe}>
             Update payment details
           </Button>
         }
       >
-        {outcome} Update your payment details to top up {formatCount(TOP_UP[state.planId].credits)} credits for{' '}
-        {formatPrice(TOP_UP[state.planId].price)}.
+        {outcome}{' '}
+        {enableAttempt ? (
+          // Same way back as the report-page pop-up: Growth has no manual top-up to offer here.
+          <>Update your payment details, then turn on Auto top up.</>
+        ) : (
+          <>
+            Update your payment details to top up {formatCount(TOP_UP[state.planId].credits)} credits for{' '}
+            {formatPrice(TOP_UP[state.planId].price)}.
+          </>
+        )}
       </Notice>
     </div>
   )
@@ -389,6 +398,8 @@ function AutoTopUp() {
   // setting but is locked; reactivating unlocks it unchanged (PRD 2.8).
   const cancelling = state.status === 'cancelling'
   const locked = downgrade || cancelling
+  // PRD 2.2 #2: once Auto top up has charged, My Plan shows the date of the last charge.
+  const lastOn = !locked && state.autoTopUp && !!state.lastAutoTopUpOn
   const toggle = () => {
     if (locked) return
     if (state.autoTopUp) dispatch({ type: 'request-disable-auto-top-up' })
@@ -411,16 +422,13 @@ function AutoTopUp() {
             // The state first (unavailable), then why, then the way out: "Keep current plan" in the switch row above.
             // Keeping yearly only unlocks the switch; it does not turn Auto top up back on by itself.
             <>Unavailable while your plan is set to switch to monthly. To use it, select Keep current plan above.</>
-          ) : (
+          ) : lastOn ? (
+            // One line: what the last charge added and when. Every new charge replaces the date.
             <>
-              {state.autoTopUp ? 'On. ' : ''}
-              {state.autoTopUp && state.lastAutoTopUpOn && (
-                <>
-                  Last auto top up on <strong>{formatDate(state.lastAutoTopUpOn)}</strong>.{' '}
-                </>
-              )}
-              Adds {formatCount(pack.credits)} credits when your credits run out.
+              Last added {formatCount(pack.credits)} credits on <strong>{formatDate(state.lastAutoTopUpOn)}</strong>
             </>
+          ) : (
+            <>Adds {formatCount(pack.credits)} credits when your credits run out.</>
           )}
         </p>
       </div>
